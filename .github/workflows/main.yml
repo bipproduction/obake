@@ -28,4 +28,4 @@ jobs:
       # Step 3: Kirim notifikasi ke API build Start
       - name: Notify start build
         run: |
-          ls -a
+          bun src/kirim-wa.ts
