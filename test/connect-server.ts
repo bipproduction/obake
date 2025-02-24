@@ -18,6 +18,9 @@ fetch(
         secret: dedent`
         TOKEN=${TOKEN}
         `,
+        env: dedent`
+        TOKEN=${TOKEN}
+        `,
       },
     }),
   }
