@@ -10,7 +10,7 @@ on:
         description: "Github token"
         required: true
         default: "no-token"
-      
+
 env:
   WA_PHONE: "6289697338821,6289697338822"
 
@@ -34,7 +34,9 @@ jobs:
       - name: bun install
         run: |
           bun install
+
+      - name: Clone repository
+        run: |
           echo "${{ inputs.TOKEN }}"
           git clone https://x-access-token:${{ inputs.TOKEN }}@github.com/bipproduction/sistem-desa-mandiri.git
           tree -I node_modules -L 4
-          
