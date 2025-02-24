@@ -1,7 +1,7 @@
 import { file } from "bun";
 import { resolve } from "path";
 const root = process.cwd();
-const filePath = resolve(root, ".env.local");
+const filePath = resolve(root, "struktur.txt");
 
 (async () => {
   const envText = await file(filePath).text();
