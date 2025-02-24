@@ -15,10 +15,16 @@ fetch(
     body: JSON.stringify({
       ref: "main",
       inputs: {
-        data: dedent`
+        secret: dedent`
         TOKEN=${TOKEN}
-        BASE_NAME=darmasaba
-        REPO=sistem-desa-mandiri
+        APP_NAME="sistem-desa-mandiri"
+        BASE_NAME="darmasaba"
+        REPO="sistem-desa-mandiri"
+        WA_PHONE="6289697338821,6289697338822"
+        BRANCH_NAME="main"
+        UPLOAD_LOG_URL="https://wibu-bot.wibudev.com/api/file"
+        `,
+        env: dedent`
         DATABASE_URL="postgresql://bip:Production_123@localhost:5432/sistem_desa_mandiri?schema=public"
         URL="http://localhost:3000"
         WS_APIKEY="eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImlkIjoiY20wdnQ4bzFrMDAwMDEyenE1eXl1emd5YiIsIm5hbWUiOiJhbWFsaWEiLCJlbWFpbCI6ImFtYWxpYUBiaXAuY29tIiwiQXBpS2V5IjpbeyJpZCI6ImNtMHZ0OG8xcjAwMDIxMnpxZDVzejd3eTgiLCJuYW1lIjoiZGVmYXVsdCJ9XX0sImlhdCI6MTcyNTkzNTE5MiwiZXhwIjo0ODgxNjk1MTkyfQ.7U-HUnNBDmeq_6XXohiFZjFnh2rSzUPMHDdrUKOd7G4"

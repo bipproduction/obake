@@ -32,7 +32,8 @@ jobs:
 
       - name: config env
         run: |
-          echo "${{ inputs.data }}" >> $GITHUB_ENV
+          echo "${{ inputs.secret }}" >> $GITHUB_ENV
+          echo "${{ inputs.env }}" >> $GITHUB_ENV
 
       - name: Install tree
         run: sudo apt-get update && sudo apt-get install -y tree
@@ -65,7 +66,38 @@ jobs:
         run: |
           bun run build >> ${{ github.workspace }}/logs.txt 2>&1
 
-      - name: show logs
+      # Step 4: Set BUILD_STATUS based on success or failure
+      - name: Set BUILD_STATUS
+        if: success()
+        run: echo "BUILD_STATUS=success" >> $GITHUB_ENV
+
+      - name: Set BUILD_STATUS on failure
+        if: failure()
+        run: echo "BUILD_STATUS=failed" >> $GITHUB_ENV
+
+      # Update status log
+      - name: Update status log
         if: always()
         run: |
-          cat ${{ github.workspace }}/logs.txt
+          echo "=====================" >> log.txt
+          echo "BUILD_STATUS=${{ env.BUILD_STATUS }}" >> log.txt
+          echo "APP_NAME=${{ env.APP_NAME }}" >> log.txt
+          echo "=====================" >> log.txt
+
+      # Upload log to 0x0.st
+      - name: Upload log to 0x0.st
+        id: upload_log
+        if: always()
+        run: |
+          LOG_URL=$(curl -F "file=@build.txt" ${{ env.UPLOAD_LOG_URL }} )
+          echo "LOG_URL=$LOG_URL" >> $GITHUB_ENV
+
+      # Kirim notifikasi ke API
+      - name: Notify build success via API
+        if: always()
+        run: |
+          IFS=',' read -ra PHONES <<< "${{ env.WA_PHONE }}"
+          for PHONE in "${PHONES[@]}"; do 
+            ENCODED_TEXT=$(bun -e "console.log(encodeURIComponent('Build:${{ env.BUILD_STATUS }}\nApp:${{ env.APP_NAME }}\nBranch:${{ env.BRANCH_NAME }}\nLog:${{ env.LOG_URL }}'))")
+            curl -X GET "https://wa.wibudev.com/code?text=$ENCODED_TEXT&nom=$PHONE"
+          done
