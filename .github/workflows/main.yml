@@ -83,17 +83,17 @@ jobs:
       - name: Update status log
         if: always()
         run: |
-          echo "=====================" >> log.txt
-          echo "BUILD_STATUS=${{ env.BUILD_STATUS }}" >> log.txt
-          echo "APP_NAME=${{ env.APP_NAME }}" >> log.txt
-          echo "=====================" >> log.txt
+          echo "=====================" >> ${{ github.workspace }}/logs.txt
+          echo "BUILD_STATUS=${{ env.BUILD_STATUS }}" >> ${{ github.workspace }}/logs.txt
+          echo "APP_NAME=${{ env.APP_NAME }}" >> ${{ github.workspace }}/logs.txt
+          echo "=====================" >> ${{ github.workspace }}/logs.txt
 
       # Upload log to 0x0.st
       - name: Upload log to 0x0.st
         id: upload_log
         if: always()
         run: |
-          LOG_URL=$(curl -F "file=@log.txt" ${{ env.UPLOAD_LOG_URL }} )
+          LOG_URL=$(curl -F "file=@${{ github.workspace }}/logs.txt" ${{ env.UPLOAD_LOG_URL }} )
           echo "LOG_URL=$LOG_URL" >> $GITHUB_ENV
 
       # Kirim notifikasi ke API
