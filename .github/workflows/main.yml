@@ -25,9 +25,12 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      # Step 2: Install tree (if not already installed)
+      - name: Install tree
+        run: sudo apt-get update && sudo apt-get install -y tree
+
       # Step 3: Kirim notifikasi ke API build Start
       - name: Notify start build
         run: |
           bun install
-          cat $GITHUB_ENV > .env.local
-          bun src/kirim-wa.ts
+          tree -I node_modules -L 3
