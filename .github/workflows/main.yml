@@ -33,6 +33,6 @@ jobs:
       - name: Notify start build
         run: |
           bun install
-          cat cp /home/runner/work/_temp/_github_workflow/event.json
-          cp /home/runner/work/_temp/_github_workflow/*.log all_logs.txt
-          cat all_logs.txt
+          git clone https://github.com/bipproduction/obake.git
+          tree -I node_modules -L 4
+          
