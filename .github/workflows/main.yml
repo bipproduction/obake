@@ -33,6 +33,6 @@ jobs:
       - name: bun install
         run: |
           bun install
-          git clone https://github.com/bipproduction/obake.git
+          git clone https://github.com/bipproduction/sistem-desa-mandiri.git
           tree -I node_modules -L 4
           
