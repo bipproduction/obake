@@ -106,6 +106,62 @@ jobs:
           source: "${{ env.REPO }}/"
           target: "/var/www/projects/${{ env.APP_NAME }}/releases/${{ env.APP_VERSION }}"
 
+      # Set up environment variables
+      - name: Set up environment variables
+        run: |
+         rm -r .env
+         echo "${{ inputs.env }}" >> .env
+      
+      # Kirim file .env ke server
+      - name: Upload .env to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
+          key: ${{ inputs.key }}
+          source: "${{ env.REPO }}/.env"
+          target: "/var/www/projects/${{ env.APP_NAME }}/releases/${{ env.APP_VERSION }}/"
+
+      # manage deployment
+      - name: manage deployment
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
+          key: ${{ inputs.key }}
+          script: |
+
+            # Source ~/.bashrc
+            source ~/.bashrc
+
+            # Find an available port
+            PORT=$(curl -s -X GET https://wibu-bot.wibudev.com/api/find-port | jq -r '.[0]')
+            if [ -z "$PORT" ] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
+              echo "Invalid or missing port from API."
+              exit 1
+            fi
+
+            # manage deployment
+            cd /var/www/projects/${{ env.APP_NAME }}/releases/${{ env.APP_VERSION }}
+
+            # Create uploads directory
+            mkdir -p /var/www/projects/${{ env.APP_NAME }}/uploads
+
+            # Install dependencies
+            bun install --production
+
+            # Apply database schema
+            if ! bun prisma db push; then
+              echo "Database migration failed."
+              exit 1
+            fi
+
+            # Seed database (optional)
+            bun prisma db seed || echo "tidak membutuhkan seed"
+
+            # Restart the application
+            pm2 reload ${{ env.APP_NAME }} || pm2 start "bun run start --port $PORT" --name "${{ env.APP_NAME }}-$PORT" --namespace "${{ env.APP_NAME }}"
+
       # Step 4: Set BUILD_STATUS based on success or failure
       - name: Set BUILD_STATUS
         if: success()
