@@ -31,11 +31,11 @@ jobs:
         run: |
           bun install
 
-      - name: Clone repository
+      - name: simpan env data
         run: |
           echo "simpan data"
           echo "${{ inputs.data }}" > .env
-          echo "perlihatkan"
-          echo ${{ env.APP_NAME }}
+          source .env
+          echo "$APP_NAME"
           # git clone https://x-access-token:${{ inputs.TOKEN }}@github.com/bipproduction/sistem-desa-mandiri.git
           # tree -I node_modules -L 4
