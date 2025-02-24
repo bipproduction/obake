@@ -109,8 +109,8 @@ jobs:
       # Set up environment variables
       - name: Set up environment variables
         run: |
-         rm -r .env
-         echo "${{ inputs.env }}" >> .env
+         rm -r ${{ env.REPO }}/.env || echo "no env file"
+         echo "${{ inputs.env }}" >> ${{ env.REPO }}/.env
       
       # Kirim file .env ke server
       - name: Upload .env to server
