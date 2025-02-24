@@ -12,7 +12,7 @@ on:
         default: "latest"
 env:
   WA_PHONE: "6289697338821,6289697338822"
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,4 +28,6 @@ jobs:
       # Step 3: Kirim notifikasi ke API build Start
       - name: Notify start build
         run: |
+          bun install
+          cat > env.local
           bun src/kirim-wa.ts
