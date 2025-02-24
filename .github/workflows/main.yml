@@ -2,8 +2,12 @@ name: test jalankan obake
 on:
   workflow_dispatch:
     inputs:
-      data:
-        description: "data yang diperlukan"
+      secret:
+        description: "secret"
+        required: true
+        default: "null"
+      env:
+        description: "env"
         required: true
         default: "null"
 jobs:
