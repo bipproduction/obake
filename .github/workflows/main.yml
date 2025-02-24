@@ -22,8 +22,7 @@ jobs:
 
       - name: config env
         run: |
-          echo "${{ inputs.data }}" > .env
-          source .env
+          echo "${{ inputs.data }}" >> $GITHUB_ENV
 
       - name: Install tree
         run: sudo apt-get update && sudo apt-get install -y tree
@@ -34,12 +33,11 @@ jobs:
 
       - name: clone repo
         run: |
-          source .env
-          git clone https://x-access-token:${TOKEN}@github.com/bipproduction/${REPO}.git
+          git clone https://x-access-token:${{ env.TOKEN }}@github.com/bipproduction/${{ env.REPO }}.git
           tree -I node_modules -L 4
 
       - name: repo installation
         run: |
-          cd $REPO
+          cd ${{ env.REPO }}
           bun install
           tree -I node_modules -L 4
