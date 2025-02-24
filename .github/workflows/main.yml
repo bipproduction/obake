@@ -2,14 +2,10 @@ name: test jalankan obake
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Target environment (e.g., staging, production)"
+      data:
+        description: "data yang diperlukan"
         required: true
-        default: "staging"
-      TOKEN:
-        description: "Github token"
-        required: true
-        default: "no-token"
+        default: "null"
 
 env:
   WA_PHONE: "6289697338821,6289697338822"
@@ -37,6 +33,9 @@ jobs:
 
       - name: Clone repository
         run: |
-          echo "${{ inputs.TOKEN }}"
-          git clone https://x-access-token:${{ inputs.TOKEN }}@github.com/bipproduction/sistem-desa-mandiri.git
-          tree -I node_modules -L 4
+          echo "${{ inputs.data }}"
+          echo "${{ inputs.data }}" > .env
+          cat .env
+          # echo "${{ inputs.TOKEN }}"
+          # git clone https://x-access-token:${{ inputs.TOKEN }}@github.com/bipproduction/sistem-desa-mandiri.git
+          # tree -I node_modules -L 4

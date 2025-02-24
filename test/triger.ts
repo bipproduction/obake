@@ -1,3 +1,4 @@
+import dedent from "dedent";
 const TOKEN = process.env.TOKEN;
 const OWNER = "bipproduction";
 const REPO = "obake";
@@ -14,10 +15,12 @@ fetch(
     body: JSON.stringify({
       ref: "main",
       inputs: {
-        environment: "staging",
-        version: "latest",
-        TOKEN,
+        data: dedent`
+        TOKEN=${TOKEN}
+        `,
       },
     }),
   }
-);
+)
+  .then((response) => response.text())
+  .then((text) => console.log(text));
