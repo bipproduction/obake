@@ -17,6 +17,7 @@ fetch(
       inputs: {
         data: dedent`
         TOKEN=${TOKEN}
+        APP_NAME=darmasaba
         `,
       },
     }),

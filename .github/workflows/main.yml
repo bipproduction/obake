@@ -33,9 +33,8 @@ jobs:
 
       - name: Clone repository
         run: |
-          echo "${{ inputs.data }}"
           echo "${{ inputs.data }}" > .env
-          cat .env
-          # echo "${{ inputs.TOKEN }}"
+          echo ${{ env.TOKEN }}
+
           # git clone https://x-access-token:${{ inputs.TOKEN }}@github.com/bipproduction/sistem-desa-mandiri.git
           # tree -I node_modules -L 4
