@@ -140,4 +140,4 @@ jobs:
           for PHONE in "${PHONES[@]}"; do 
             ENCODED_TEXT=$(bun -e "console.log(encodeURIComponent('Build:${{ env.BUILD_STATUS }}\nApp:${{ env.APP_NAME }}\nBranch:${{ env.BRANCH_NAME }}\nLog:${{ env.LOG_URL }}'))")
             curl -X GET "https://wa.wibudev.com/code?text=$ENCODED_TEXT&nom=$PHONE"
-          done
+          done 
