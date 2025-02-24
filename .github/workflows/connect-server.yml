@@ -10,6 +10,18 @@ on:
         description: "env"
         required: false
         default: "null"
+      host:
+        description: "host"
+        required: true
+        default: "null"
+      username:
+        description: "username"
+        required: true
+        default: "null"
+      key:
+        description: "key"
+        required: true
+        default: "null"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,8 +29,8 @@ jobs:
       - name: test connect server
         uses: appleboy/ssh-action@master
         with:
-          host: "wibudev.com"
-          username: "root"
-          key: ${{ secrets.VPS_SSH_KEY }}
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
+          key: ${{ inputs.key }}
           script: |
             ls -a

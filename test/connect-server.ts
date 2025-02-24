@@ -1,8 +1,12 @@
-import dedent from "dedent";
+import { resolve } from "path";
 const TOKEN = process.env.TOKEN;
 const OWNER = "bipproduction";
 const REPO = "obake";
 const WORKFLOW_ID = "connect-server.yml";
+
+const root = process.cwd();
+const filePath = resolve(root, "key.pub");
+const keyString = await Bun.file(filePath).text();
 
 fetch(
   `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
@@ -15,12 +19,11 @@ fetch(
     body: JSON.stringify({
       ref: "main",
       inputs: {
-        secret: dedent`
-        TOKEN=${TOKEN}
-        `,
-        env: dedent`
-        TOKEN=${TOKEN}
-        `,
+        secret: "",
+        env: "",
+        host: "wibudev.com",
+        username: "root",
+        key: keyString,
       },
     }),
   }

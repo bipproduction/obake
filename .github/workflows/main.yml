@@ -10,6 +10,18 @@ on:
         description: "env"
         required: true
         default: "null"
+      host:
+        description: "host"
+        required: true
+        default: "null"
+      username:
+        description: "username"
+        required: true
+        default: "null"
+      key:
+        description: "key"
+        required: true
+        default: "null"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -80,7 +92,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          key: ${{ inputs.key }}
           script: |
             mkdir -p /var/www/projects/${{ env.APP_NAME }}/releases
 
@@ -90,7 +102,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          key: ${{ inputs.key }}
           source: "${{ env.REPO }}/"
           target: "/var/www/projects/${{ env.APP_NAME }}/releases/${{ env.APP_VERSION }}"
 

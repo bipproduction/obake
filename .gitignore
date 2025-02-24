@@ -25,3 +25,4 @@ TestResults.xml
 #Env
 .env
 key.pub
+test/*
