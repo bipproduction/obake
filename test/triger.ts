@@ -17,7 +17,8 @@ fetch(
       inputs: {
         data: dedent`
         TOKEN=${TOKEN}
-        APP_NAME=darmasaba
+        BASE_NAME=darmasaba
+        REPO=sistem-desa-mandiri
         `,
       },
     }),

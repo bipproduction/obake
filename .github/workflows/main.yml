@@ -14,28 +14,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Checkout kode sumber
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Setup Bun
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      # Step 2: Install tree (if not already installed)
+      - name: config env
+        run: |
+          echo "${{ inputs.data }}" > .env
+          source .env
+
       - name: Install tree
         run: sudo apt-get update && sudo apt-get install -y tree
 
-      # Step 3: Install dependencies and clone repository
       - name: bun install
         run: |
           bun install
 
-      - name: simpan env data
+      - name: clone repo
         run: |
-          echo "simpan data"
-          echo "${{ inputs.data }}" > .env
-          source .env
-          echo "$APP_NAME"
-          # git clone https://x-access-token:${{ inputs.TOKEN }}@github.com/bipproduction/sistem-desa-mandiri.git
-          # tree -I node_modules -L 4
+          git clone https://x-access-token:$TOKEN@github.com/bipproduction/$REPO.git
+          tree -I node_modules -L 4
+
+      - name: repo installation
+        run: |
+          cd $REPO
+          bun install
+          tree -I node_modules -L 4
