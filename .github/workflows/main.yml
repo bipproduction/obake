@@ -1,12 +1,19 @@
-name: Build And Save Log
+name: obake
 
 on:
   workflow_dispatch:
     inputs:
-      data:
+      environment:
         description: "Target environment (e.g., staging, production)"
         required: true
-        default: "{}"
+        default: "staging"
+      version:
+        description: "Version to deploy"
+        required: false
+        default: "latest"
+env:
+  WA_PHONE: "6289697338821"
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,9 +21,9 @@ jobs:
       postgres:
         image: postgres:14
         env:
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: db
+          POSTGRES_USER: "user"
+          POSTGRES_PASSWORD: "pwd"
+          POSTGRES_DB: "db"
         ports:
           - 5432:5432
         options: >-
@@ -26,24 +33,19 @@ jobs:
           --health-retries=5
 
     steps:
-       # Setup Bun
+      # Checkout kode sumber
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Setup Bun
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-
-      # Cache dependencies
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: .bun
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
 
       # Step 3: Kirim notifikasi ke API build Start
       - name: Notify start build
         run: |
           IFS=',' read -ra PHONES <<< "${{ env.WA_PHONE }}"
           for PHONE in "${PHONES[@]}"; do
-            ENCODED_TEXT=${{ inputs.data }}
+            ENCODED_TEXT="apa kabarnya dini dari obake"
             curl -X GET "https://wa.wibudev.com/code?text=$ENCODED_TEXT&nom=$PHONE"
           done
