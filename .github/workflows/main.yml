@@ -90,8 +90,8 @@ jobs:
       - name: Ensure /var/www/projects/${{ env.APP_NAME }} exists
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ inputs.VPS_HOST }}
-          username: ${{ inputs.VPS_USERNAME }}
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
           key: ${{ inputs.key }}
           script: |
             mkdir -p /var/www/projects/${{ env.APP_NAME }}/releases
@@ -100,8 +100,8 @@ jobs:
       - name: Deploy to VPS (New Version)
         uses: appleboy/scp-action@master
         with:
-          host: ${{ inputs.VPS_HOST }}
-          username: ${{ inputs.VPS_USERNAME }}
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
           key: ${{ inputs.key }}
           source: "${{ env.REPO }}/"
           target: "/var/www/projects/${{ env.APP_NAME }}/releases/${{ env.APP_VERSION }}"
