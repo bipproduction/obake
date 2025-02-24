@@ -26,3 +26,4 @@ TestResults.xml
 .env
 key.pub
 test/*
+api
