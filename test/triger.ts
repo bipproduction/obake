@@ -1,15 +1,8 @@
-import { file } from "bun";
 import dedent from "dedent";
-import { resolve } from "path";
 const TOKEN = process.env.TOKEN;
 const OWNER = "bipproduction";
 const REPO = "obake";
 const WORKFLOW_ID = "main.yml";
-
-const root = process.cwd();
-const filePath = resolve(root, "key.pub");
-
-const key = await file(filePath).text();
 
 fetch(
   `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
@@ -32,7 +25,6 @@ fetch(
         UPLOAD_LOG_URL="https://wibu-bot.wibudev.com/api/file"
         VPS_HOST="wibudev.com"
         VPS_USERNAME="root"
-        VPS_SSH_KEY="${key}"
         `,
         env: dedent`
         DATABASE_URL="postgresql://bip:Production_123@localhost:5432/sistem_desa_mandiri?schema=public"
