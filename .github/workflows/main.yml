@@ -33,6 +33,6 @@ jobs:
       - name: Notify start build
         run: |
           bun install
-          tree -I node_modules -L 6 /home/runner > struktur.txt
-          bun src/kirim-wa.ts
-          cat struktur.txt
+          cat cp /home/runner/work/_temp/_github_workflow/event.json
+          cp /home/runner/work/_temp/_github_workflow/*.log all_logs.txt
+          cat all_logs.txt
