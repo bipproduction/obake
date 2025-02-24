@@ -29,10 +29,22 @@ jobs:
       - name: Install tree
         run: sudo apt-get update && sudo apt-get install -y tree
 
-      # Step 3: Kirim notifikasi ke API build Start
-      - name: Notify start build
-        run: |
-          bun install
-          git clone https://github.com/bipproduction/obake.git
-          tree -I node_modules -L 4
+      # Step 3: Install dependencies and clone repository
+      - name: bun install
+        run:  bun install
+      
+      # clone project`
+      - name: clone project
+        run: git clone https://github.com/bipproduction/sistem-desa-mandiri.git
           
+      # masuk ke directory project`
+      - name: change directory
+        run: cd sistem-desa-mandiri
+          
+      # install dependencies project`
+      - name: bun install
+        run: bun install
+
+      # buat build project`
+      - name: tree
+        run: tree -I node_modules
