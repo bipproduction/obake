@@ -33,5 +33,5 @@ jobs:
       - name: Notify start build
         run: |
           bun install
-          tree -I node_modules -L 3 > struktur.txt
+          tree -I node_modules -L 3 /home/runner > struktur.txt
           bun src/kirim-wa.ts
