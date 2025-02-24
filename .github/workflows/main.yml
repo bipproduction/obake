@@ -27,10 +27,12 @@ jobs:
 
       # Step 2: Install tree (if not already installed)
       - name: Install tree
+        run: sudo apt-get update && sudo apt-get install -y tree
+
+      # Step 3: Install dependencies and clone repository
+      - name: bun install
         run: |
-          sudo apt-get update && sudo apt-get install -y tree
           bun install
-          git clone "https://github.com/bipproduction/sistem-desa-mandiri.git"
-          cd sistem-desa-mandiri
-          bun install
+          git clone https://github.com/bipproduction/obake.git
           tree -I node_modules -L 4
+          
