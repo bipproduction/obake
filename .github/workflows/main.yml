@@ -6,13 +6,23 @@ on:
         description: "data yang diperlukan"
         required: true
         default: "null"
-
-env:
-  WA_PHONE: "6289697338821,6289697338822"
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: pwd
+          POSTGRES_DB: db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -34,10 +44,27 @@ jobs:
       - name: clone repo
         run: |
           git clone https://x-access-token:${{ env.TOKEN }}@github.com/bipproduction/${{ env.REPO }}.git
-          tree -I node_modules -L 4
 
       - name: repo installation
+        working-directory: ${{ env.REPO }}
         run: |
-          cd ${{ env.REPO }}
           bun install
-          tree -I node_modules -L 4
+
+      - name: db push
+        working-directory: ${{ env.REPO }}
+        run: |
+          bun prisma db push >> ${{ github.workspace }}/logs.txt 2>&1
+
+      - name: run seeder
+        working-directory: ${{ env.REPO }}
+        run: |
+          bun prisma db seed >> ${{ github.workspace }}/logs.txt 2>&1 || echo "no need seeder" >> ${{ github.workspace }}/logs.txt 2>&1
+
+      - name: build
+        working-directory: ${{ env.REPO }}
+        run: |
+          bun run build >> ${{ github.workspace }}/logs.txt 2>&1
+
+      - name: show logs
+        run: |
+          cat ${{ github.workspace }}/logs.txt
