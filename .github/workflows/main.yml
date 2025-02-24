@@ -34,7 +34,7 @@ jobs:
 
       - name: clone repo
         run: |
-          git clone https://x-access-token:$TOKEN@github.com/bipproduction/$REPO.git
+          git clone https://x-access-token:${TOKEN}@github.com/bipproduction/${REPO}.git
           tree -I node_modules -L 4
 
       - name: repo installation
