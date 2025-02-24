@@ -29,5 +29,5 @@ jobs:
       - name: Notify start build
         run: |
           bun install
-          cat > env.local
+          cat $GITHUB_ENV > env.local
           bun src/kirim-wa.ts
