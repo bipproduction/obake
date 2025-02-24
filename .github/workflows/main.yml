@@ -1,5 +1,4 @@
-name: obake
-
+name: test jalankan obake
 on:
   workflow_dispatch:
     inputs:
@@ -12,7 +11,7 @@ on:
         required: false
         default: "latest"
 env:
-  WA_PHONE: "6289697338821"
+  WA_PHONE: "6289697338821,6289697338822"
   
 jobs:
   build:
