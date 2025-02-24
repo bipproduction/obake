@@ -30,7 +30,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y tree
           bun install
-          git clone https://github.com/bipproduction/sistem-desa-mandiri.git
+          git clone "https://github.com/bipproduction/sistem-desa-mandiri.git"
           cd sistem-desa-mandiri
           bun install
           tree -I node_modules -L 4
