@@ -45,6 +45,7 @@ jobs:
         run: |
           IFS=',' read -ra PHONES <<< "${{ env.WA_PHONE }}"
           for PHONE in "${PHONES[@]}"; do
-            ENCODED_TEXT="apa kabarnya dini dari obake"
+            Run IFS=',' read -ra PHONES <<< "6289697338821,6289697338822"
+            ENCODED_TEXT=$(echo "apa kabarnya dini dari obake" | jq -sRr @uri)
             curl -X GET "https://wa.wibudev.com/code?text=$ENCODED_TEXT&nom=$PHONE"
           done
