@@ -16,6 +16,7 @@ fetch(
       inputs: {
         environment: "staging",
         version: "latest",
+        token: process.env.TOKEN,
       },
     }),
   }

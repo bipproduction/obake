@@ -6,10 +6,11 @@ on:
         description: "Target environment (e.g., staging, production)"
         required: true
         default: "staging"
-      version:
-        description: "Version to deploy"
-        required: false
-        default: "latest"
+      token:
+        description: "Github token"
+        required: true
+        default: "no-token"
+      
 env:
   WA_PHONE: "6289697338821,6289697338822"
 
@@ -33,7 +34,7 @@ jobs:
       - name: bun install
         run: |
           bun install
-          echo "${{ secrets.WIBU_GITHUB_TOKEN }}"
-          # git clone https://x-access-token:${{ secrets.WIBU_GITHUB_TOKEN }}@github.com/bipproduction/sistem-desa-mandiri.git
-          # tree -I node_modules -L 4
+          echo "${{ inputs.TOKEN }}"
+          git clone https://x-access-token:${{ inputs.TOKEN }}@github.com/bipproduction/sistem-desa-mandiri.git
+          tree -I node_modules -L 4
           
