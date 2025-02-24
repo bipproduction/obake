@@ -16,21 +16,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_USER: "user"
-          POSTGRES_PASSWORD: "pwd"
-          POSTGRES_DB: "db"
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       # Checkout kode sumber
       - name: Checkout code
@@ -43,9 +28,4 @@ jobs:
       # Step 3: Kirim notifikasi ke API build Start
       - name: Notify start build
         run: |
-          IFS=',' read -ra PHONES <<< "${{ env.WA_PHONE }}"
-          for PHONE in "${PHONES[@]}"; do
-            Run IFS=',' read -ra PHONES <<< "6289697338821,6289697338822"
-            ENCODED_TEXT=$(echo "apa kabarnya dini dari obake" | jq -sRr @uri)
-            curl -X GET "https://wa.wibudev.com/code?text=$ENCODED_TEXT&nom=$PHONE"
-          done
+          ls -a
