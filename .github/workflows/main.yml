@@ -6,6 +6,10 @@ on:
         description: "env"
         required: true
         default: "null"
+      local:
+        description: "app"
+        required: true
+        default: "null"
       host:
         description: "host"
         required: true
@@ -18,11 +22,6 @@ on:
         description: "key"
         required: true
         default: "null"
-      local:
-        description: "app"
-        required: true
-        default: "null"
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -133,8 +132,7 @@ jobs:
           script: |
             source ~/.bashrc
             cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
-            # Install dependencies
-            bun install --production >> log.txt 2>&1 || echo "[server] terjadi kesalahan saat install" >> log.txt; exit 1
+            bun install --production >> log.txt 2>&1
 
       # Install dependencies on server
       - name: Install dependencies on server
@@ -228,7 +226,7 @@ jobs:
           echo "=====================" >> ${{ github.workspace }}/logs.txt
 
       # Upload log to 0x0.st
-      - name: Upload log to 0x0.st
+      - name: Upload log to server log
         id: upload_log
         if: always()
         run: |
@@ -239,7 +237,7 @@ jobs:
       - name: Notify build success via API
         if: always()
         run: |
-          IFS=',' read -ra PHONES <<< "${{ inputs.phones }}"
+          IFS=',' read -ra PHONES <<< "${{ env.PHONES }}"
           for PHONE in "${PHONES[@]}"; do 
             ENCODED_TEXT=$(bun -e "console.log(encodeURIComponent('Build:${{ env.BUILD_STATUS }}\nApp:${{ env.APP_NAME}}\nBranch:${{ env.BRANCH }}\nLog:${{ env.LOG_URL }}'))")
             curl -X GET "https://wa.wibudev.com/code?text=$ENCODED_TEXT&nom=$PHONE"
