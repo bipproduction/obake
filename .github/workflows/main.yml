@@ -89,24 +89,12 @@ jobs:
           bun install
           git clone https://x-access-token:${{ inputs.token }}@github.com/bipproduction/${{ inputs.repo }}.git ${{ env.APP_VERSION }}
 
-      - name: repo target installation
-        working-directory: ${{ env.APP_VERSION }}
-        run: |
-          bun install
-
-      - name: db push
-        working-directory: ${{ env.APP_VERSION }}
-        run: |
-          bun prisma db push >> ${{ github.workspace }}/logs.txt 2>&1
-
-      - name: run seeder
-        working-directory: ${{ env.APP_VERSION }}
-        run: |
-          bun prisma db seed >> ${{ github.workspace }}/logs.txt 2>&1 || echo "no need seeder" >> ${{ github.workspace }}/logs.txt 2>&1
-
       - name: build
         working-directory: ${{ env.APP_VERSION }}
         run: |
+          bun install
+          bun prisma db push >> ${{ github.workspace }}/logs.txt 2>&1
+          bun prisma db seed >> ${{ github.workspace }}/logs.txt 2>&1 || echo "no need seeder" >> ${{ github.workspace }}/logs.txt 2>&1
           bun run build >> ${{ github.workspace }}/logs.txt 2>&1
 
       # Ensure project directory exists
