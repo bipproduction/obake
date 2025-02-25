@@ -128,12 +128,6 @@ jobs:
           source: "${{ env.APP_VERSION }}"
           target: "/var/www/projects/${{ inputs.app_name }}/releases/"
 
-      # Set up environment variables
-      - name: Set up environment variables
-        run: |
-          rm -r ${{ env.APP_VERSION }}/.env || echo "no env file"
-          echo "${{ inputs.env }}" >> ${{ env.APP_VERSION }}/.env
-
       # Kirim file .env ke server
       - name: Upload .env to server
         uses: appleboy/scp-action@master
@@ -152,17 +146,15 @@ jobs:
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
           script: |
+            # Source ~/.bashrc
+            source ~/.bashrc
+
             echo "masuk ke directory kerja"
             # manage deployment
             cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
 
             # membuat file log
             echo "[server] membuat log.txt" > log.txt
-
-            echo "${{ inputs.env }}" > .env
-
-            # Source ~/.bashrc
-            source ~/.bashrc
 
             # Find an available port
             PORT=$(curl -s -X GET https://wibu-bot.wibudev.com/api/find-port | jq -r '.[0]')
