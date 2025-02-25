@@ -135,19 +135,6 @@ jobs:
             cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
             bun install --production >> log.txt 2>&1
 
-      # Install dependencies on server
-      - name: Install dependencies on server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ inputs.host }}
-          username: ${{ inputs.username }}
-          key: ${{ inputs.key }}
-          script: |
-            source ~/.bashrc
-            cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
-            # Install dependencies
-            bun install --production >> log.txt 2>&1 || echo "[server] terjadi kesalahan saat install" >> log.txt; exit 1
-
       # db push on server
       - name: db push on server
         uses: appleboy/ssh-action@master
@@ -158,7 +145,7 @@ jobs:
           script: |
             source ~/.bashrc
             cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
-            bun prisma db push >> log.txt 2>&1 || echo "[server] database tidak ditemukan" >> log.txt; exit 1
+            bun prisma db push >> log.txt 2>&1
 
       # seed on server
       - name: seed on server

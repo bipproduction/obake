@@ -9,6 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "dedent": "^1.5.3"
+    "dedent": "^1.5.3",
+    "jszip": "^3.10.1"
   }
 }
