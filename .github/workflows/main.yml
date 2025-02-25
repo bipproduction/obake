@@ -83,19 +83,13 @@ jobs:
           fi
           echo "APP_PORT=$PORT" >> $GITHUB_ENV
 
-      - name: config env
-        run: |
-          echo "${{ inputs.env }}" >> $GITHUB_ENV
-
-      - name: bun install
-        run: |
-          bun install
-
       - name: clone repo
         run: |
+          echo "${{ inputs.env }}" >> $GITHUB_ENV
+          bun install
           git clone https://x-access-token:${{ inputs.token }}@github.com/bipproduction/${{ inputs.repo }}.git ${{ env.APP_VERSION }}
 
-      - name: repo installation
+      - name: repo target installation
         working-directory: ${{ env.APP_VERSION }}
         run: |
           bun install
