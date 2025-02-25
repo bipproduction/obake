@@ -132,7 +132,7 @@ jobs:
           script: |
             source ~/.bashrc
             cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
-            bun install --production >> log.txt 2>&1
+            bun install --production
 
       # db push on server
       - name: db push on server
@@ -144,7 +144,7 @@ jobs:
           script: |
             source ~/.bashrc
             cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
-            bun prisma db push >> log.txt 2>&1
+            bun prisma db push
 
       # seed on server
       - name: seed on server
@@ -156,7 +156,7 @@ jobs:
           script: |
             source ~/.bashrc
             cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
-            bun prisma db seed >> log.txt 2>&1 || echo "[server] tidak membutuhkan seed" >> log.txt;
+            bun prisma db seed || echo "[server] tidak membutuhkan seed"
 
       # manage deployment on server
       - name: manage deployment on server
@@ -176,23 +176,7 @@ jobs:
             # Restart the application
             pm2 reload ${{ env.NAMESPACE}} || pm2 start "bun run start --port ${{ env.APP_PORT }}" --name "${{ env.APP_NAME}}-${{ env.APP_PORT }}" --namespace "${{ env.NAMESPACE}}"
 
-            echo "[server] restart selesai" >> log.txt
-
-      # Step 3: Fetch log.txt from the server to the workspace
-      - name: Fetch log.txt from server
-        uses: appleboy/scp-action@master
-        continue-on-error: true
-        with:
-          host: ${{ inputs.host }}
-          username: ${{ inputs.username }}
-          key: ${{ inputs.key }}
-          source: "/var/www/projects/${{ env.APP_NAME }}/releases/${{ env.APP_VERSION }}/log.txt"
-          target: "server-log.txt"
-
-      - name: merge log
-        continue-on-error: true
-        run: |
-          cat server-log.txt >> ${{ github.workspace }}/logs.txt
+            echo "[server] restart selesai"
 
       # Step 4: Set BUILD_STATUS based on success or failure
       - name: Set BUILD_STATUS
