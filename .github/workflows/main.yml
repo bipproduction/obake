@@ -70,6 +70,15 @@ jobs:
       - name: Set APP_VERSION
         run: echo "APP_VERSION=${{ inputs.branch }}-${{ github.sha }}-$(date +%Y_%m_%d-%H_%M_%S)" >> $GITHUB_ENV
 
+      - name: find app port
+        run: |
+          PORT=$(curl -s -X GET https://wibu-bot.wibudev.com/api/find-port | jq -r '.[0]')
+          if [ -z "$PORT" ] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
+            echo "Invalid or missing port from API."
+            exit 1
+          fi
+          echo "APP_PORT=$PORT" >> $GITHUB_ENV
+
       - name: config env
         run: |
           echo "${{ inputs.env }}" >> $GITHUB_ENV
@@ -145,26 +154,6 @@ jobs:
             cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
             mv env.txt .env
 
-      # get port
-      - name: get port
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ inputs.host }}
-          username: ${{ inputs.username }}
-          key: ${{ inputs.key }}
-          script: |
-            # Source ~/.bashrc
-            source ~/.bashrc
-            echo "[server] find port"
-            # Find an available port
-            PORT=$(curl -s -X GET https://wibu-bot.wibudev.com/api/find-port | jq -r '.[0]')
-            if [ -z "$PORT" ] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
-              echo "Invalid or missing port from API."
-              exit 1
-            fi
-            echo "$PORT" > port.txt
-            echo "[server] port: $PORT" >> log.txt
-
       # manage deployment
       - name: manage deployment
         uses: appleboy/ssh-action@master
@@ -190,19 +179,25 @@ jobs:
             bun prisma db seed >> log.txt 2>&1 || echo "[server] tidak membutuhkan seed" >> log.txt
 
             # Restart the application
-            pm2 reload ${{ inputs.namespace}} || pm2 start "bun run start --port $PORT" --name "${{ inputs.app_name}}-$PORT" --namespace "${{ inputs.namespace}}"
+            pm2 reload ${{ inputs.namespace}} || pm2 start "bun run start --port ${{ env.APP_PORT }}" --name "${{ inputs.app_name}}-${{ env.APP_PORT }}" --namespace "${{ inputs.namespace}}"
 
             echo "[server] restart selesai" >> log.txt
 
       # Step 3: Fetch log.txt from the server to the workspace
       - name: Fetch log.txt from server
         uses: appleboy/scp-action@master
+        continue-on-error: true
         with:
           host: ${{ inputs.host }}
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
           source: "/var/www/projects/${{ inputs.app_name }}/releases/${{ env.APP_VERSION }}/log.txt"
           target: "server-log.txt"
+
+      - name: merge log
+        continue-on-error: true
+        run: |
+          cat server-log.txt >> ${{ github.workspace }}/logs.txt
 
       # Step 4: Set BUILD_STATUS based on success or failure
       - name: Set BUILD_STATUS
