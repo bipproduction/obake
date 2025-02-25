@@ -194,6 +194,7 @@ jobs:
           echo "=====================" >> ${{ github.workspace }}/logs.txt
           echo "BUILD_STATUS=${{ env.BUILD_STATUS }}" >> ${{ github.workspace }}/logs.txt
           echo "APP_NAME=${{ env.APP_NAME}}" >> ${{ github.workspace }}/logs.txt
+          echo "BRANCH=${{ env.BRANCH }}" >> ${{ github.workspace }}/logs.txt
           echo "=====================" >> ${{ github.workspace }}/logs.txt
 
       # Upload log to 0x0.st
@@ -210,6 +211,6 @@ jobs:
         run: |
           IFS=',' read -ra PHONES <<< "${{ env.PHONES }}"
           for PHONE in "${PHONES[@]}"; do 
-            ENCODED_TEXT=$(echo -n "Build:${{ env.BUILD_STATUS }}\nApp:${{ env.APP_NAME}}\nBranch:${{ env.BRANCH }}\nLog:${{ env.LOG_URL }}" | jq -Rr @uri)
+            ENCODED_TEXT=$(echo -n "${{ env.LOG_URL}}" | jq -Rr @uri)
             curl -X GET "https://wa.wibudev.com/code?text=$ENCODED_TEXT&nom=$PHONE"
           done
