@@ -153,9 +153,7 @@ jobs:
             # config .env
             mv env.txt .env
 
-            # membuat file log
-            echo "[server] membuat log.txt" > log.txt
-
+            echo "[server] find port"
             # Find an available port
             PORT=$(curl -s -X GET https://wibu-bot.wibudev.com/api/find-port | jq -r '.[0]')
             if [ -z "$PORT" ] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
@@ -179,12 +177,12 @@ jobs:
             echo "[server] restart selesai" >> log.txt
 
       # Step 3: Read log.txt from server and append to workspace log.txt
-      - name: Append log.txt from server to workspace
-        if: always()
-        working-directory: ${{ env.APP_VERSION }}
-        run: |
-          ssh -i <(echo "${{ inputs.key }}") ${{ inputs.username }}@${{ inputs.host }} \
-            "cat /var/www/projects/${{ inputs.app_name }}/releases/${{ env.APP_VERSION }}/log.txt || echo 'log.txt not found'" >> log.txt
+      # - name: Append log.txt from server to workspace
+      #   if: always()
+      #   working-directory: ${{ env.APP_VERSION }}
+      #   run: |
+      #     ssh -i <(echo "${{ inputs.key }}") ${{ inputs.username }}@${{ inputs.host }} \
+      #       "cat /var/www/projects/${{ inputs.app_name }}/releases/${{ env.APP_VERSION }}/log.txt || echo 'log.txt not found'" >> log.txt
 
       # Step 4: Set BUILD_STATUS based on success or failure
       - name: Set BUILD_STATUS
