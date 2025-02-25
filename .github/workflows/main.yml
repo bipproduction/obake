@@ -34,7 +34,7 @@ on:
         description: "repo"
         required: true
         default: "null"
-      branch:   
+      branch:
         description: "branch"
         required: true
         default: "null"
@@ -68,7 +68,7 @@ jobs:
 
       # Step 2: Generate APP_VERSION dynamically
       - name: Set APP_VERSION
-        run: echo "APP_VERSION=${{ inputs.branch }}-${{ github.sha }}-$(date +%Y_%m_%d_%H _%M_%S)" >> $GITHUB_ENV
+        run: echo "APP_VERSION=${{ inputs.branch }}-${{ github.sha }}-$(date +%Y_%m_%d_%H_%M_%S)" >> $GITHUB_ENV
 
       - name: config env
         run: |
@@ -152,6 +152,13 @@ jobs:
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
           script: |
+            # manage deployment
+            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+
+            # membuat file log
+            echo "[server] membuat log.txt" > log.txt
+
+            echo "${{ inputs.env }}" > .env
 
             # Source ~/.bashrc
             source ~/.bashrc
@@ -162,24 +169,28 @@ jobs:
               echo "Invalid or missing port from API."
               exit 1
             fi
-
-            # manage deployment
-            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            echo "[server] port: $PORT" >> log.txt
 
             # Install dependencies
-            bun install --production
+            bun install --production >> log.txt 2>&1 || echo "[server] terjadi kesalahan saat install" >> log.txt; exit 1
 
             # Apply database schema
-            if ! bun prisma db push; then
-              echo "Database migration failed."
-              exit 1
-            fi
+            bun prisma db push >> log.txt 2>&1 || echo "[server] database tidak ditemukan" >> log.txt; exit 1
 
             # Seed database (optional)
-            bun prisma db seed || echo "tidak membutuhkan seed"
+            bun prisma db seed >> log.txt 2>&1 || echo "[server] tidak membutuhkan seed" >> log.txt
 
             # Restart the application
             pm2 reload ${{ inputs.namespace}} || pm2 start "bun run start --port $PORT" --name "${{ inputs.app_name}}-$PORT" --namespace "${{ inputs.namespace}}"
+            
+            echo "[server] restart selesai" >> log.txt
+
+      # Step 3: Read log.txt from server and append to workspace log.txt
+      - name: Append log.txt from server to workspace
+        working-directory: ${{ env.APP_VERSION }}
+        run: |
+          ssh -i <(echo "${{ inputs.key }}") ${{ inputs.username }}@${{ inputs.host }} \
+            "cat /var/www/projects/${{ inputs.app_name }}/releases/${{ env.APP_VERSION }}/log.txt" >> log.txt
 
       # Step 4: Set BUILD_STATUS based on success or failure
       - name: Set BUILD_STATUS
