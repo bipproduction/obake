@@ -44,3 +44,4 @@ jobs:
           script: |
             echo "lihat port diserver"
             echo "${{ env.APP_PORT }}"
+            echo "${{ github.run_id }}"
