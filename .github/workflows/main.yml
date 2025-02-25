@@ -68,7 +68,7 @@ jobs:
 
       # Step 2: Generate APP_VERSION dynamically
       - name: Set APP_VERSION
-        run: echo "APP_VERSION=${{ inputs.branch }}-${{ github.sha }}-$(date +%Y_%m_%d_%H_%M_%S)" >> $GITHUB_ENV
+        run: echo "APP_VERSION=${{ inputs.branch }}-${{ github.sha }}-$(date +%Y_%m_%d-%H_%M_%S)" >> $GITHUB_ENV
 
       - name: config env
         run: |
@@ -152,6 +152,7 @@ jobs:
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
           script: |
+            echo "masuk ke directory kerja"
             # manage deployment
             cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
 
