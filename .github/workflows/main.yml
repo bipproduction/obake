@@ -52,11 +52,6 @@ jobs:
           echo "${{ inputs.env }}" >> $GITHUB_ENV
           echo "${{ inputs.local }}" >> $GITHUB_ENV
           echo "APP_VERSION=${{ env.BRANCH }}-${{ github.sha }}-$(date +%Y_%m_%d-%H_%M_%S)" >> $GITHUB_ENV
-
-          echo "${{ inputs.local }}"
-
-      - name: find app port
-        run: |
           PORT=$(curl -s -X GET https://wibu-bot.wibudev.com/api/find-port | jq -r '.[0]')
           if [ -z "$PORT" ] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
             echo "Invalid or missing port from API."
@@ -64,9 +59,11 @@ jobs:
           fi
           echo "APP_PORT=$PORT" >> $GITHUB_ENV
 
+      - name: install dependencies
+        run: bun install
+
       - name: clone repo
         run: |
-          bun install
           git clone https://x-access-token:${{ env.TOKEN }}@github.com/bipproduction/${{ env.REPO }}.git ${{ env.APP_VERSION }}
 
       - name: build
