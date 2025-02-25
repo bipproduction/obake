@@ -18,7 +18,7 @@ on:
         description: "key"
         required: true
         default: "null"
-      app: 
+      local:
         description: "app"
         required: true
         default: "null"
@@ -47,9 +47,10 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      # Step 2: Generate APP_VERSION dynamically
-      - name: Set APP_VERSION
+      - name: manage env and app version
         run: |
+          echo "${{ inputs.env }}" >> $GITHUB_ENV
+          echo "${{ inputs.local }}" >> $GITHUB_ENV
           echo "APP_VERSION=${{ env.BRANCH }}-${{ github.sha }}-$(date +%Y_%m_%d-%H_%M_%S)" >> $GITHUB_ENV
 
       - name: find app port
@@ -63,8 +64,6 @@ jobs:
 
       - name: clone repo
         run: |
-          echo "${{ inputs.env }}" >> $GITHUB_ENV
-          echo "${{ inputs.app }}" >> $GITHUB_ENV
           bun install
           git clone https://x-access-token:${{ env.TOKEN }}@github.com/bipproduction/${{ env.REPO }}.git ${{ env.APP_VERSION }}
 
