@@ -125,7 +125,7 @@ jobs:
           host: ${{ inputs.host }}
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
-          source: "${{ env.APP_VERSION }}"
+          source: "${{ env.APP_VERSION }}/."
           target: "/var/www/projects/${{ inputs.app_name }}/releases/"
 
       # Kirim file .env ke server
