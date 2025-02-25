@@ -75,8 +75,8 @@ jobs:
         working-directory: ${{ env.APP_VERSION }}
         run: |
           bun install
-          bun prisma db push >> ${{ github.workspace }}/logs.txt 2>&1
-          bun prisma db seed >> ${{ github.workspace }}/logs.txt 2>&1 || echo "no need seeder" >> ${{ github.workspace }}/logs.txt 2>&1
+          bunx prisma db push >> ${{ github.workspace }}/logs.txt 2>&1
+          bunx prisma db seed >> ${{ github.workspace }}/logs.txt 2>&1 || echo "no need seeder" >> ${{ github.workspace }}/logs.txt 2>&1
           bun run build >> ${{ github.workspace }}/logs.txt 2>&1
 
       # Ensure project directory exists
@@ -144,7 +144,7 @@ jobs:
           script: |
             source ~/.bashrc
             cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
-            bun prisma db push
+            bunx prisma db push
 
       # seed on server
       - name: seed on server
@@ -156,7 +156,7 @@ jobs:
           script: |
             source ~/.bashrc
             cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
-            bun prisma db seed || echo "[server] tidak membutuhkan seed"
+            bunx prisma db seed || echo "[server] tidak membutuhkan seed"
 
       # manage deployment on server
       - name: manage deployment on server
