@@ -118,6 +118,12 @@ jobs:
         run: |
           rm -rf .git node_modules
 
+      # config .env
+      - name: create config env.txt
+        working-directory: ${{ env.APP_VERSION }}
+        run: |
+          echo "${{ inputs.env }}" >> env.txt
+
       # Deploy to a new version directory
       - name: Deploy to VPS (New Version)
         uses: appleboy/scp-action@master
@@ -127,16 +133,6 @@ jobs:
           key: ${{ inputs.key }}
           source: "${{ env.APP_VERSION }}/."
           target: "/var/www/projects/${{ inputs.app_name }}/releases/"
-
-      # Kirim file .env ke server
-      - name: Upload .env to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ inputs.host }}
-          username: ${{ inputs.username }}
-          key: ${{ inputs.key }}
-          source: "${{ env.APP_VERSION }}/.env"
-          target: "/var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}/"
 
       # manage deployment
       - name: manage deployment
@@ -152,6 +148,9 @@ jobs:
             echo "masuk ke directory kerja"
             # manage deployment
             cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+
+            # config .env
+            mv env.txt .env
 
             # membuat file log
             echo "[server] membuat log.txt" > log.txt
