@@ -18,34 +18,11 @@ on:
         description: "key"
         required: true
         default: "null"
-      token:
-        description: "token"
+      app: 
+        description: "app"
         required: true
         default: "null"
-      app_name:
-        description: "app name"
-        required: true
-        default: "null"
-      namespace:
-        description: "namespace"
-        required: true
-        default: "null"
-      repo:
-        description: "repo"
-        required: true
-        default: "null"
-      branch:
-        description: "branch"
-        required: true
-        default: "null"
-      log_url:
-        description: "log url"
-        required: true
-        default: "null"
-      phones:
-        description: "phones"
-        required: true
-        default: "null"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -72,7 +49,8 @@ jobs:
 
       # Step 2: Generate APP_VERSION dynamically
       - name: Set APP_VERSION
-        run: echo "APP_VERSION=${{ inputs.branch }}-${{ github.sha }}-$(date +%Y_%m_%d-%H_%M_%S)" >> $GITHUB_ENV
+        run: |
+          echo "APP_VERSION=${{ env.BRANCH }}-${{ github.sha }}-$(date +%Y_%m_%d-%H_%M_%S)" >> $GITHUB_ENV
 
       - name: find app port
         run: |
@@ -86,8 +64,9 @@ jobs:
       - name: clone repo
         run: |
           echo "${{ inputs.env }}" >> $GITHUB_ENV
+          echo "${{ inputs.app }}" >> $GITHUB_ENV
           bun install
-          git clone https://x-access-token:${{ inputs.token }}@github.com/bipproduction/${{ inputs.repo }}.git ${{ env.APP_VERSION }}
+          git clone https://x-access-token:${{ env.TOKEN }}@github.com/bipproduction/${{ env.REPO }}.git ${{ env.APP_VERSION }}
 
       - name: build
         working-directory: ${{ env.APP_VERSION }}
@@ -98,14 +77,14 @@ jobs:
           bun run build >> ${{ github.workspace }}/logs.txt 2>&1
 
       # Ensure project directory exists
-      - name: Ensure /var/www/projects/${{ inputs.app_name}} exists
+      - name: Ensure /var/www/projects/${{ env.APP_NAME}} exists
         uses: appleboy/ssh-action@master
         with:
           host: ${{ inputs.host }}
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
           script: |
-            mkdir -p /var/www/projects/${{ inputs.app_name}}/releases
+            mkdir -p /var/www/projects/${{ env.APP_NAME}}/releases
 
       # Clean unnecessary files
       - name: Clean unnecessary files
@@ -127,7 +106,7 @@ jobs:
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
           source: "${{ env.APP_VERSION }}/."
-          target: "/var/www/projects/${{ inputs.app_name }}/releases/"
+          target: "/var/www/projects/${{ env.APP_NAME }}/releases/"
 
       # manage deployment
       - name: manage env file
@@ -137,7 +116,7 @@ jobs:
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
           script: |
-            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
             mv env.txt .env
 
       # bun install on server
@@ -149,7 +128,7 @@ jobs:
           key: ${{ inputs.key }}
           script: |
             source ~/.bashrc
-            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
             # Install dependencies
             bun install --production >> log.txt 2>&1 || echo "[server] terjadi kesalahan saat install" >> log.txt; exit 1
 
@@ -162,7 +141,7 @@ jobs:
           key: ${{ inputs.key }}
           script: |
             source ~/.bashrc
-            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
             # Install dependencies
             bun install --production >> log.txt 2>&1 || echo "[server] terjadi kesalahan saat install" >> log.txt; exit 1
 
@@ -175,7 +154,7 @@ jobs:
           key: ${{ inputs.key }}
           script: |
             source ~/.bashrc
-            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
             bun prisma db push >> log.txt 2>&1 || echo "[server] database tidak ditemukan" >> log.txt; exit 1
 
       # seed on server
@@ -187,7 +166,7 @@ jobs:
           key: ${{ inputs.key }}
           script: |
             source ~/.bashrc
-            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }}
             bun prisma db seed >> log.txt 2>&1 || echo "[server] tidak membutuhkan seed" >> log.txt;
 
       # manage deployment on server
@@ -203,10 +182,10 @@ jobs:
 
             echo "masuk ke directory kerja"
             # manage deployment
-            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }} 
+            cd /var/www/projects/${{ env.APP_NAME}}/releases/${{ env.APP_VERSION }} 
 
             # Restart the application
-            pm2 reload ${{ inputs.namespace}} || pm2 start "bun run start --port ${{ env.APP_PORT }}" --name "${{ inputs.app_name}}-${{ env.APP_PORT }}" --namespace "${{ inputs.namespace}}"
+            pm2 reload ${{ env.NAMESPACE}} || pm2 start "bun run start --port ${{ env.APP_PORT }}" --name "${{ env.APP_NAME}}-${{ env.APP_PORT }}" --namespace "${{ env.NAMESPACE}}"
 
             echo "[server] restart selesai" >> log.txt
 
@@ -218,7 +197,7 @@ jobs:
           host: ${{ inputs.host }}
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
-          source: "/var/www/projects/${{ inputs.app_name }}/releases/${{ env.APP_VERSION }}/log.txt"
+          source: "/var/www/projects/${{ env.APP_NAME }}/releases/${{ env.APP_VERSION }}/log.txt"
           target: "server-log.txt"
 
       - name: merge log
@@ -241,7 +220,7 @@ jobs:
         run: |
           echo "=====================" >> ${{ github.workspace }}/logs.txt
           echo "BUILD_STATUS=${{ env.BUILD_STATUS }}" >> ${{ github.workspace }}/logs.txt
-          echo "APP_NAME=${{ inputs.app_name}}" >> ${{ github.workspace }}/logs.txt
+          echo "APP_NAME=${{ env.APP_NAME}}" >> ${{ github.workspace }}/logs.txt
           echo "=====================" >> ${{ github.workspace }}/logs.txt
 
       # Upload log to 0x0.st
@@ -249,7 +228,7 @@ jobs:
         id: upload_log
         if: always()
         run: |
-          LOG_URL=$(curl -F "file=@${{ github.workspace }}/logs.txt" ${{ inputs.log_url }} )
+          LOG_URL=$(curl -F "file=@${{ github.workspace }}/logs.txt" ${{ env.LOG_URL }} )
           echo "LOG_URL=$LOG_URL" >> $GITHUB_ENV
 
       # Kirim notifikasi ke API
@@ -258,6 +237,6 @@ jobs:
         run: |
           IFS=',' read -ra PHONES <<< "${{ inputs.phones }}"
           for PHONE in "${PHONES[@]}"; do 
-            ENCODED_TEXT=$(bun -e "console.log(encodeURIComponent('Build:${{ env.BUILD_STATUS }}\nApp:${{ inputs.app_name}}\nBranch:${{ inputs.branch }}\nLog:${{ env.LOG_URL }}'))")
+            ENCODED_TEXT=$(bun -e "console.log(encodeURIComponent('Build:${{ env.BUILD_STATUS }}\nApp:${{ env.APP_NAME}}\nBranch:${{ env.BRANCH }}\nLog:${{ env.LOG_URL }}'))")
             curl -X GET "https://wa.wibudev.com/code?text=$ENCODED_TEXT&nom=$PHONE"
           done
