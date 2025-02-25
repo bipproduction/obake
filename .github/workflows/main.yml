@@ -53,7 +53,7 @@ jobs:
           POSTGRES_PASSWORD: Production_123
           POSTGRES_DB: db
         ports:
-          - 5432:5432
+          - 5433:5432
         options: >-
           --health-cmd="pg_isready"
           --health-interval=10s
@@ -66,12 +66,13 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      # Step 2: Generate APP_VERSION dynamically
+      - name: Set APP_VERSION
+        run: echo "APP_VERSION=${{ inputs.branch }}-${{ github.sha }}-$(date +%Y_%m_%d_%H _%M_%S)" >> $GITHUB_ENV
+
       - name: config env
         run: |
           echo "${{ inputs.env }}" >> $GITHUB_ENV
-
-      - name: Install tree
-        run: sudo apt-get update && sudo apt-get install -y tree
 
       - name: bun install
         run: |
@@ -79,31 +80,27 @@ jobs:
 
       - name: clone repo
         run: |
-          git clone https://x-access-token:${{ inputs.token }}@github.com/bipproduction/${{ inputs.repo }}.git
+          git clone https://x-access-token:${{ inputs.token }}@github.com/bipproduction/${{ inputs.repo }}.git ${{ env.APP_VERSION }}
 
       - name: repo installation
-        working-directory: ${{ inputs.repo }}
+        working-directory: ${{ env.APP_VERSION }}
         run: |
           bun install
 
       - name: db push
-        working-directory: ${{ inputs.repo }}
+        working-directory: ${{ env.APP_VERSION }}
         run: |
           bun prisma db push >> ${{ github.workspace }}/logs.txt 2>&1
 
       - name: run seeder
-        working-directory: ${{ inputs.repo }}
+        working-directory: ${{ env.APP_VERSION }}
         run: |
           bun prisma db seed >> ${{ github.workspace }}/logs.txt 2>&1 || echo "no need seeder" >> ${{ github.workspace }}/logs.txt 2>&1
 
       - name: build
-        working-directory: ${{ inputs.repo }}
+        working-directory: ${{ env.APP_VERSION }}
         run: |
           bun run build >> ${{ github.workspace }}/logs.txt 2>&1
-
-      # Step 2: Generate APP_VERSION dynamically
-      - name: Set APP_VERSION
-        run: echo "APP_VERSION=${{ github.sha }}-${{ inputs.branch }}-$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
       # Ensure project directory exists
       - name: Ensure /var/www/projects/${{ inputs.app_name}} exists
@@ -117,7 +114,7 @@ jobs:
 
       # Clean unnecessary files
       - name: Clean unnecessary files
-        working-directory: ${{ inputs.repo }}
+        working-directory: ${{ env.APP_VERSION }}
         run: |
           rm -rf .git node_modules
 
@@ -128,14 +125,14 @@ jobs:
           host: ${{ inputs.host }}
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
-          source: "${{ inputs.repo }}/."
-          target: "/var/www/projects/${{ inputs.app_name }}/releases/${{ env.APP_VERSION }}"
+          source: "${{ env.APP_VERSION }}"
+          target: "/var/www/projects/${{ inputs.app_name }}/releases/"
 
       # Set up environment variables
       - name: Set up environment variables
         run: |
-          rm -r ${{ inputs.repo }}/.env || echo "no env file"
-          echo "${{ inputs.env }}" >> ${{ inputs.repo }}/.env
+          rm -r ${{ env.APP_VERSION }}/.env || echo "no env file"
+          echo "${{ inputs.env }}" >> ${{ env.APP_VERSION }}/.env
 
       # Kirim file .env ke server
       - name: Upload .env to server
@@ -144,7 +141,7 @@ jobs:
           host: ${{ inputs.host }}
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
-          source: "${{ inputs.repo }}/.env"
+          source: "${{ env.APP_VERSION }}/.env"
           target: "/var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}/"
 
       # manage deployment
@@ -169,9 +166,6 @@ jobs:
             # manage deployment
             cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
 
-            # Create uploads directory
-            mkdir -p /var/www/projects/${{ inputs.app_name}}/uploads
-
             # Install dependencies
             bun install --production
 
@@ -185,7 +179,7 @@ jobs:
             bun prisma db seed || echo "tidak membutuhkan seed"
 
             # Restart the application
-            pm2 reload ${{ inputs.app_name}} || pm2 start "bun run start --port $PORT" --name "${{ inputs.app_name}}-$PORT" --namespace "${{ inputs.namespace}}"
+            pm2 reload ${{ inputs.namespace}} || pm2 start "bun run start --port $PORT" --name "${{ inputs.app_name}}-$PORT" --namespace "${{ inputs.namespace}}"
 
       # Step 4: Set BUILD_STATUS based on success or failure
       - name: Set BUILD_STATUS
