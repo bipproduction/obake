@@ -147,8 +147,9 @@ jobs:
 
             echo "masuk ke directory kerja"
             # manage deployment
-            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }} >> log.txt 2>&1 || echo "[server] directory tidak ditemukan" >> log.txt
 
+            echo "[server] move env.txt to .env"
             # config .env
             mv env.txt .env
 
@@ -174,15 +175,16 @@ jobs:
 
             # Restart the application
             pm2 reload ${{ inputs.namespace}} || pm2 start "bun run start --port $PORT" --name "${{ inputs.app_name}}-$PORT" --namespace "${{ inputs.namespace}}"
-            
+
             echo "[server] restart selesai" >> log.txt
 
       # Step 3: Read log.txt from server and append to workspace log.txt
       - name: Append log.txt from server to workspace
+        if: always()
         working-directory: ${{ env.APP_VERSION }}
         run: |
           ssh -i <(echo "${{ inputs.key }}") ${{ inputs.username }}@${{ inputs.host }} \
-            "cat /var/www/projects/${{ inputs.app_name }}/releases/${{ env.APP_VERSION }}/log.txt" >> log.txt
+            "cat /var/www/projects/${{ inputs.app_name }}/releases/${{ env.APP_VERSION }}/log.txt || echo 'log.txt not found'" >> log.txt
 
       # Step 4: Set BUILD_STATUS based on success or failure
       - name: Set BUILD_STATUS
