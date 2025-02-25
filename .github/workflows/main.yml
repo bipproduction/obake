@@ -210,6 +210,6 @@ jobs:
         run: |
           IFS=',' read -ra PHONES <<< "${{ env.PHONES }}"
           for PHONE in "${PHONES[@]}"; do 
-            ENCODED_TEXT=$(bun -e "console.log(encodeURIComponent('Build:${{ env.BUILD_STATUS }}\nApp:${{ env.APP_NAME}}\nBranch:${{ env.BRANCH }}\nLog:${{ env.LOG_URL }}'))")
+            ENCODED_TEXT=$(echo -n "Build:${{ env.BUILD_STATUS }}\nApp:${{ env.APP_NAME}}\nBranch:${{ env.BRANCH }}\nLog:${{ env.LOG_URL }}" | jq -Rr @uri)
             curl -X GET "https://wa.wibudev.com/code?text=$ENCODED_TEXT&nom=$PHONE"
           done
