@@ -135,6 +135,37 @@ jobs:
           target: "/var/www/projects/${{ inputs.app_name }}/releases/"
 
       # manage deployment
+      - name: manage env file
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
+          key: ${{ inputs.key }}
+          script: |
+            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            mv env.txt .env
+
+      # get port
+      - name: get port
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
+          key: ${{ inputs.key }}
+          script: |
+            # Source ~/.bashrc
+            source ~/.bashrc
+            echo "[server] find port"
+            # Find an available port
+            PORT=$(curl -s -X GET https://wibu-bot.wibudev.com/api/find-port | jq -r '.[0]')
+            if [ -z "$PORT" ] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
+              echo "Invalid or missing port from API."
+              exit 1
+            fi
+            echo "$PORT" > port.txt
+            echo "[server] port: $PORT" >> log.txt
+
+      # manage deployment
       - name: manage deployment
         uses: appleboy/ssh-action@master
         with:
@@ -147,20 +178,7 @@ jobs:
 
             echo "masuk ke directory kerja"
             # manage deployment
-            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }} >> log.txt 2>&1 || echo "[server] directory tidak ditemukan" >> log.txt
-
-            echo "[server] move env.txt to .env"
-            # config .env
-            mv env.txt .env
-
-            echo "[server] find port"
-            # Find an available port
-            PORT=$(curl -s -X GET https://wibu-bot.wibudev.com/api/find-port | jq -r '.[0]')
-            if [ -z "$PORT" ] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
-              echo "Invalid or missing port from API."
-              exit 1
-            fi
-            echo "[server] port: $PORT" >> log.txt
+            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }} 
 
             # Install dependencies
             bun install --production >> log.txt 2>&1 || echo "[server] terjadi kesalahan saat install" >> log.txt; exit 1
@@ -176,13 +194,15 @@ jobs:
 
             echo "[server] restart selesai" >> log.txt
 
-      # Step 3: Read log.txt from server and append to workspace log.txt
-      # - name: Append log.txt from server to workspace
-      #   if: always()
-      #   working-directory: ${{ env.APP_VERSION }}
-      #   run: |
-      #     ssh -i <(echo "${{ inputs.key }}") ${{ inputs.username }}@${{ inputs.host }} \
-      #       "cat /var/www/projects/${{ inputs.app_name }}/releases/${{ env.APP_VERSION }}/log.txt || echo 'log.txt not found'" >> log.txt
+      # Step 3: Fetch log.txt from the server to the workspace
+      - name: Fetch log.txt from server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
+          key: ${{ inputs.key }}
+          source: "/var/www/projects/${{ inputs.app_name }}/releases/${{ env.APP_VERSION }}/log.txt"
+          target: "server-log.txt"
 
       # Step 4: Set BUILD_STATUS based on success or failure
       - name: Set BUILD_STATUS

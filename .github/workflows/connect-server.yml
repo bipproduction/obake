@@ -26,6 +26,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: find port
+        run: |
+          PORT=$(curl -s -X GET https://wibu-bot.wibudev.com/api/find-port | jq -r '.[0]')
+          if [ -z "$PORT" ] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
+            echo "Invalid or missing port from API."
+            exit 1
+          fi
+          echo "APP_PORT=$PORT" >> $GITHUB_ENV
+
       - name: test connect server
         uses: appleboy/ssh-action@master
         with:
@@ -33,4 +42,5 @@ jobs:
           username: ${{ inputs.username }}
           key: ${{ inputs.key }}
           script: |
-            ls -a
+            echo "lihat port diserver"
+            echo "${{ env.APP_PORT }}"
