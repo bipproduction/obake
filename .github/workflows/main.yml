@@ -42,6 +42,10 @@ on:
         description: "log url"
         required: true
         default: "null"
+      phones:
+        description: "phones"
+        required: true
+        default: "null"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -154,8 +158,58 @@ jobs:
             cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
             mv env.txt .env
 
-      # manage deployment
-      - name: manage deployment
+      # bun install on server
+      - name: bun install on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
+          key: ${{ inputs.key }}
+          script: |
+            source ~/.bashrc
+            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            # Install dependencies
+            bun install --production >> log.txt 2>&1 || echo "[server] terjadi kesalahan saat install" >> log.txt; exit 1
+
+      # Install dependencies on server
+      - name: Install dependencies on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
+          key: ${{ inputs.key }}
+          script: |
+            source ~/.bashrc
+            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            # Install dependencies
+            bun install --production >> log.txt 2>&1 || echo "[server] terjadi kesalahan saat install" >> log.txt; exit 1
+
+      # db push on server
+      - name: db push on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
+          key: ${{ inputs.key }}
+          script: |
+            source ~/.bashrc
+            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            bun prisma db push >> log.txt 2>&1 || echo "[server] database tidak ditemukan" >> log.txt; exit 1
+
+      # seed on server
+      - name: seed on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ inputs.username }}
+          key: ${{ inputs.key }}
+          script: |
+            source ~/.bashrc
+            cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }}
+            bun prisma db seed >> log.txt 2>&1 || echo "[server] tidak membutuhkan seed" >> log.txt;
+
+      # manage deployment on server
+      - name: manage deployment on server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ inputs.host }}
@@ -168,15 +222,6 @@ jobs:
             echo "masuk ke directory kerja"
             # manage deployment
             cd /var/www/projects/${{ inputs.app_name}}/releases/${{ env.APP_VERSION }} 
-
-            # Install dependencies
-            bun install --production >> log.txt 2>&1 || echo "[server] terjadi kesalahan saat install" >> log.txt; exit 1
-
-            # Apply database schema
-            bun prisma db push >> log.txt 2>&1 || echo "[server] database tidak ditemukan" >> log.txt; exit 1
-
-            # Seed database (optional)
-            bun prisma db seed >> log.txt 2>&1 || echo "[server] tidak membutuhkan seed" >> log.txt
 
             # Restart the application
             pm2 reload ${{ inputs.namespace}} || pm2 start "bun run start --port ${{ env.APP_PORT }}" --name "${{ inputs.app_name}}-${{ env.APP_PORT }}" --namespace "${{ inputs.namespace}}"
@@ -229,7 +274,7 @@ jobs:
       - name: Notify build success via API
         if: always()
         run: |
-          IFS=',' read -ra PHONES <<< "${{ env.WA_PHONE }}"
+          IFS=',' read -ra PHONES <<< "${{ inputs.phones }}"
           for PHONE in "${PHONES[@]}"; do 
             ENCODED_TEXT=$(bun -e "console.log(encodeURIComponent('Build:${{ env.BUILD_STATUS }}\nApp:${{ inputs.app_name}}\nBranch:${{ inputs.branch }}\nLog:${{ env.LOG_URL }}'))")
             curl -X GET "https://wa.wibudev.com/code?text=$ENCODED_TEXT&nom=$PHONE"
