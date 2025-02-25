@@ -51,7 +51,13 @@ jobs:
         run: |
           echo "${{ inputs.env }}" >> $GITHUB_ENV
           echo "${{ inputs.local }}" >> $GITHUB_ENV
+
+      - name: app version
+        run: |
           echo "APP_VERSION=${{ env.BRANCH }}-${{ github.sha }}-$(date +%Y_%m_%d-%H_%M_%S)" >> $GITHUB_ENV
+
+      - name: find app port
+        run: |
           PORT=$(curl -s -X GET https://wibu-bot.wibudev.com/api/find-port | jq -r '.[0]')
           if [ -z "$PORT" ] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
             echo "Invalid or missing port from API."
