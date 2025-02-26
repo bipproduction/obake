@@ -19,7 +19,4 @@ jobs:
       - name: coba
         run: |
           bun install
-          mkdir -p assets
-          echo ${{ inputs.data }}
-          echo ${{ inputs.data }} > assets/data-local.json
-          bun index.ts
+          bun index.ts --data ${{ inputs.data }}
