@@ -18,6 +18,8 @@
     "crypto-js": "^4.2.0",
     "dedent": "^1.5.3",
     "firebase-admin": "^13.1.0",
+    "json-schema-to-typescript": "^15.0.4",
+    "json-to-ts": "^2.1.0",
     "jszip": "^3.10.1",
     "minimist": "^1.2.8"
   }
