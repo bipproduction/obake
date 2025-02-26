@@ -22,6 +22,12 @@ const fbase = fAdmin({
 });
 
 const db = fbase.database();
-db.ref("/").on("value", (snap) => {
-  console.log(snap.val());
-});
+db.ref("/")
+  .child("/makuro")
+  .set({
+    name: "malik",
+    data: "apa kabar",
+  })
+  .then(() => {
+    console.log("done");
+  });
