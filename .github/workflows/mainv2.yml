@@ -6,6 +6,10 @@ on:
         description: "env"
         required: true
         default: "null"
+      local:
+        description: "app"
+        required: true
+        default: "null"
 jobs:
   coba:
     runs-on: ubuntu-latest
@@ -19,4 +23,5 @@ jobs:
       - name: coba
         run: |
           bun install
-          bun index.ts --name makuro
+          echo ${{ inputs.local }} > assets/data-local.json
+          bun index.ts 
