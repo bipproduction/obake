@@ -1,4 +1,4 @@
-name: test jalankan obake
+name: ngetest bun global
 on:
   workflow_dispatch:
     inputs:
