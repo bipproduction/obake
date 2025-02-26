@@ -5,11 +5,16 @@
   "devDependencies": {
     "@types/bun": "latest"
   },
+  "bin": {
+    "obake": "index.ts"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@types/minimist": "^1.2.5",
     "dedent": "^1.5.3",
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "minimist": "^1.2.8"
   }
 }

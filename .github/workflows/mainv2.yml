@@ -1,0 +1,22 @@
+name: test jalankan obake
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "env"
+        required: true
+        default: "null"
+jobs:
+  coba:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: coba
+        run: |
+          bun i -g .
+          obake --name makuro
