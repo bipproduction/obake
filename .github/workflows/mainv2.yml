@@ -18,5 +18,6 @@ jobs:
 
       - name: coba
         run: |
+          bun install
           bun add --global .
           obake --name makuro
