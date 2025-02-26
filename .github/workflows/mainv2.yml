@@ -2,7 +2,7 @@ name: ngetest bun global
 on:
   workflow_dispatch:
     inputs:
-      data:
+      key:
         description: "env"
         required: true
         default: "null"
@@ -19,5 +19,4 @@ jobs:
       - name: coba
         run: |
           bun install
-          echo "${{ toJson(inputs.data) }}" > data.json
-          bun run index.ts
+          bun run index.ts --key "${{ inputs.key }}"

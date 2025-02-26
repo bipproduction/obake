@@ -28,3 +28,4 @@ key.pub
 test/*
 api
 assets/*
+secret
