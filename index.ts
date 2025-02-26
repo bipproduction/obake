@@ -1,3 +1,4 @@
+import { fAdmin } from "@/fbase";
 import { file } from "bun";
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
@@ -10,7 +11,17 @@ if (!key) {
 }
 
 const encryptedData = await file("data-penting.txt").text();
-const dataString = CryptoJS.AES.decrypt(encryptedData, key).toString(CryptoJS.enc.Utf8);
-const data = JSON.parse(dataString);
+const dataString = CryptoJS.AES.decrypt(encryptedData, key).toString(
+  CryptoJS.enc.Utf8
+);
+const dataPenting: DataPenting = JSON.parse(dataString);
 
-console.log(JSON.stringify(data, null, 2));
+const fbase = fAdmin({
+  databaseUrl: dataPenting.firebase.databaseURL,
+  key: JSON.stringify(dataPenting.firebase.accountKey),
+});
+
+const db = fbase.database();
+db.ref("/").on("value", (snap) => {
+  console.log(snap.val());
+});
