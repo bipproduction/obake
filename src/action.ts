@@ -36,7 +36,7 @@ const dataText = await res.text();
 console.log(dataText);
 
 const admin = fAdmin({
-  credential: JSON.parse(key),
+  credential: dataPenting.firebase.credential,
   databaseUrl: dataPenting.firebase.databaseURL,
 });
 const db = admin.database();

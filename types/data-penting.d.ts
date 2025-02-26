@@ -10,10 +10,10 @@ interface Ssh {
   key: string;
 }
 interface Firebase {
-  accountKey: AccountKey;
+  credential: Credential;
   databaseURL: string;
 }
-interface AccountKey {
+interface Credential {
   type: string;
   project_id: string;
   private_key_id: string;
