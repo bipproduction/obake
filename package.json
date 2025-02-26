@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@types/minimist": "^1.2.5",
+    "axios": "^1.7.9",
     "dedent": "^1.5.3",
     "jszip": "^3.10.1",
     "minimist": "^1.2.8"
