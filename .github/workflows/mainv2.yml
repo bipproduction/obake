@@ -19,4 +19,5 @@ jobs:
       - name: coba
         run: |
           bun install
-          bun index.ts --data "${{ inputs.data }}"
+          echo "Received data: ${{ inputs.data }}"
+          echo "${{ inputs.data }}" > data.json
