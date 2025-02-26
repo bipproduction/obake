@@ -31,7 +31,7 @@ async function kirimData(params: { body: string }) {
 
 for (let i = 0; i < 10; i++) {
   await kirimData({
-    body: JSON.stringify({ log: "halo apa kabar ini adalah lognya" }),
+    body: JSON.stringify({ log: `halo apa kabar ini adalah lognya ${i}` }),
   });
   Bun.sleep(1000);
 }
