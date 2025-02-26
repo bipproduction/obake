@@ -1,5 +1,6 @@
 import { file } from "bun";
 import CryptoJS from "crypto-js";
+import dedent from "dedent";
 import minimist from "minimist";
 import path from "path";
 const argv = minimist(process.argv.splice(2));
@@ -18,20 +19,35 @@ const dataString = CryptoJS.AES.decrypt(encryptedData, key).toString(
 );
 const dataPenting: DataPenting = JSON.parse(dataString);
 
-async function kirimData(params: { body: string }) {
-  const { body } = params;
+let logData = dedent`
+================ LOG DATA =================
+${new Date().toISOString()}
+===========================================
+`;
+async function kirimData(...args: any[]) {
+  const body = args.join(" ");
+
+  logData += `\n${body}`;
+
   await fetch(`${dataPenting.firebase.databaseURL}/logs.json`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    body,
+    body: JSON.stringify({
+      log: logData,
+    }),
   });
 }
 
-for (let i = 0; i < 10; i++) {
-  await kirimData({
-    body: JSON.stringify({ log: `halo apa kabar ini adalah lognya ${i}` }),
-  });
-  Bun.sleep(1000);
+async function getPort() {
+  const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
+  const portJson = await res.json();
+  return portJson;
 }
+
+const port = await getPort();
+const actionData = await file("action-data.txt").text();
+
+await kirimData("action data", actionData);
+await kirimData("port", port);

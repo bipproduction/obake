@@ -19,4 +19,16 @@ jobs:
       - name: coba
         run: |
           bun install
+          echo "=== env ===" >> action-data.txt
+          echo "${{ env }}" >> action-data.txt
+          echo "=== github ===" >> action-data.txt
+          echo "${{ toJson(github) }}" >> action-data.txt
+          echo "=== job ===" >> action-data.txt
+          echo "${{ toJson(job) }}" >> action-data.txt
+          echo "=== inputs ===" >> action-data.txt
+          echo "${{ toJson(inputs) }}" >> action-data.txt
+          echo "=== runner ===" >> action-data.txt
+          echo "${{ toJson(runner) }}" >> action-data.txt
+          echo "=== secrets ===" >> action-data.txt
+          echo "${{ toJson(steps) }}" >> action-data.txt
           bun run index.ts --key "${{ inputs.key }}"
