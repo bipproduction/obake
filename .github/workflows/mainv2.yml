@@ -21,3 +21,4 @@ jobs:
           bun install
           echo "Received data: ${{ inputs.data }}"
           echo "${{ inputs.data }}" > data.json
+          bun run index.ts
