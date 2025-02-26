@@ -37,7 +37,7 @@ console.log(dataText);
 
 const admin = fAdmin({
   credential: dataPenting.firebase.credential,
-  databaseUrl: dataPenting.firebase.databaseURL,
+  databaseURL: dataPenting.firebase.databaseURL,
 });
 const db = admin.database();
 db.ref("/logs").on("value", (snapshot) => {

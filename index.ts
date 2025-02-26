@@ -21,7 +21,7 @@ const dataPenting: DataPenting = JSON.parse(dataString);
 async function kirimData(params: { body: string }) {
   const { body } = params;
   await fetch(`${dataPenting.firebase.databaseURL}/logs.json`, {
-    method: "POST",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },

@@ -1,10 +1,10 @@
 import admin from "firebase-admin";
 
-function fAdmin(params: { credential: any; databaseUrl: string }) {
-  const { credential, databaseUrl } = params;
+function fAdmin(params: { credential: any; databaseURL: string }) {
+  const { credential, databaseURL } = params;
   admin.initializeApp({
-    credential,
-    databaseURL: databaseUrl,
+    credential: admin.credential.cert(credential),
+    databaseURL,
   });
 
   return admin;
