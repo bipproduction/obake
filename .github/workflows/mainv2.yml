@@ -2,12 +2,8 @@ name: ngetest bun global
 on:
   workflow_dispatch:
     inputs:
-      env:
+      data:
         description: "env"
-        required: true
-        default: "null"
-      local:
-        description: "app"
         required: true
         default: "null"
 jobs:
@@ -24,5 +20,5 @@ jobs:
         run: |
           bun install
           mkdir -p assets
-          echo "${{ inputs }}" > assets/data-local.json
+          echo "${{ inputs.data }}" > assets/data-local.json
           bun index.ts
