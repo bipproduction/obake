@@ -19,4 +19,4 @@ jobs:
       - name: coba
         run: |
           bun install
-          bun index.ts --data ${{ inputs.data }}
+          bun index.ts --data "${{ inputs.data }}"
