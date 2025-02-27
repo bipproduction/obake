@@ -90,6 +90,14 @@ const port = await getPort();
 
 await kirimLog(Bun.inspect.table(dataExtendJson).green);
 
+
+const clone = await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
+    .nothrow()
+    .quiet();
+await kirimLog(clone.stdout.toString().green);
+await kirimLog(clone.stderr.toString().red);
+
+
 // git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}
 await action({
   startText: "clone start ...",
