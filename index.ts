@@ -49,7 +49,7 @@ async function kirimLog(...args: any[]) {
   });
 }
 
-const data = await $`git --version`.text()
+const data = await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`.text()
 kirimLog(data);
 
 
