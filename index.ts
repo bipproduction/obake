@@ -158,7 +158,7 @@ async function kirimLog(...args: any[]) {
     const conn = await ssh.connect({
       host: dataRequiredJson.ssh.host,
       username: dataRequiredJson.ssh.user,
-      privateKeyPath: dataRequiredJson.ssh.key,
+      privateKeyPath: Buffer.from(dataRequiredJson.ssh.key),
     });
 
     await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
