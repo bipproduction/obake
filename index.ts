@@ -102,6 +102,8 @@ bunx prisma db push || echo "prisma db push error"
 bunx prisma db seed || echo "prisma db seed error"
 bun --bun run build
 `
+.nothrow()
+.quiet()
 
 await kirimLog(command.exitCode);
 await kirimLog(command.stdout.toString());
