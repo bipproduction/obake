@@ -1,4 +1,5 @@
 import { $ } from "bun";
+import 'colors'
 
 const dbSeed = await $`git --version`
     .nothrow()
@@ -6,5 +7,5 @@ const dbSeed = await $`git --version`
 
 
 // console.log(dbSeed.exitCode);
-console.log(dbSeed.stdout.toString());
-console.log(dbSeed.stderr.toString());
+console.log(dbSeed.stdout.toString().green);
+console.log(dbSeed.stderr.toString().red);
