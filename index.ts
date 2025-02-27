@@ -1,6 +1,7 @@
 import { $, type ShellOutput } from "bun";
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
+import 'colors'
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
@@ -69,13 +70,14 @@ async function action(params: {
   const shellValue = await $`${cmd}`
     .env({
       PATH: process.env.PATH as string,
+      ...process.env,
       ...env,
     })
     .cwd(cwd ?? process.cwd())
     .nothrow()
     .quiet();
   if (shellValue.exitCode !== 0 && killOnError) {
-    await kirimLog(shellValue.stderr.toString());
+    await kirimLog(shellValue.stderr.toString().red);
     await kirimLog("{{ close }}");
     process.exit(1);
   } else if (shellValue.exitCode !== 0) {
