@@ -95,7 +95,7 @@ await kirimLog(Bun.inspect.table(dataExtendJson));
 
 await action({
   startText: "clone start ...",
-  cmd: `git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`,
+  cmd: `git --version && git status`,
   endText: "clone end ...",
 });
 
