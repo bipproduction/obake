@@ -70,7 +70,7 @@ async function action(params: {
   const shellValue = await $`${cmd}`
     .env({
       NODE_ENV: "production",
-      ...env,
+      ...process.env,
     })
     .cwd(cwd ?? process.cwd())
     .nothrow()
