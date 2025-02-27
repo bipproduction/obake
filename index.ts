@@ -93,14 +93,15 @@ await handleStep(
   }
 );
 
-await handleStep(async () =>
-  $`echo ${dataExtendJson.env} > .env`
-    .cwd(dataExtendJson.appVersion)
-    .quiet()
-    .nothrow(),
-    {
-      info: "generate env ...",
-    }
+await handleStep(
+  async () =>
+    $`echo ${dataExtendJson.env} > .env`
+      .cwd(dataExtendJson.appVersion)
+      .quiet()
+      .nothrow(),
+  {
+    info: "generate env ...",
+  }
 );
 
 await handleStep(
@@ -141,64 +142,14 @@ await handleStep(
   }
 );
 
-// await kirimLog("[INFO] ", "cloning ...");
-// await kirimLog("[INFO] ", clone.stdout.toString());
-// if (clone.exitCode !== 0) {
-//   await kirimLog("[ERROR]", clone.stderr.toString());
-//   await kirimLog("{{ close }}");
-//   process.exit(1);
-// }
-
-// const installDependency = await $`bun install`
-//   .cwd(dataExtendJson.appVersion)
-//   .nothrow()
-//   .quiet();
-// await kirimLog("[INFO] ", "installing ...");
-// await kirimLog("[INFO] ", installDependency.stdout.toString());
-// if (installDependency.exitCode !== 0) {
-//   await kirimLog("[ERROR]", installDependency.stderr.toString());
-//   await kirimLog("{{ close }}");
-//   process.exit(1);
-// }
-
-// const dbPush = await $`bunx prisma db push`
-//   .cwd(dataExtendJson.appVersion)
-//   .nothrow()
-//   .quiet();
-
-// await kirimLog("[INFO] ", "db pushing ...");
-// await kirimLog("[INFO] ", dbPush.stdout.toString());
-// if (dbPush.exitCode !== 0) {
-//   await kirimLog("[ERROR]", dbPush.stderr.toString());
-//   await kirimLog("{{ close }}");
-//   process.exit(1);
-// }
-
-// const dbSeed = await $`bunx prisma db seed`
-//   .cwd(dataExtendJson.appVersion)
-//   .nothrow()
-//   .quiet();
-
-// await kirimLog("[INFO] ", "db seeding ...");
-// await kirimLog("[INFO] ", dbSeed.stdout.toString());
-// if (dbSeed.exitCode !== 0) {
-//   await kirimLog("[ERROR]", dbSeed.stderr.toString());
-//   await kirimLog("{{ close }}");
-//   process.exit(1);
-// }
-
-// const build = await $`bun --bun run build`
-//   .cwd(dataExtendJson.appVersion)
-//   .nothrow()
-//   .quiet();
-
-// await kirimLog("[INFO] ", "building ...");
-// await kirimLog("[INFO] ", build.stdout.toString());
-// if (build.exitCode !== 0) {
-//   await kirimLog("[ERROR]", build.stderr.toString());
-//   await kirimLog("{{ close }}");
-//   process.exit(1);
-// }
+// handle build
+await handleStep(
+  async () =>
+    $`bun --bun run build`.quiet().nothrow().cwd(dataExtendJson.appVersion),
+  {
+    info: "run build ...",
+  }
+);
 
 await kirimLog("{{ close }}");
 process.exit(0);
