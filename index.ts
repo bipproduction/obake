@@ -73,3 +73,4 @@ const clone =
     .text();
 
 await kirimData("clone", clone);
+await kirimData("{{ close }}");

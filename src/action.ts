@@ -76,6 +76,11 @@ const admin = fAdmin({
 const db = admin.database();
 db.ref("/logs").child("log").set("loading ...");
 db.ref("/logs").on("value", (snapshot) => {
+  const dataString = snapshot.val()?.log ?? "";
   console.clear();
-  console.log(snapshot.val()?.log ?? "");
+  console.log(dataString);
+  if (dataString.includes("{{ close }}")) {
+    db.ref("/logs").off();
+    process.exit(0);
+  }
 });
