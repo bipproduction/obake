@@ -1,4 +1,4 @@
-import { $, type ShellOutput } from "bun";
+import { $, ShellPromise, type ShellOutput } from "bun";
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
 import "colors";
@@ -49,11 +49,9 @@ async function kirimLog(...args: any[]) {
   });
 }
 
-
-
 async function action(params: {
   startText: string;
-  cmd: string;
+  shell: ShellPromise;
   env?: Record<string, string>;
   cwd?: string;
   endText?: string;
@@ -61,7 +59,7 @@ async function action(params: {
 }) {
   const {
     startText = "START! ...",
-    cmd,
+    shell,
     env = {},
     cwd,
     endText = "SUCCESS!",
@@ -69,8 +67,7 @@ async function action(params: {
   } = params;
 
   await kirimLog(startText);
-  const shellValue = await $`${cmd}`
-    .nothrow();
+  const shellValue = await shell?.nothrow().quiet();
 
   if (shellValue.exitCode !== 0 && killOnError) {
     await kirimLog(shellValue.stderr.toString().red);
@@ -93,31 +90,12 @@ const port = await getPort();
 
 await kirimLog(Bun.inspect.table(dataExtendJson));
 
-const command = await $`
-git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}
-cd ${dataExtendJson.appVersion}
-echo "${dataExtendJson.env}" > .env
-bun install
-bunx prisma db push || echo "prisma db push error"
-bunx prisma db seed || echo "prisma db seed error"
-
-`
-.nothrow()
-.quiet()
-
-await kirimLog(command.exitCode);
-await kirimLog(command.stdout.toString().green);
-await kirimLog(command.stderr.toString().red);
-
-await kirimLog("{{ close }}")
-
-
 // git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}
-// await action({
-//   startText: "clone start ...",
-//   cmd: `git --version && git status`,
-//   endText: "clone end ...",
-// });
+await action({
+  startText: "clone start ...",
+  shell: $`git --version && git status`,
+  endText: "clone end ...",
+});
 
 // await action({
 //   startText: "create env ...",
