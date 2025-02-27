@@ -161,7 +161,6 @@ async function kirimLog(...args: any[]) {
   });
 
   await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
-
 })()
   .then(async () => {
     await kirimLog("[INFO-FINISH] ", "Proccess Finished ...");
