@@ -2,133 +2,167 @@ import { $ } from "bun";
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
 
+// Definisi tipe data
 interface RequiredData {
-  firebase: { databaseURL: string };
+  firebase: {
+    databaseURL: string;
+  };
   githubToken: string;
 }
 
-interface CommandResult {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
+interface ExtendData {
+  appVersion: string;
+  repo: string;
 }
 
-// Konfigurasi dan Inisialisasi
-const argv = minimist(process.argv.slice(2));
-const { key, "data-required": dataRequired, "data-extend": dataExtend } = argv;
+// Memperbaiki error TypeScript dengan mendeklarasikan tipe global
+declare global {
+  var requiredData: RequiredData | undefined;
+  var extendData: ExtendData | undefined;
+}
 
-// Utilitas untuk dekripsi dan parsing JSON
-const decryptAndParse = (encrypted: string, key: string) => {
-  const decrypted = CryptoJS.AES.decrypt(encrypted, key).toString(CryptoJS.enc.Utf8);
+// Variabel untuk menyimpan log
+let logData = "";
+
+// Fungsi untuk mengirim log
+async function logMessage(...args: any[]) {
+  const body = args.join(" ");
+  logData += `\n${body}`;
+  
+  if (!global.requiredData || !global.extendData) return; // Hindari error saat data belum diinisialisasi
+  
+  await fetch(`${global.requiredData.firebase.databaseURL}/logs.json`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      [global.extendData.appVersion]: logData,
+    }),
+  });
+}
+
+// Dekripsi dan parsing data
+function decryptAndParse<T>(encryptedData: string, key: string): T {
+  const decrypted = CryptoJS.AES.decrypt(encryptedData, key).toString(CryptoJS.enc.Utf8);
   return JSON.parse(decrypted);
-};
+}
 
-// Kelas untuk menangani logging
-class Logger {
-  private logData: string = "";
-  private readonly databaseURL: string;
+// Validasi argumen dan memproses
+function validateAndProcessArgs() {
+  const argv = minimist(process.argv.splice(2));
+  
+  const key = argv.key;
+  const dataRequired = argv["data-required"];
+  const dataExtend = argv["data-extend"];
+  
+  if (!key) throw new Error("key not found");
+  if (!dataRequired) throw new Error("data_required not found");
+  if (!dataExtend) throw new Error("data_extend not found");
+  
+  return { 
+    key, 
+    dataRequired, 
+    dataExtend 
+  };
+}
 
-  constructor(databaseURL: string) {
-    this.databaseURL = databaseURL;
-  }
-
-  async log(...args: any[]) {
-    const message = args.join(" ");
-    this.logData += `\n${message}`;
-    return this;
-  }
-
-  async commit(version: string) {
-    await fetch(`${this.databaseURL}/logs.json`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [version]: this.logData }),
-    });
+// Mendapatkan port dari API
+async function getPort() {
+  try {
+    const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
+    return await res.json();
+  } catch (error) {
+    throw new Error(`Failed to get port: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
-// Fungsi untuk menjalankan perintah shell dengan logging
-async function executeCommand(
-  command: any,
-  logger: Logger,
-  infoMessage: string,
-  errorMessage: string
-): Promise<void> {
+// Fungsi untuk mengeksekusi langkah dengan logging
+async function executeStep(stepName: string, command: any, options: { cwd: string }) {
+  await logMessage(`[INFO] ${stepName} starting...`);
+  
   const result = await command.nothrow().quiet();
   
-  await logger.log("[INFO] ", infoMessage);
-  await logger.log("[INFO] ", result.stdout.toString());
+  await logMessage(`[INFO] ${result.stdout.toString()}`);
   
   if (result.exitCode !== 0) {
-    await logger.log("[ERROR] ", errorMessage, result.stderr.toString());
-    await logger.log("{{ close }}");
-    process.exit(1);
+    throw new Error(`${stepName} failed: ${result.stderr.toString()}`);
   }
+  
+  await logMessage(`[INFO] ${stepName} completed successfully`);
+  return result;
+}
+
+// Menjalankan langkah-langkah deployment
+async function runDeploymentSteps(requiredData: RequiredData, extendData: ExtendData) {
+  // Simpan data ke global untuk digunakan oleh fungsi logMessage
+  global.requiredData = requiredData;
+  global.extendData = extendData;
+  
+  // Clone repository
+  await executeStep(
+    "git clone",
+    $`git clone https://x-access-token:${requiredData.githubToken}@github.com/bipproduction/${extendData.repo}.git ${extendData.appVersion}`,
+    { cwd: "." }
+  );
+  
+  // Install dependencies
+  await executeStep(
+    "install dependencies",
+    $`bun install`,
+    { cwd: extendData.appVersion }
+  );
+  
+  // Database push
+  await executeStep(
+    "db push",
+    $`bunx prisma db push`,
+    { cwd: extendData.appVersion }
+  );
+  
+  // Database seed
+  await executeStep(
+    "db seed",
+    $`bunx prisma db seed`,
+    { cwd: extendData.appVersion }
+  );
+  
+  // Build
+  await executeStep(
+    "build",
+    $`bun --bun run build`,
+    { cwd: extendData.appVersion }
+  );
 }
 
 // Fungsi utama
 async function main() {
-  // Validasi input
-  for (const [param, value] of Object.entries({ key, dataRequired, dataExtend })) {
-    if (!value) {
-      console.error(`${param} not found`);
-      process.exit(1);
-    }
+  try {
+    // Validasi dan memproses argumen
+    const { key, dataRequired, dataExtend } = validateAndProcessArgs();
+    
+    // Dekripsi dan parsing data
+    const requiredData = decryptAndParse<RequiredData>(dataRequired, key);
+    const extendData = decryptAndParse<ExtendData>(dataExtend, key);
+    
+    // Menampilkan informasi
+    await logMessage(Bun.inspect.table(extendData));
+    
+    // Mendapatkan port
+    const port = await getPort();
+    
+    // Menjalankan proses deployment
+    await runDeploymentSteps(requiredData, extendData);
+    
+    // Sukses
+    await logMessage("{{ close }}");
+    process.exit(0);
+  } catch (error) {
+    await logMessage("[ERROR]", error instanceof Error ? error.message : String(error));
+    await logMessage("{{ close }}");
+    process.exit(1);
   }
-
-  // Dekripsi dan parsing data
-  const requiredData: RequiredData = decryptAndParse(dataRequired, key);
-  const extendData = decryptAndParse(dataExtend, key);
-  const logger = new Logger(requiredData.firebase.databaseURL);
-
-  // Log data awal
-  await logger.log(Bun.inspect.table(extendData));
-
-  // Ambil port
-  const port = await (async () => {
-    const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
-    return (await res.json()).port;
-  })();
-
-  // Eksekusi perintah-perintah
-  const commands = [
-    {
-      cmd: $`git clone https://x-access-token:${requiredData.githubToken}@github.com/bipproduction/${extendData.repo}.git ${extendData.appVersion}`,
-      info: "cloning ...",
-      error: "Failed to clone repository"
-    },
-    {
-      cmd: $`bun install`.cwd(extendData.appVersion),
-      info: "installing ...",
-      error: "Failed to install dependencies"
-    },
-    {
-      cmd: $`bunx prisma db push`.cwd(extendData.appVersion),
-      info: "db pushing ...",
-      error: "Failed to push database"
-    },
-    {
-      cmd: $`bunx prisma db seed`.cwd(extendData.appVersion),
-      info: "db seeding ...",
-      error: "Failed to seed database"
-    },
-    {
-      cmd: $`bun --bun run build`.cwd(extendData.appVersion),
-      info: "building ...",
-      error: "Failed to build application"
-    }
-  ];
-
-  for (const { cmd, info, error } of commands) {
-    await executeCommand(cmd, logger, info, error);
-  }
-
-  (await logger.log("{{ close }}")).commit(extendData.appVersion);
-  process.exit(0);
 }
 
-// Jalankan aplikasi
-main().catch(async (error) => {
-  console.error("Unexpected error:", error);
-  process.exit(1);
-});
+// Jalankan program
+main();
