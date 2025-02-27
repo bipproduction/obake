@@ -88,7 +88,7 @@ async function getPort() {
 
 const port = await getPort();
 
-await kirimLog(Bun.inspect.table(dataExtendJson));
+await kirimLog(Bun.inspect.table(dataExtendJson).green);
 
 // git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}
 await action({
@@ -128,4 +128,4 @@ await action({
 //   endText: "build end ...",
 // });
 
-// await kirimLog("{{ close }}");
+await kirimLog("{{ close }}");
