@@ -156,6 +156,19 @@ async function kirimLog(...args: any[]) {
     }
   );
 
+  // hapus .git dan node_modules
+  await handleStep(
+    async () => {
+      return await $`rm -rf .git node_modules`
+        .cwd(dataExtendJson.appVersion)
+        .nothrow()
+        .quiet();
+    },
+    {
+      info: "cleaning ...",
+    }
+  );
+
   const ssh = new NodeSSH();
   const conn = await ssh.connect({
     host: dataRequiredJson.ssh.host,
@@ -172,7 +185,17 @@ async function kirimLog(...args: any[]) {
   await kirimLog("[INFO] ", "upload ...");
   await conn.putDirectory(
     `./${dataExtendJson.appVersion}/`,
-    `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`
+    `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
+    {
+      recursive: true,
+      async tick(localFile, remoteFile, error) {
+        await kirimLog("[INFO] ", `upload ${localFile} -> ${remoteFile}`);
+        if (error) {
+          await kirimLog("[ERROR] ", error);
+          throw error;
+        }
+      },
+    }
   );
 
   await kirimLog("[INFO] ", "ls ...");

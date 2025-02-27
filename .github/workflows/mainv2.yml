@@ -38,7 +38,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: coba
+      - name: jalankan
         run: |
           bun install
           bun run index.ts --key "${{ inputs.key }}" --data-required "${{ inputs.data_required }}" --data-extend "${{ inputs.data_extend }}"
