@@ -51,8 +51,8 @@ async function kirimLog(...args: any[]) {
 
 
 kirimLog("START! ...");
-const data = await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git`.text()
-kirimLog(data);
+const {exitCode} = await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git`
+kirimLog(exitCode);
 
 
 // async function action(params: {
