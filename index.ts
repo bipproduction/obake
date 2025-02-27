@@ -33,6 +33,9 @@ const extendData = CryptoJS.AES.decrypt(data_extend, key).toString(
 );
 const dataExtendJson = JSON.parse(extendData);
 
+// save rsa
+await Bun.write("~/.ssh/id_rsa", dataRequiredJson.ssh.key);
+
 let logData = "";
 async function kirimLog(...args: any[]) {
   const body = args.join(" ");
@@ -158,7 +161,7 @@ async function kirimLog(...args: any[]) {
     const conn = await ssh.connect({
       host: dataRequiredJson.ssh.host,
       username: dataRequiredJson.ssh.user,
-      privateKeyPath: Buffer.from(dataRequiredJson.ssh.key),
+      privateKeyPath: "~/.ssh/id_rsa",
     });
 
     await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
