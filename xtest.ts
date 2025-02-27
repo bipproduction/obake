@@ -1,5 +1,10 @@
-import dayjs from "dayjs";
-import minimist from "minimist";
-const argv = minimist(process.argv.splice(2))
+import { $ } from "bun";
 
-process.stdout.write("\r" + dayjs().format("YYYY-MM-DD_HH-mm-ss") + "\n");
+const dbSeed = await $`ls p`
+    .nothrow()
+    .quiet()
+
+
+// console.log(dbSeed.exitCode);
+console.log(dbSeed.stdout.toString());
+console.log(dbSeed.stderr.toString());

@@ -1,7 +1,6 @@
-import CryptoJS from "crypto-js";
-import dedent from "dedent";
-import minimist from "minimist";
 import { $ } from "bun";
+import CryptoJS from "crypto-js";
+import minimist from "minimist";
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
@@ -59,60 +58,79 @@ const port = await getPort();
 
 await kirimLog(Bun.inspect.table(dataExtendJson));
 
-await kirimLog("clone start ..."); 
+await kirimLog("clone start ...");
 const clone =
   await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
     .env({
       path: process.env.PATH as string,
       ...process.env,
     })
-    .text();
+    .nothrow()
+    .quiet();
+
+await kirimLog(clone.exitCode, clone.stderr.toString());
+if (clone.exitCode !== 0) process.exit(1);
 
 await kirimLog("create env ...");
 const createEnv = await $`echo "${dataExtendJson.env}" > .env`
-    .env({
-      path: process.env.PATH as string
-    })
-    .cwd(dataExtendJson.appVersion)
-    .text();
+  .env({
+    path: process.env.PATH as string,
+  })
+  .cwd(dataExtendJson.appVersion)
+  .nothrow()
+  .quiet();
+
+await kirimLog(createEnv.exitCode, createEnv.stderr.toString());
+if (createEnv.exitCode !== 0) process.exit(1);
 
 await kirimLog("install ...");
 const install = await $`bun install`
-    .env({
-      path: process.env.PATH as string
-    })
-    .cwd(dataExtendJson.appVersion)
-    .text();
+  .env({
+    path: process.env.PATH as string,
+  })
+  .cwd(dataExtendJson.appVersion)
+  .nothrow()
+  .quiet();
 
-await kirimLog(install);
+await kirimLog(install.exitCode, install.stderr.toString());
+if (install.exitCode !== 0) process.exit(1);
 
 await kirimLog("db push ...");
 const dbPush = await $`bunx prisma db push`
-    .env({
-      path: process.env.PATH as string
-    })
-    .cwd(dataExtendJson.appVersion)
-    .nothrow()
-    .text();
-await kirimLog(dbPush);
+  .env({
+    path: process.env.PATH as string,
+  })
+  .cwd(dataExtendJson.appVersion)
+  .nothrow()
+  .quiet();
+
+await kirimLog(dbPush.exitCode, dbPush.stderr.toString());
+if (dbPush.exitCode !== 0) process.exit(1);
 
 await kirimLog("start ...");
 const dbSeed = await $`bunx prisma db seed`
-    .env({
-      path: process.env.PATH as string
-    })
-    .cwd(dataExtendJson.appVersion)
-    .nothrow()
-    .text();
-await kirimLog(dbSeed);
+  .env({
+    path: process.env.PATH as string,
+  })
+  .cwd(dataExtendJson.appVersion)
+  .nothrow()
+  .quiet();
 
+await kirimLog(dbSeed.exitCode, dbSeed.stderr.toString());
+
+await kirimLog("build ...");
 const build = await $`bun --bun run build`
-    .env({
-      path: process.env.PATH as string
-    })
-    .cwd(dataExtendJson.appVersion)
-    .nothrow()
-    .text();
-await kirimLog(build);
+  .env({
+    path: process.env.PATH as string,
+  })
+  .cwd(dataExtendJson.appVersion)
+  .nothrow()
+  .quiet();
+
+await kirimLog(build.exitCode, build.stderr.toString());
+if (build.exitCode !== 0) {
+  await kirimLog("{{ close }}");
+  process.exit(1);
+}
 
 await kirimLog("{{ close }}");
