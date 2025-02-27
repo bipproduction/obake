@@ -153,14 +153,19 @@ async function kirimLog(...args: any[]) {
     }
   );
 
-  const ssh = new NodeSSH();
-  const conn = await ssh.connect({
-    host: dataRequiredJson.ssh.host,
-    username: dataRequiredJson.ssh.user,
-    privateKeyPath: dataRequiredJson.ssh.key,
-  });
+  try {
+    const ssh = new NodeSSH();
+    const conn = await ssh.connect({
+      host: dataRequiredJson.ssh.host,
+      username: dataRequiredJson.ssh.user,
+      privateKeyPath: dataRequiredJson.ssh.key,
+    });
 
-  await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
+    await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
+  } catch (error) {
+    await kirimLog("[ERROR]", error);
+    throw error;
+  }
 })()
   .then(async () => {
     await kirimLog("[INFO-FINISH] ", "Proccess Finished ...");
