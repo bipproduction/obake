@@ -17,6 +17,20 @@ on:
 jobs:
   coba:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: bip
+          POSTGRES_PASSWORD: Production_123
+          POSTGRES_DB: db
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
