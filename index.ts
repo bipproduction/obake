@@ -156,33 +156,34 @@ async function kirimLog(...args: any[]) {
     }
   );
 
-  try {
-    const ssh = new NodeSSH();
-    const conn = await ssh.connect({
-      host: dataRequiredJson.ssh.host,
-      username: dataRequiredJson.ssh.user,
-      privateKeyPath: "~/.ssh/id_rsa",
-    });
+  const ssh = new NodeSSH();
+  const conn = await ssh.connect({
+    host: dataRequiredJson.ssh.host,
+    username: dataRequiredJson.ssh.user,
+    privateKeyPath: "~/.ssh/id_rsa",
+  });
 
-    // create release dir
-    await kirimLog("[INFO] ", "create release dir ...");
-    await conn.mkdir(`/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`);
-    
-    await kirimLog("[INFO] ", "upload ...");
-    await conn.putDirectory(`./${dataExtendJson.appVersion}/`, `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`);
-    
-    const ls = await conn.execCommand(`ls `, {
-      cwd: `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
-    })
+  // create release dir
+  await kirimLog("[INFO] ", "create release dir ...");
+  await conn.mkdir(
+    `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`
+  );
 
-    await kirimLog("[INFO] ", ls.stdout.toString());
-    await kirimLog("[INFO] ",  ls.stderr.toString());
+  await kirimLog("[INFO] ", "upload ...");
+  await conn.putDirectory(
+    `./${dataExtendJson.appVersion}/`,
+    `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`
+  );
 
-    await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
-  } catch (error) {
-    await kirimLog("[ERROR]", error);
-    throw error;
-  }
+  await kirimLog("[INFO] ", "ls ...");
+  const ls = await conn.execCommand(`ls `, {
+    cwd: `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
+  });
+
+  await kirimLog("[INFO] ", ls.stdout.toString());
+  await kirimLog("[INFO] ", ls.stderr.toString());
+
+  await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
 })()
   .then(async () => {
     await kirimLog("[INFO-FINISH] ", "Proccess Finished ...");
