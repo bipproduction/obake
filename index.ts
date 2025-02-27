@@ -1,6 +1,7 @@
 import { $, type ShellOutput } from "bun";
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
+import _ from "lodash";
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
