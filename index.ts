@@ -1,7 +1,7 @@
 import { $, type ShellOutput } from "bun";
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
-import 'colors'
+import "colors";
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
@@ -69,6 +69,7 @@ async function action(params: {
   await kirimLog(startText);
   const shellValue = await $`${cmd}`
     .env({
+      PATH: process.env.PATH as string,
       NODE_ENV: "production",
       ...process.env,
       ...env,
@@ -76,7 +77,7 @@ async function action(params: {
     .cwd(cwd ?? process.cwd())
     .nothrow()
     .quiet();
-    
+
   if (shellValue.exitCode !== 0 && killOnError) {
     await kirimLog(shellValue.stderr.toString().red);
     await kirimLog("{{ close }}");
@@ -98,10 +99,9 @@ const port = await getPort();
 
 await kirimLog(Bun.inspect.table(dataExtendJson));
 
-
 await action({
   startText: "clone start ...",
-  cmd: `git status`,
+  cmd: `git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`,
   endText: "clone end ...",
 });
 
