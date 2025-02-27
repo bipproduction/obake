@@ -58,27 +58,28 @@ const dataExtend = {
 
 const encryptedDataExtend = convertDataExtend({ data: dataExtend, key });
 
-const res = await fetch(
-  `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
-  {
-    method: "POST",
-    headers: {
-      Authorization: `token ${key}`,
-      Accept: "application/vnd.github.v3+json",
-    },
-    body: JSON.stringify({
-      ref: "main",
-      inputs: {
-        key,
-        data_required: encrypted_data_require,
-        data_extend: encryptedDataExtend,
+async function dispatch() {
+  const res = await fetch(
+    `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `token ${key}`,
+        Accept: "application/vnd.github.v3+json",
       },
-    }),
-  }
-);
-
-const dataText = await res.text();
-console.log(dataText);
+      body: JSON.stringify({
+        ref: "main",
+        inputs: {
+          key,
+          data_required: encrypted_data_require,
+          data_extend: encryptedDataExtend,
+        },
+      }),
+    }
+  );
+  const dataText = await res.text();
+  console.log(dataText);
+}
 
 const dataPenting = await getRequiredData(key);
 const admin = fAdmin({
@@ -87,14 +88,38 @@ const admin = fAdmin({
 });
 
 const db = admin.database();
-db.ref("/logs").child(id).set("loading ...");
-db.ref("/logs")
-  .child(id)
-  .on("value", (snapshot) => {
-    const dataString = snapshot.val();
-    console.clear();
-    console.log(dataString);
-    if (dataString?.includes("{{ close }}")) {
-      process.exit(0);
-    }
-  });
+
+async function watchLog() {
+  db.ref("/logs")
+    .child(dataExtend.namespace)
+    .child("log")
+    .on("value", (snapshot) => {
+      const dataString = snapshot.val();
+      console.clear();
+      console.log(dataString);
+      if (dataString?.includes("{{ close }}")) {
+        process.exit(0);
+      }
+    });
+}
+
+async function upadateStatus() {
+  db.ref("/logs").child(dataExtend.namespace).child("log").set("loading ...");
+  db.ref("/logs").child(dataExtend.namespace).child("isRunning").set(true);
+}
+
+(async () => {
+  const isRunning = await db
+    .ref("/logs")
+    .child(dataExtend.namespace)
+    .child("isRunning")
+    .once("value");
+  if (isRunning.val()) {
+    await watchLog();
+    return;
+  }
+
+  await dispatch();
+  await upadateStatus();
+  await watchLog();
+})();
