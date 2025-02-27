@@ -1,7 +1,6 @@
-import { $, ShellPromise, type ShellOutput } from "bun";
+import { $ } from "bun";
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
-import "colors";
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
@@ -57,7 +56,7 @@ async function getPort() {
 
 const port = await getPort();
 
-await kirimLog(Bun.inspect.table(dataExtendJson).green);
+await kirimLog(Bun.inspect.table(dataExtendJson));
 
 const clone =
   await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
@@ -93,7 +92,7 @@ await kirimLog("[INFO] ", "db seeding ...");
 await kirimLog("[INFO] ", dbSeed.stdout.toString());
 await kirimLog("[ERROR]", dbSeed.stderr.toString());
 
-const build = await $`bunx prisma start`
+const build = await $`bun --bun run build`
   .cwd(dataExtendJson.appVersion)
   .nothrow()
   .quiet();
