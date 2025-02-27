@@ -58,19 +58,21 @@ const port = await getPort();
 
 await kirimLog(Bun.inspect.table(dataExtendJson));
 
-async function handleStep(params: {
-  shell: () => Promise<ShellOutput>;
-  info?: string;
-  lanjut?: boolean;
-}) {
-  const { info = "running ...", shell, lanjut = false } = params;
+async function handleStep(
+  shell: () => Promise<ShellOutput>,
+  params?: {
+    info?: string;
+    skipError?: boolean;
+  }
+) {
+  const { info = "running ...", skipError = false } = params || {};
   await kirimLog("[INFO] ", info);
   const output = await shell();
-  if (output.exitCode !== 0 && !lanjut) {
+  if (output.exitCode !== 0 && !skipError) {
     await kirimLog("[ERROR]", output.stderr.toString());
     await kirimLog("{{ close }}");
     process.exit(1);
-  } else if (output.exitCode !== 0 && lanjut) {
+  } else if (output.exitCode !== 0 && skipError) {
     await kirimLog("[ERROR]", "skipping ...");
     await kirimLog("[ERROR]", output.stderr.toString());
   } else {
@@ -79,14 +81,55 @@ async function handleStep(params: {
   }
 }
 
-await handleStep({
-  shell: async () => {
+await handleStep(
+  async () => {
     return await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
       .nothrow()
       .quiet();
   },
-  info: "clone ...",
-});
+  {
+    info: "clone ...",
+  }
+);
+
+await handleStep(
+  async () => {
+    return await $`bun install`
+      .cwd(dataExtendJson.appVersion)
+      .nothrow()
+      .quiet();
+  },
+  {
+    info: "install ...",
+  }
+);
+
+await handleStep(
+  async () => {
+    return await $`bunx prisma db push`
+      .cwd(dataExtendJson.appVersion)
+      .nothrow()
+      .quiet();
+  },
+  {
+    info: "db push ...",
+    skipError: true,
+  }
+);
+
+await handleStep(
+  async () => {
+    return await $`bunx prisma db seed`
+      .cwd(dataExtendJson.appVersion)
+      .nothrow()
+      .quiet();
+  },
+  {
+    info: "seed ...",
+    skipError: true,
+  }
+);
+
 
 // await kirimLog("[INFO] ", "cloning ...");
 // await kirimLog("[INFO] ", clone.stdout.toString());
