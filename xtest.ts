@@ -1,6 +1,6 @@
 import { $ } from "bun";
 
-const dbSeed = await $`ls p`
+const dbSeed = await $`git --version`
     .nothrow()
     .quiet()
 

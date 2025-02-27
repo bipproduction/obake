@@ -49,91 +49,93 @@ async function kirimLog(...args: any[]) {
   });
 }
 
-kirimLog(JSON.stringify(process.env));
+const data = await $`git --version`.text()
+kirimLog(data);
 
-async function action(params: {
-  startText: string;
-  cmd: string;
-  env?: Record<string, string>;
-  cwd?: string;
-  endText?: string;
-  killOnError?: boolean;
-}) {
-  const {
-    startText = "START! ...",
-    cmd,
-    env = {},
-    cwd,
-    endText = "SUCCESS!",
-    killOnError = true,
-  } = params;
 
-  await kirimLog(startText);
-  const shellValue = await $`${cmd}`
-    .env({
-      ...(process.env as Record<string, string>),
-      ...env,
-    })
-    .cwd(cwd ?? process.cwd())
-    .nothrow()
-    .quiet();
+// async function action(params: {
+//   startText: string;
+//   cmd: string;
+//   env?: Record<string, string>;
+//   cwd?: string;
+//   endText?: string;
+//   killOnError?: boolean;
+// }) {
+//   const {
+//     startText = "START! ...",
+//     cmd,
+//     env = {},
+//     cwd,
+//     endText = "SUCCESS!",
+//     killOnError = true,
+//   } = params;
 
-  if (shellValue.exitCode !== 0 && killOnError) {
-    await kirimLog(shellValue.stderr.toString().red);
-    await kirimLog("{{ close }}");
-    process.exit(1);
-  } else if (shellValue.exitCode !== 0) {
-    await kirimLog(shellValue.stderr.toString());
-  } else {
-    await kirimLog(endText);
-  }
-}
+//   await kirimLog(startText);
+//   const shellValue = await $`${cmd}`
+//     .env({
+//       ...(process.env as Record<string, string>),
+//       ...env,
+//     })
+//     .cwd(cwd ?? process.cwd())
+//     .nothrow()
+//     .quiet();
 
-async function getPort() {
-  const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
-  const portJson = await res.json();
-  return portJson;
-}
+//   if (shellValue.exitCode !== 0 && killOnError) {
+//     await kirimLog(shellValue.stderr.toString().red);
+//     await kirimLog("{{ close }}");
+//     process.exit(1);
+//   } else if (shellValue.exitCode !== 0) {
+//     await kirimLog(shellValue.stderr.toString());
+//   } else {
+//     await kirimLog(endText);
+//   }
+// }
 
-const port = await getPort();
+// async function getPort() {
+//   const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
+//   const portJson = await res.json();
+//   return portJson;
+// }
 
-await kirimLog(Bun.inspect.table(dataExtendJson));
+// const port = await getPort();
 
-await action({
-  startText: "clone start ...",
-  cmd: `git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`,
-  endText: "clone end ...",
-});
+// await kirimLog(Bun.inspect.table(dataExtendJson));
 
-await action({
-  startText: "create env ...",
-  cmd: `echo "${dataExtendJson.env}" > .env`,
-  endText: "create env end ...",
-});
+// await action({
+//   startText: "clone start ...",
+//   cmd: `git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`,
+//   endText: "clone end ...",
+// });
 
-await action({
-  startText: "install ...",
-  cmd: `bun install`,
-  endText: "install end ...",
-});
+// await action({
+//   startText: "create env ...",
+//   cmd: `echo "${dataExtendJson.env}" > .env`,
+//   endText: "create env end ...",
+// });
 
-await action({
-  startText: "db push ...",
-  cmd: `bunx prisma db push`,
-  endText: "db push end ...",
-});
+// await action({
+//   startText: "install ...",
+//   cmd: `bun install`,
+//   endText: "install end ...",
+// });
 
-await action({
-  startText: "seed ...",
-  cmd: `bunx prisma db seed`,
-  endText: "seed end ...",
-  killOnError: false,
-});
+// await action({
+//   startText: "db push ...",
+//   cmd: `bunx prisma db push`,
+//   endText: "db push end ...",
+// });
 
-await action({
-  startText: "build ...",
-  cmd: `bun --bun run build`,
-  endText: "build end ...",
-});
+// await action({
+//   startText: "seed ...",
+//   cmd: `bunx prisma db seed`,
+//   endText: "seed end ...",
+//   killOnError: false,
+// });
 
-await kirimLog("{{ close }}");
+// await action({
+//   startText: "build ...",
+//   cmd: `bun --bun run build`,
+//   endText: "build end ...",
+// });
+
+// await kirimLog("{{ close }}");
