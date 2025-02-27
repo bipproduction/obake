@@ -72,17 +72,21 @@ async function handleStep(params: {
     process.exit(1);
   } else if (output.exitCode !== 0 && lanjut) {
     await kirimLog("[ERROR]", "skipping ...");
+    await kirimLog("[ERROR]", output.stderr.toString());
   } else {
     await kirimLog("[INFO] ", "success");
     await kirimLog("[INFO] ", output.stdout.toString());
   }
 }
 
-const clone = async () =>
-  await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
-    .nothrow()
-    .quiet();
-await handleStep({ shell: clone, info: "clone ..." });
+await handleStep({
+  shell: async () => {
+    return await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
+      .nothrow()
+      .quiet();
+  },
+  info: "clone ...",
+});
 
 // await kirimLog("[INFO] ", "cloning ...");
 // await kirimLog("[INFO] ", clone.stdout.toString());
@@ -143,5 +147,5 @@ await handleStep({ shell: clone, info: "clone ..." });
 //   process.exit(1);
 // }
 
-// await kirimLog("{{ close }}");
-// process.exit(0);
+await kirimLog("{{ close }}");
+process.exit(0);
