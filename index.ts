@@ -68,7 +68,7 @@ const clone =
     .nothrow()
     .quiet();
 
-await kirimLog(clone.exitCode, clone.stderr.toString());
+await kirimLog(clone.exitCode, clone.stderr.toString(), "\n");
 if (clone.exitCode !== 0) process.exit(1);
 
 await kirimLog("create env ...");
@@ -80,7 +80,7 @@ const createEnv = await $`echo "${dataExtendJson.env}" > .env`
   .nothrow()
   .quiet();
 
-await kirimLog(createEnv.exitCode, createEnv.stderr.toString());
+await kirimLog(createEnv.exitCode, createEnv.stderr.toString(), "\n");
 if (createEnv.exitCode !== 0) process.exit(1);
 
 await kirimLog("install ...");
@@ -92,7 +92,7 @@ const install = await $`bun install`
   .nothrow()
   .quiet();
 
-await kirimLog(install.exitCode, install.stderr.toString());
+await kirimLog(install.exitCode, install.stderr.toString(), "\n");
 if (install.exitCode !== 0) process.exit(1);
 
 await kirimLog("db push ...");
@@ -104,10 +104,10 @@ const dbPush = await $`bunx prisma db push`
   .nothrow()
   .quiet();
 
-await kirimLog(dbPush.exitCode, dbPush.stderr.toString());
+await kirimLog(dbPush.exitCode, dbPush.stderr.toString(), "\n");
 if (dbPush.exitCode !== 0) process.exit(1);
 
-await kirimLog("start ...");
+await kirimLog("seed ...");
 const dbSeed = await $`bunx prisma db seed`
   .env({
     path: process.env.PATH as string,
@@ -116,7 +116,7 @@ const dbSeed = await $`bunx prisma db seed`
   .nothrow()
   .quiet();
 
-await kirimLog(dbSeed.exitCode, dbSeed.stderr.toString());
+await kirimLog(dbSeed.exitCode, dbSeed.stderr.toString(), "\n");
 
 await kirimLog("build ...");
 const build = await $`bun --bun run build`
@@ -127,7 +127,7 @@ const build = await $`bun --bun run build`
   .nothrow()
   .quiet();
 
-await kirimLog(build.exitCode, build.stderr.toString());
+await kirimLog(build.exitCode, build.stderr.toString(), "\n");
 if (build.exitCode !== 0) {
   await kirimLog("{{ close }}");
   process.exit(1);
