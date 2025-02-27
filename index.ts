@@ -72,5 +72,9 @@ const clone =
     })
     .text();
 
+const ls = await $`cd ${dataExtendJson.appVersion} && ls`.text();
+
 await kirimData("clone", clone);
+await kirimData("ls", ls);
+
 await kirimData("{{ close }}");
