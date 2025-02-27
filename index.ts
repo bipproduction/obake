@@ -171,10 +171,13 @@ async function kirimLog(...args: any[]) {
     await kirimLog("[INFO] ", "upload ...");
     await conn.putDirectory(`./${dataExtendJson.appVersion}/`, `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`);
     
-    await conn.execCommand(`ls `, {
+    const ls = await conn.execCommand(`ls `, {
       cwd: `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
     })
-    
+
+    await kirimLog("[INFO] ", ls.stdout.toString());
+    await kirimLog("[INFO] ",  ls.stderr.toString());
+
     await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
   } catch (error) {
     await kirimLog("[ERROR]", error);
