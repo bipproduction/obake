@@ -95,11 +95,19 @@ await kirimLog(Bun.inspect.table(dataExtendJson));
 
 const command = await $`
 git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}
+cd ${dataExtendJson.appVersion}
+echo "${dataExtendJson.env}" > .env
+bun install
+bunx prisma db push || echo "prisma db push error"
+bunx prisma db seed || echo "prisma db seed error"
+bun --bun run build
 `
 
 await kirimLog(command.exitCode);
 await kirimLog(command.stdout.toString());
 await kirimLog(command.stderr.toString());
+
+await kirimLog("{{ close }}")
 
 
 // git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}
