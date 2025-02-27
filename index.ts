@@ -56,7 +56,7 @@ async function getPort() {
 
 const port = await getPort();
 
-await kirimLog(Bun.inspect.table(dataExtendJson));
+await kirimLog(Bun.inspect.table(_.omit(dataExtendJson, ["env"])));
 
 async function handleStep(
   shell: () => Promise<ShellOutput>,
@@ -129,7 +129,6 @@ await handleStep(
     skipError: true,
   }
 );
-
 
 // await kirimLog("[INFO] ", "cloning ...");
 // await kirimLog("[INFO] ", clone.stdout.toString());

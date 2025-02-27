@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@types/crypto-js": "^4.2.2",
+    "@types/lodash": "^4.17.15",
     "@types/minimist": "^1.2.5",
     "axios": "^1.7.9",
     "colors": "^1.4.0",
@@ -23,6 +24,7 @@
     "json-schema-to-typescript": "^15.0.4",
     "json-to-ts": "^2.1.0",
     "jszip": "^3.10.1",
+    "lodash": "^4.17.21",
     "minimist": "^1.2.8"
   }
 }
