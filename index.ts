@@ -93,6 +93,16 @@ await handleStep(
   }
 );
 
+await handleStep(async () =>
+  $`echo ${dataExtendJson.env} > .env`
+    .cwd(dataExtendJson.appVersion)
+    .quiet()
+    .nothrow(),
+    {
+      info: "generate env ...",
+    }
+);
+
 await handleStep(
   async () => {
     return await $`bun install`
