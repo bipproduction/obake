@@ -9,5 +9,5 @@ function fAdmin(params: { credential: any; databaseURL: string }) {
 
   return admin;
 }
-
+ 
 export { fAdmin };

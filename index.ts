@@ -1,4 +1,4 @@
-import { $ } from "bun";
+import { $, type ShellOutput } from "bun";
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
 const argv = minimist(process.argv.splice(2));
@@ -48,6 +48,43 @@ async function kirimLog(...args: any[]) {
   });
 }
 
+async function action(params: {
+  startText: string;
+  cmd: string;
+  env?: Record<string, string>;
+  cwd?: string;
+  endText?: string;
+  killOnError?: boolean;
+}) {
+  const {
+    startText = "START! ...",
+    cmd,
+    env = {},
+    cwd,
+    endText = "SUCCESS!",
+    killOnError = true,
+  } = params;
+
+  await kirimLog(startText);
+  const shellValue = await $`${cmd}`
+    .env({
+      PATH: process.env.PATH as string,
+      ...env,
+    })
+    .cwd(cwd ?? process.cwd())
+    .nothrow()
+    .quiet();
+  if (shellValue.exitCode !== 0 && killOnError) {
+    await kirimLog(shellValue.stderr.toString());
+    await kirimLog("{{ close }}");
+    process.exit(1);
+  } else if (shellValue.exitCode !== 0) {
+    await kirimLog(shellValue.stderr.toString());
+  } else {
+    await kirimLog(endText);
+  }
+}
+
 async function getPort() {
   const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
   const portJson = await res.json();
@@ -58,79 +95,42 @@ const port = await getPort();
 
 await kirimLog(Bun.inspect.table(dataExtendJson));
 
-await kirimLog("clone start ...");
-const clone =
-  await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
-    .env({
-      path: process.env.PATH as string,
-      ...process.env,
-    })
-    .nothrow()
-    .quiet();
 
-await kirimLog(clone.exitCode, clone.stderr.toString(), "\n");
-if (clone.exitCode !== 0) process.exit(1);
+await action({
+  startText: "clone start ...",
+  cmd: `git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`,
+  endText: "clone end ...",
+});
 
-await kirimLog("create env ...");
-const createEnv = await $`echo "${dataExtendJson.env}" > .env`
-  .env({
-    path: process.env.PATH as string,
-  })
-  .cwd(dataExtendJson.appVersion)
-  .nothrow()
-  .quiet();
+await action({
+  startText: "create env ...",
+  cmd: `echo "${dataExtendJson.env}" > .env`,
+  endText: "create env end ...",
+});
 
-await kirimLog(createEnv.exitCode, createEnv.stderr.toString(), "\n");
-if (createEnv.exitCode !== 0) process.exit(1);
+await action({
+  startText: "install ...",
+  cmd: `bun install`,
+  endText: "install end ...",
+});
 
-await kirimLog("install ...");
-const install = await $`bun install`
-  .env({
-    path: process.env.PATH as string,
-  })
-  .cwd(dataExtendJson.appVersion)
-  .nothrow()
-  .quiet();
+await action({
+  startText: "db push ...",
+  cmd: `bunx prisma db push`,
+  endText: "db push end ...",
+});
 
-await kirimLog(install.exitCode, install.stderr.toString(), "\n");
-if (install.exitCode !== 0) process.exit(1);
+await action({
+  startText: "seed ...",
+  cmd: `bunx prisma db seed`,
+  endText: "seed end ...",
+  killOnError: false,
+});
 
-await kirimLog("db push ...");
-const dbPush = await $`bunx prisma db push`
-  .env({
-    path: process.env.PATH as string,
-  })
-  .cwd(dataExtendJson.appVersion)
-  .nothrow()
-  .quiet();
-
-await kirimLog(dbPush.exitCode, dbPush.stderr.toString(), "\n");
-if (dbPush.exitCode !== 0) process.exit(1);
-
-await kirimLog("seed ...");
-const dbSeed = await $`bunx prisma db seed`
-  .env({
-    path: process.env.PATH as string,
-  })
-  .cwd(dataExtendJson.appVersion)
-  .nothrow()
-  .quiet();
-
-await kirimLog(dbSeed.exitCode, dbSeed.stderr.toString(), "\n");
-
-await kirimLog("build ...");
-const build = await $`bun --bun run build`
-  .env({
-    path: process.env.PATH as string,
-  })
-  .cwd(dataExtendJson.appVersion)
-  .nothrow()
-  .quiet();
-
-await kirimLog(build.exitCode, build.stderr.toString(), "\n");
-if (build.exitCode !== 0) {
-  await kirimLog("{{ close }}");
-  process.exit(1);
-}
+await action({
+  startText: "build ...",
+  cmd: `bun --bun run build`,
+  endText: "build end ...",
+});
 
 await kirimLog("{{ close }}");
