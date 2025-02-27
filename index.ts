@@ -32,13 +32,8 @@ const extendData = CryptoJS.AES.decrypt(data_extend, key).toString(
 );
 const dataExtendJson = JSON.parse(extendData);
 
-let logData = dedent`
-================ LOG DATA =================
-${new Date().toISOString()}
-===========================================
-`;
-
-async function kirimData(...args: any[]) {
+let logData = "";
+async function kirimLog(...args: any[]) {
   const body = args.join(" ");
 
   logData += `\n${body}`;
@@ -62,9 +57,9 @@ async function getPort() {
 
 const port = await getPort();
 
-await kirimData(Bun.inspect.table(dataExtendJson));
-await kirimData("port", port);
+await kirimLog(Bun.inspect.table(dataExtendJson));
 
+await kirimLog("clone start ..."); 
 const clone =
   await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
     .env({
@@ -73,9 +68,51 @@ const clone =
     })
     .text();
 
-const ls = await $`cd ${dataExtendJson.appVersion} && ls`.text();
+await kirimLog("create env ...");
+const createEnv = await $`echo "${dataExtendJson.env}" > .env`
+    .env({
+      path: process.env.PATH as string
+    })
+    .cwd(dataExtendJson.appVersion)
+    .text();
 
-await kirimData("clone", clone);
-await kirimData("ls", ls);
+await kirimLog("install ...");
+const install = await $`bun install`
+    .env({
+      path: process.env.PATH as string
+    })
+    .cwd(dataExtendJson.appVersion)
+    .text();
 
-await kirimData("{{ close }}");
+await kirimLog(install);
+
+await kirimLog("db push ...");
+const dbPush = await $`bunx prisma db push`
+    .env({
+      path: process.env.PATH as string
+    })
+    .cwd(dataExtendJson.appVersion)
+    .nothrow()
+    .text();
+await kirimLog(dbPush);
+
+await kirimLog("start ...");
+const dbSeed = await $`bunx prisma db seed`
+    .env({
+      path: process.env.PATH as string
+    })
+    .cwd(dataExtendJson.appVersion)
+    .nothrow()
+    .text();
+await kirimLog(dbSeed);
+
+const build = await $`bun --bun run build`
+    .env({
+      path: process.env.PATH as string
+    })
+    .cwd(dataExtendJson.appVersion)
+    .nothrow()
+    .text();
+await kirimLog(build);
+
+await kirimLog("{{ close }}");
