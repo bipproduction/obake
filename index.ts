@@ -1,142 +1,134 @@
 import { $ } from "bun";
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
-const argv = minimist(process.argv.splice(2));
 
-const key = argv.key;
-const data_required = argv["data-required"];
-const data_extend = argv["data-extend"];
-if (!key) {
-  console.error("key not found");
-  process.exit(1);
+interface RequiredData {
+  firebase: { databaseURL: string };
+  githubToken: string;
 }
 
-if (!data_required) {
-  console.error("data_required not found");
-  process.exit(1);
+interface CommandResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
 }
 
-if (!data_extend) {
-  console.error("data_extend not found");
-  process.exit(1);
+// Konfigurasi dan Inisialisasi
+const argv = minimist(process.argv.slice(2));
+const { key, "data-required": dataRequired, "data-extend": dataExtend } = argv;
+
+// Utilitas untuk dekripsi dan parsing JSON
+const decryptAndParse = (encrypted: string, key: string) => {
+  const decrypted = CryptoJS.AES.decrypt(encrypted, key).toString(CryptoJS.enc.Utf8);
+  return JSON.parse(decrypted);
+};
+
+// Kelas untuk menangani logging
+class Logger {
+  private logData: string = "";
+  private readonly databaseURL: string;
+
+  constructor(databaseURL: string) {
+    this.databaseURL = databaseURL;
+  }
+
+  async log(...args: any[]) {
+    const message = args.join(" ");
+    this.logData += `\n${message}`;
+    return this;
+  }
+
+  async commit(version: string) {
+    await fetch(`${this.databaseURL}/logs.json`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [version]: this.logData }),
+    });
+  }
 }
 
-const dataRequired = CryptoJS.AES.decrypt(data_required, key).toString(
-  CryptoJS.enc.Utf8
-);
-const dataRequiredJson: RequiredData = JSON.parse(dataRequired);
+// Fungsi untuk menjalankan perintah shell dengan logging
+async function executeCommand(
+  command: any,
+  logger: Logger,
+  infoMessage: string,
+  errorMessage: string
+): Promise<void> {
+  const result = await command.nothrow().quiet();
+  
+  await logger.log("[INFO] ", infoMessage);
+  await logger.log("[INFO] ", result.stdout.toString());
+  
+  if (result.exitCode !== 0) {
+    await logger.log("[ERROR] ", errorMessage, result.stderr.toString());
+    await logger.log("{{ close }}");
+    process.exit(1);
+  }
+}
 
-const extendData = CryptoJS.AES.decrypt(data_extend, key).toString(
-  CryptoJS.enc.Utf8
-);
-const dataExtendJson = JSON.parse(extendData);
+// Fungsi utama
+async function main() {
+  // Validasi input
+  for (const [param, value] of Object.entries({ key, dataRequired, dataExtend })) {
+    if (!value) {
+      console.error(`${param} not found`);
+      process.exit(1);
+    }
+  }
 
-let logData = "";
-async function kirimLog(...args: any[]) {
-  const body = args.join(" ");
+  // Dekripsi dan parsing data
+  const requiredData: RequiredData = decryptAndParse(dataRequired, key);
+  const extendData = decryptAndParse(dataExtend, key);
+  const logger = new Logger(requiredData.firebase.databaseURL);
 
-  logData += `\n${body}`;
+  // Log data awal
+  await logger.log(Bun.inspect.table(extendData));
 
-  await fetch(`${dataRequiredJson.firebase.databaseURL}/logs.json`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
+  // Ambil port
+  const port = await (async () => {
+    const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
+    return (await res.json()).port;
+  })();
+
+  // Eksekusi perintah-perintah
+  const commands = [
+    {
+      cmd: $`git clone https://x-access-token:${requiredData.githubToken}@github.com/bipproduction/${extendData.repo}.git ${extendData.appVersion}`,
+      info: "cloning ...",
+      error: "Failed to clone repository"
     },
-    body: JSON.stringify({
-      [dataExtendJson.appVersion]: logData,
-    }),
-  });
+    {
+      cmd: $`bun install`.cwd(extendData.appVersion),
+      info: "installing ...",
+      error: "Failed to install dependencies"
+    },
+    {
+      cmd: $`bunx prisma db push`.cwd(extendData.appVersion),
+      info: "db pushing ...",
+      error: "Failed to push database"
+    },
+    {
+      cmd: $`bunx prisma db seed`.cwd(extendData.appVersion),
+      info: "db seeding ...",
+      error: "Failed to seed database"
+    },
+    {
+      cmd: $`bun --bun run build`.cwd(extendData.appVersion),
+      info: "building ...",
+      error: "Failed to build application"
+    }
+  ];
+
+  for (const { cmd, info, error } of commands) {
+    await executeCommand(cmd, logger, info, error);
+  }
+
+  (await logger.log("{{ close }}")).commit(extendData.appVersion);
+  process.exit(0);
 }
 
-async function getPort() {
-  const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
-  const portJson = await res.json();
-  return portJson;
-}
-
-const port = await getPort();
-
-await kirimLog(Bun.inspect.table(dataExtendJson));
-
-const clone =
-  await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
-    .nothrow()
-    .quiet();
-await kirimLog("[INFO] ", "cloning ...");
-await kirimLog("[INFO] ", clone.stdout.toString());
-await kirimLog("[ERROR]", clone.stderr.toString());
-
-const installDependency = await $`bun install`
-  .cwd(dataExtendJson.appVersion)
-  .nothrow()
-  .quiet();
-await kirimLog("[INFO] ", "installing ...");
-await kirimLog("[INFO] ", installDependency.stdout.toString());
-await kirimLog("[ERROR]", installDependency.stderr.toString());
-
-const dbPush = await $`bunx prisma db push`
-  .cwd(dataExtendJson.appVersion)
-  .nothrow()
-  .quiet();
-
-await kirimLog("[INFO] ", "db pushing ...");
-await kirimLog("[INFO] ", dbPush.stdout.toString());
-await kirimLog("[ERROR]", dbPush.stderr.toString());
-
-const dbSeed = await $`bunx prisma db seed`
-  .cwd(dataExtendJson.appVersion)
-  .nothrow()
-  .quiet();
-
-await kirimLog("[INFO] ", "db seeding ...");
-await kirimLog("[INFO] ", dbSeed.stdout.toString());
-await kirimLog("[ERROR]", dbSeed.stderr.toString());
-
-const build = await $`bun --bun run build`
-  .cwd(dataExtendJson.appVersion)
-  .nothrow()
-  .quiet();
-
-await kirimLog("[INFO] ", "building ...");
-await kirimLog("[INFO] ", build.stdout.toString());
-await kirimLog("[ERROR]", build.stderr.toString());
-
-// git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}
-// await action({
-//   startText: "clone start ...",
-//   shell: $`git --version && git status`,
-//   endText: "clone end ...",
-// });
-
-// await action({
-//   startText: "create env ...",
-//   cmd: `echo "${dataExtendJson.env}" > .env`,
-//   endText: "create env end ...",
-// });
-
-// await action({
-//   startText: "install ...",
-//   cmd: `bun install`,
-//   endText: "install end ...",
-// });
-
-// await action({
-//   startText: "db push ...",
-//   cmd: `bunx prisma db push`,
-//   endText: "db push end ...",
-// });
-
-// await action({
-//   startText: "seed ...",
-//   cmd: `bunx prisma db seed`,
-//   endText: "seed end ...",
-//   killOnError: false,
-// });
-
-// await action({
-//   startText: "build ...",
-//   cmd: `bun --bun run build`,
-//   endText: "build end ...",
-// });
-
-await kirimLog("{{ close }}");
+// Jalankan aplikasi
+main().catch(async (error) => {
+  console.error("Unexpected error:", error);
+  process.exit(1);
+});
