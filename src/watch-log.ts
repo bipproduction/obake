@@ -1,5 +1,5 @@
 import { fAdmin } from "./fadmin";
-import getDataPenting from "./get-data-penting";
+import getRequiredData from "./get-required-data";
 import minimist from "minimist";
 
 const argv = minimist(process.argv.splice(2));
@@ -9,7 +9,7 @@ if (!argv.key) {
   process.exit(1);
 }
 
-const dataPenting = await getDataPenting(argv.key);
+const dataPenting = await getRequiredData(argv.key);
 const admin = fAdmin({
   credential: dataPenting.firebase.credential,
   databaseURL: dataPenting.firebase.databaseURL,

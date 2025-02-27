@@ -1,6 +1,4 @@
-import {AES, enc} from 'crypto-js'
+import minimist from "minimist";
+const argv = minimist(process.argv.splice(2))
 
-const c = AES.encrypt("ini data string", "makuro")
-console.log(c.toString())
-
-console.log(AES.decrypt(c.toString(), "makuro").toString(enc.Utf8))
+console.log(argv)

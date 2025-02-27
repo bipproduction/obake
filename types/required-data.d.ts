@@ -1,6 +1,5 @@
-interface DataPenting {
+interface RequiredData {
   firebase: Firebase;
-  envApp: string;
   githubToken: string;
   ssh: Ssh;
 }

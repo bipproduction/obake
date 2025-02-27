@@ -2,22 +2,35 @@ import { file } from "bun";
 import CryptoJS from "crypto-js";
 import dedent from "dedent";
 import minimist from "minimist";
-import path from "path";
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
+const data_required = argv["data-required"];
+const data_extend = argv["data-extend"];
 if (!key) {
   console.error("key not found");
   process.exit(1);
 }
 
-const encryptedData = await file(
-  path.resolve(process.cwd(), "data-penting.txt")
-).text();
-const dataString = CryptoJS.AES.decrypt(encryptedData, key).toString(
+if (!data_required) {
+  console.error("data_required not found");
+  process.exit(1);
+}
+
+if (!data_extend) {
+  console.error("data_extend not found");
+  process.exit(1);
+}
+
+const dataRequired = CryptoJS.AES.decrypt(data_required, key).toString(
   CryptoJS.enc.Utf8
 );
-const dataPenting: DataPenting = JSON.parse(dataString);
+const dataRequiredJson: RequiredData = JSON.parse(dataRequired);
+
+const extendData = CryptoJS.AES.decrypt(data_extend, key).toString(
+  CryptoJS.enc.Utf8
+);
+const dataExtendJson = JSON.parse(extendData);
 
 let logData = dedent`
 ================ LOG DATA =================
@@ -29,7 +42,7 @@ async function kirimData(...args: any[]) {
 
   logData += `\n${body}`;
 
-  await fetch(`${dataPenting.firebase.databaseURL}/logs.json`, {
+  await fetch(`${dataRequiredJson.firebase.databaseURL}/logs.json`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -47,7 +60,6 @@ async function getPort() {
 }
 
 const port = await getPort();
-const actionData = await file("action-data.txt").text();
 
-await kirimData("action data", actionData);
+await kirimData("action data", dataExtendJson);
 await kirimData("port", port);

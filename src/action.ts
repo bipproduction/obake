@@ -1,11 +1,18 @@
-import { fAdmin } from "./fadmin";
-import getDataPenting from "./get-data-penting";
 import minimist from "minimist";
+import { fAdmin } from "./fadmin";
+import getRequiredData from "./get-required-data";
+import { file } from "bun";
+import path from "path";
+import CryptoJS from "crypto-js";
 const argv = minimist(process.argv.splice(2));
 
 const OWNER = "bipproduction";
 const REPO = "obake";
 const WORKFLOW_ID = "mainv2.yml";
+
+const encrypted_data_require = await file(
+  path.resolve(process.cwd(), "data-required.txt")
+).text();
 
 const key = argv.key;
 if (!key) {
@@ -13,7 +20,21 @@ if (!key) {
   process.exit(1);
 }
 
-const dataPenting = await getDataPenting(key);
+function convertDataExtend(params: {
+  data: { [key: string]: any };
+  key: string;
+}) {
+  const { data, key } = params;
+  const encrypt = CryptoJS.AES.encrypt(JSON.stringify(data), key).toString();
+  return encrypt;
+}
+
+const dataExtend = {
+  name: "app name",
+  version: "app version",
+  description: "app description",
+};
+const encryptedDataExtend = convertDataExtend({ data: dataExtend, key });
 
 const res = await fetch(
   `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
@@ -27,6 +48,8 @@ const res = await fetch(
       ref: "main",
       inputs: {
         key,
+        data_required: encrypted_data_require,
+        data_extend: encryptedDataExtend,
       },
     }),
   }
@@ -35,6 +58,7 @@ const res = await fetch(
 const dataText = await res.text();
 console.log(dataText);
 
+const dataPenting = await getRequiredData(key);
 const admin = fAdmin({
   credential: dataPenting.firebase.credential,
   databaseURL: dataPenting.firebase.databaseURL,
@@ -42,5 +66,5 @@ const admin = fAdmin({
 
 const db = admin.database();
 db.ref("/logs").on("value", (snapshot) => {
-  console.log(snapshot.val());
+  console.log(snapshot.val()?.log ?? "");
 });
