@@ -69,13 +69,14 @@ async function action(params: {
   await kirimLog(startText);
   const shellValue = await $`${cmd}`
     .env({
-      PATH: process.env.PATH as string,
+      NODE_ENV: "production",
       ...process.env,
       ...env,
     })
     .cwd(cwd ?? process.cwd())
     .nothrow()
     .quiet();
+    
   if (shellValue.exitCode !== 0 && killOnError) {
     await kirimLog(shellValue.stderr.toString().red);
     await kirimLog("{{ close }}");
