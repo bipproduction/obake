@@ -1,177 +1,147 @@
-import { $, ShellPromise } from "bun";
+import { $, type ShellOutput } from "bun";
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
+const argv = minimist(process.argv.splice(2));
 
-// Definisi tipe data
-interface RequiredData {
-  firebase: {
-    databaseURL: string;
-  };
-  githubToken: string;
+const key = argv.key;
+const data_required = argv["data-required"];
+const data_extend = argv["data-extend"];
+if (!key) {
+  console.error("key not found");
+  process.exit(1);
 }
 
-interface ExtendData {
-  appVersion: string;
-  repo: string;
+if (!data_required) {
+  console.error("data_required not found");
+  process.exit(1);
 }
 
-// Memperbaiki error TypeScript dengan mendeklarasikan tipe global
-declare global {
-  var requiredData: RequiredData | undefined;
-  var extendData: ExtendData | undefined;
+if (!data_extend) {
+  console.error("data_extend not found");
+  process.exit(1);
 }
 
-// Variabel untuk menyimpan log
+const dataRequired = CryptoJS.AES.decrypt(data_required, key).toString(
+  CryptoJS.enc.Utf8
+);
+const dataRequiredJson: RequiredData = JSON.parse(dataRequired);
+
+const extendData = CryptoJS.AES.decrypt(data_extend, key).toString(
+  CryptoJS.enc.Utf8
+);
+const dataExtendJson = JSON.parse(extendData);
+
 let logData = "";
-
-// Fungsi untuk mengirim log
-async function logMessage(...args: any[]) {
+async function kirimLog(...args: any[]) {
   const body = args.join(" ");
+
   logData += `\n${body}`;
 
-  if (!global.requiredData || !global.extendData) return; // Hindari error saat data belum diinisialisasi
-
-  await fetch(`${global.requiredData.firebase.databaseURL}/logs.json`, {
+  await fetch(`${dataRequiredJson.firebase.databaseURL}/logs.json`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      [global.extendData.appVersion]: logData,
+      [dataExtendJson.appVersion]: logData,
     }),
   });
 }
 
-// Dekripsi dan parsing data
-function decryptAndParse<T>(encryptedData: string, key: string): T {
-  const decrypted = CryptoJS.AES.decrypt(encryptedData, key).toString(
-    CryptoJS.enc.Utf8
-  );
-  return JSON.parse(decrypted);
-}
-
-// Validasi argumen dan memproses
-function validateAndProcessArgs() {
-  const argv = minimist(process.argv.splice(2));
-
-  const key = argv.key;
-  const dataRequired = argv["data-required"];
-  const dataExtend = argv["data-extend"];
-
-  if (!key) throw new Error("key not found");
-  if (!dataRequired) throw new Error("data_required not found");
-  if (!dataExtend) throw new Error("data_extend not found");
-
-  return {
-    key,
-    dataRequired,
-    dataExtend,
-  };
-}
-
-// Mendapatkan port dari API
 async function getPort() {
-  try {
-    const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
-    return await res.json();
-  } catch (error) {
-    throw new Error(
-      `Failed to get port: ${error instanceof Error ? error.message : String(error)}`
-    );
+  const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
+  const portJson = await res.json();
+  return portJson;
+}
+
+const port = await getPort();
+
+await kirimLog(Bun.inspect.table(dataExtendJson));
+
+async function handleStep(params: {
+  shell: () => Promise<ShellOutput>;
+  info?: string;
+  lanjut?: boolean;
+}) {
+  const { info = "running ...", shell, lanjut = false } = params;
+  await kirimLog("[INFO] ", info);
+  const output = await shell();
+  if (output.exitCode !== 0 && !lanjut) {
+    await kirimLog("[ERROR]", output.stderr.toString());
+    await kirimLog("{{ close }}");
+    process.exit(1);
+  } else if (output.exitCode !== 0 && lanjut) {
+    await kirimLog("[ERROR]", "skipping ...");
+  } else {
+    await kirimLog("[INFO] ", "success");
+    await kirimLog("[INFO] ", output.stdout.toString());
   }
 }
 
-// Fungsi untuk mengeksekusi langkah dengan logging
-async function executeStep(
-  stepName: string,
-  command: ShellPromise,
-  options: { cwd?: string }
-) {
-  await logMessage(`[INFO] ${stepName} starting...`);
-
-  const result = await command
-    .cwd(options.cwd ?? process.cwd())
+const clone = async () =>
+  await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
     .nothrow()
     .quiet();
+await handleStep({ shell: clone, info: "clone ..." });
 
-  await logMessage(`[INFO] ${result.stdout.toString()}`);
+// await kirimLog("[INFO] ", "cloning ...");
+// await kirimLog("[INFO] ", clone.stdout.toString());
+// if (clone.exitCode !== 0) {
+//   await kirimLog("[ERROR]", clone.stderr.toString());
+//   await kirimLog("{{ close }}");
+//   process.exit(1);
+// }
 
-  if (result.exitCode !== 0) {
-    throw new Error(`${stepName} failed: ${result.stderr.toString()}`);
-  }
+// const installDependency = await $`bun install`
+//   .cwd(dataExtendJson.appVersion)
+//   .nothrow()
+//   .quiet();
+// await kirimLog("[INFO] ", "installing ...");
+// await kirimLog("[INFO] ", installDependency.stdout.toString());
+// if (installDependency.exitCode !== 0) {
+//   await kirimLog("[ERROR]", installDependency.stderr.toString());
+//   await kirimLog("{{ close }}");
+//   process.exit(1);
+// }
 
-  await logMessage(`[INFO] ${stepName} completed successfully`);
-  return result;
-}
+// const dbPush = await $`bunx prisma db push`
+//   .cwd(dataExtendJson.appVersion)
+//   .nothrow()
+//   .quiet();
 
-// Menjalankan langkah-langkah deployment
-async function runDeploymentSteps(
-  requiredData: RequiredData,
-  extendData: ExtendData
-) {
-  // Simpan data ke global untuk digunakan oleh fungsi logMessage
-  global.requiredData = requiredData;
-  global.extendData = extendData;
+// await kirimLog("[INFO] ", "db pushing ...");
+// await kirimLog("[INFO] ", dbPush.stdout.toString());
+// if (dbPush.exitCode !== 0) {
+//   await kirimLog("[ERROR]", dbPush.stderr.toString());
+//   await kirimLog("{{ close }}");
+//   process.exit(1);
+// }
 
-  // Clone repository
-  await executeStep(
-    "git clone",
-    $`git clone https://x-access-token:${requiredData.githubToken}@github.com/bipproduction/${extendData.repo}.git ${extendData.appVersion}`,
-    { cwd: "." }
-  );
+// const dbSeed = await $`bunx prisma db seed`
+//   .cwd(dataExtendJson.appVersion)
+//   .nothrow()
+//   .quiet();
 
-  // Install dependencies
-  await executeStep("install dependencies", $`bun install`, {
-    cwd: extendData.appVersion,
-  });
+// await kirimLog("[INFO] ", "db seeding ...");
+// await kirimLog("[INFO] ", dbSeed.stdout.toString());
+// if (dbSeed.exitCode !== 0) {
+//   await kirimLog("[ERROR]", dbSeed.stderr.toString());
+//   await kirimLog("{{ close }}");
+//   process.exit(1);
+// }
 
-  // Database push
-  await executeStep("db push", $`bunx prisma db push`, {
-    cwd: extendData.appVersion,
-  });
+// const build = await $`bun --bun run build`
+//   .cwd(dataExtendJson.appVersion)
+//   .nothrow()
+//   .quiet();
 
-  // Database seed
-  await executeStep("db seed", $`bunx prisma db seed`, {
-    cwd: extendData.appVersion,
-  });
+// await kirimLog("[INFO] ", "building ...");
+// await kirimLog("[INFO] ", build.stdout.toString());
+// if (build.exitCode !== 0) {
+//   await kirimLog("[ERROR]", build.stderr.toString());
+//   await kirimLog("{{ close }}");
+//   process.exit(1);
+// }
 
-  // Build
-  await executeStep("build", $`bun --bun run build`, {
-    cwd: extendData.appVersion,
-  });
-}
-
-// Fungsi utama
-async function main() {
-  try {
-    // Validasi dan memproses argumen
-    const { key, dataRequired, dataExtend } = validateAndProcessArgs();
-
-    // Dekripsi dan parsing data
-    const requiredData = decryptAndParse<RequiredData>(dataRequired, key);
-    const extendData = decryptAndParse<ExtendData>(dataExtend, key);
-
-    // Menampilkan informasi
-    await logMessage(Bun.inspect.table(extendData));
-
-    // Mendapatkan port
-    const port = await getPort();
-
-    // Menjalankan proses deployment
-    await runDeploymentSteps(requiredData, extendData);
-
-    // Sukses
-    await logMessage("{{ close }}");
-    process.exit(0);
-  } catch (error) {
-    await logMessage(
-      "[ERROR]",
-      error instanceof Error ? error.message : String(error)
-    );
-    await logMessage("{{ close }}");
-    process.exit(1);
-  }
-}
-
-// Jalankan program
-main();
+// await kirimLog("{{ close }}");
+// process.exit(0);
