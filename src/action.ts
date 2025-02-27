@@ -35,7 +35,7 @@ const date = dayjs().format("YYYY-MM-DD_HH-mm-ss");
 
 const id = `${branch}_${date}`;
 const dataExtend = {
-  id,
+  appVersion: id,
   name: "sistem desa mandiri",
   repo: "sistem-desa-mandiri",
   branch,

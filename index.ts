@@ -1,7 +1,7 @@
-import { file } from "bun";
 import CryptoJS from "crypto-js";
 import dedent from "dedent";
 import minimist from "minimist";
+import { $ } from "bun";
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
@@ -63,3 +63,13 @@ const port = await getPort();
 
 await kirimData("data extend", JSON.stringify(dataExtendJson, null, 2));
 await kirimData("port", port);
+
+const clone =
+  await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
+    .env({
+      path: process.env.PATH as string,
+      ...process.env,
+    })
+    .text();
+
+await kirimData("clone", clone);
