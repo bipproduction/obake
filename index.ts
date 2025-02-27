@@ -49,6 +49,8 @@ async function kirimLog(...args: any[]) {
   });
 }
 
+kirimLog(JSON.stringify(process.env));
+
 async function action(params: {
   startText: string;
   cmd: string;
@@ -68,10 +70,6 @@ async function action(params: {
 
   await kirimLog(startText);
   const shellValue = await $`${cmd}`
-    .env({
-      NODE_ENV: "production",
-      ...process.env,
-    })
     .cwd(cwd ?? process.cwd())
     .nothrow()
     .quiet();
