@@ -62,7 +62,7 @@ async function getPort() {
 
 const port = await getPort();
 
-await kirimData(Bun.inspect.table(dataRequiredJson));
+await kirimData(Bun.inspect.table(dataExtendJson));
 await kirimData("port", port);
 
 const clone =
