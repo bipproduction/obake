@@ -49,37 +49,6 @@ async function kirimLog(...args: any[]) {
   });
 }
 
-async function action(params: {
-  startText: string;
-  shell: ShellPromise;
-  env?: Record<string, string>;
-  cwd?: string;
-  endText?: string;
-  killOnError?: boolean;
-}) {
-  const {
-    startText = "START! ...",
-    shell,
-    env = {},
-    cwd,
-    endText = "SUCCESS!",
-    killOnError = true,
-  } = params;
-
-  await kirimLog(startText);
-  const shellValue = await shell?.nothrow().quiet();
-
-  if (shellValue.exitCode !== 0 && killOnError) {
-    await kirimLog(shellValue.stderr.toString().red);
-    await kirimLog("{{ close }}");
-    process.exit(1);
-  } else if (shellValue.exitCode !== 0) {
-    await kirimLog(shellValue.stderr.toString());
-  } else {
-    await kirimLog(endText);
-  }
-}
-
 async function getPort() {
   const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
   const portJson = await res.json();
@@ -94,8 +63,44 @@ const clone =
   await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
     .nothrow()
     .quiet();
+await kirimLog("[INFO] ", "cloning ...");
 await kirimLog("[INFO] ", clone.stdout.toString());
 await kirimLog("[ERROR]", clone.stderr.toString());
+
+const installDependency = await $`bun install`
+  .cwd(dataExtendJson.appVersion)
+  .nothrow()
+  .quiet();
+await kirimLog("[INFO] ", "installing ...");
+await kirimLog("[INFO] ", installDependency.stdout.toString());
+await kirimLog("[ERROR]", installDependency.stderr.toString());
+
+const dbPush = await $`bunx prisma db push`
+  .cwd(dataExtendJson.appVersion)
+  .nothrow()
+  .quiet();
+
+await kirimLog("[INFO] ", "db pushing ...");
+await kirimLog("[INFO] ", dbPush.stdout.toString());
+await kirimLog("[ERROR]", dbPush.stderr.toString());
+
+const dbSeed = await $`bunx prisma db seed`
+  .cwd(dataExtendJson.appVersion)
+  .nothrow()
+  .quiet();
+
+await kirimLog("[INFO] ", "db seeding ...");
+await kirimLog("[INFO] ", dbSeed.stdout.toString());
+await kirimLog("[ERROR]", dbSeed.stderr.toString());
+
+const build = await $`bunx prisma start`
+  .cwd(dataExtendJson.appVersion)
+  .nothrow()
+  .quiet();
+
+await kirimLog("[INFO] ", "building ...");
+await kirimLog("[INFO] ", build.stdout.toString());
+await kirimLog("[ERROR]", build.stderr.toString());
 
 // git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}
 // await action({
