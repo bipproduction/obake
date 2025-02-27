@@ -4,6 +4,7 @@ import getRequiredData from "./get-required-data";
 import { file } from "bun";
 import path from "path";
 import CryptoJS from "crypto-js";
+import dayjs from "dayjs";
 const argv = minimist(process.argv.splice(2));
 
 const OWNER = "bipproduction";
@@ -29,11 +30,19 @@ function convertDataExtend(params: {
   return encrypt;
 }
 
+const branch = "main";
+const date = dayjs().format("YYYY-MM-DD_HH-mm-ss");
+
+const id = `${branch}_${date}`;
 const dataExtend = {
-  name: "app name",
-  version: "app version",
-  description: "app description",
+  id,
+  name: "sistem desa mandiri",
+  repo: "sistem-desa-mandiri",
+  branch,
+  namespace: "darmasaba",
+  date,
 };
+
 const encryptedDataExtend = convertDataExtend({ data: dataExtend, key });
 
 const res = await fetch(
@@ -65,6 +74,8 @@ const admin = fAdmin({
 });
 
 const db = admin.database();
+db.ref("/logs").child("log").set("loading ...");
 db.ref("/logs").on("value", (snapshot) => {
+  console.clear();
   console.log(snapshot.val()?.log ?? "");
 });

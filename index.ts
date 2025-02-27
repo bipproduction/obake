@@ -61,5 +61,5 @@ async function getPort() {
 
 const port = await getPort();
 
-await kirimData("data extend", JSON.stringify(dataExtendJson));
+await kirimData("data extend", JSON.stringify(dataExtendJson, null, 2));
 await kirimData("port", port);

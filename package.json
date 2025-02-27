@@ -16,6 +16,7 @@
     "@types/minimist": "^1.2.5",
     "axios": "^1.7.9",
     "crypto-js": "^4.2.0",
+    "dayjs": "^1.11.13",
     "dedent": "^1.5.3",
     "firebase-admin": "^13.1.0",
     "json-schema-to-typescript": "^15.0.4",
