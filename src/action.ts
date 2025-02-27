@@ -30,14 +30,15 @@ function convertDataExtend(params: {
   return encrypt;
 }
 
+const repo = "sistem-desa-mandiri";
 const branch = "main";
 const date = dayjs().format("YYYY-MM-DD_HH-mm-ss");
 
-const id = `${branch}_${date}`;
+const id = `${repo}_${branch}_${date}`;
 const dataExtend = {
   appVersion: id,
   name: "sistem desa mandiri",
-  repo: "sistem-desa-mandiri",
+  repo,
   branch,
   namespace: "darmasaba",
   date,
@@ -74,13 +75,12 @@ const admin = fAdmin({
 });
 
 const db = admin.database();
-db.ref("/logs").child("log").set("loading ...");
-db.ref("/logs").on("value", (snapshot) => {
-  const dataString = snapshot.val()?.log ?? "";
+db.ref("/logs").child(id).set("loading ...");
+db.ref("/logs").child(id).on("value", (snapshot) => {
+  const dataString = snapshot.val();
   console.clear();
   console.log(dataString);
-  if (dataString.includes("{{ close }}")) {
-    db.ref("/logs").off();
+  if (dataString?.includes("{{ close }}")) {
     process.exit(0);
   }
 });

@@ -37,6 +37,7 @@ let logData = dedent`
 ${new Date().toISOString()}
 ===========================================
 `;
+
 async function kirimData(...args: any[]) {
   const body = args.join(" ");
 
@@ -48,7 +49,7 @@ async function kirimData(...args: any[]) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      log: logData,
+      [dataExtendJson.appVersion]: logData,
     }),
   });
 }
