@@ -5,6 +5,7 @@ import { file } from "bun";
 import path from "path";
 import CryptoJS from "crypto-js";
 import dayjs from "dayjs";
+import dedent from "dedent";
 const argv = minimist(process.argv.splice(2));
 
 const OWNER = "bipproduction";
@@ -33,6 +34,9 @@ function convertDataExtend(params: {
 const repo = "sistem-desa-mandiri";
 const branch = "main";
 const date = dayjs().format("YYYY-MM-DD_HH-mm-ss");
+const env = dedent`
+NODE_ENV=production
+`;
 
 const id = `${repo}_${branch}_${date}`;
 const dataExtend = {
@@ -42,6 +46,7 @@ const dataExtend = {
   branch,
   namespace: "darmasaba",
   date,
+  env,
 };
 
 const encryptedDataExtend = convertDataExtend({ data: dataExtend, key });
