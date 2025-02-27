@@ -49,7 +49,9 @@ async function kirimLog(...args: any[]) {
   });
 }
 
-const data = await $`git status`.text()
+
+kirimLog("START! ...");
+const data = await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git`.text()
 kirimLog(data);
 
 
