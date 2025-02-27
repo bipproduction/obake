@@ -161,15 +161,15 @@ async function kirimLog(...args: any[]) {
   });
 
   await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
-  
+
 })()
   .then(async () => {
-    await kirimLog("[INFO] ", "Proccess Finished ...");
+    await kirimLog("[INFO-FINISH] ", "Proccess Finished ...");
     await kirimLog("{{ close }}");
     process.exit(0);
   })
   .catch(async (error) => {
-    await kirimLog("[ERROR]", JSON.stringify(error));
+    await kirimLog("[ERROR-FINAL]", JSON.stringify(error));
     await kirimLog("{{ close }}");
     process.exit(1);
   });
