@@ -4,7 +4,7 @@ import path from "path";
 
 async function getRequiredData(key: string) {
   const encryptedData = await file(
-    path.resolve(process.cwd(), "data-penting.txt")
+    path.resolve(process.cwd(), "data-required.txt")
   ).text();
   const dataString = CryptoJS.AES.decrypt(encryptedData, key).toString(
     CryptoJS.enc.Utf8
