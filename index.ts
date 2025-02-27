@@ -70,6 +70,10 @@ async function action(params: {
 
   await kirimLog(startText);
   const shellValue = await $`${cmd}`
+    .env({
+      ...(process.env as Record<string, string>),
+      ...env,
+    })
     .cwd(cwd ?? process.cwd())
     .nothrow()
     .quiet();
