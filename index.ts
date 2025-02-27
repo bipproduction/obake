@@ -89,7 +89,7 @@ async function kirimLog(...args: any[]) {
 
   await handleStep(
     async () => {
-      return await $`git clone https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
+      return await $`git clone --branch ${dataExtendJson.branch} https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
         .nothrow()
         .quiet();
     },
@@ -164,6 +164,17 @@ async function kirimLog(...args: any[]) {
       privateKeyPath: "~/.ssh/id_rsa",
     });
 
+    // create release dir
+    await kirimLog("[INFO] ", "create release dir ...");
+    await conn.mkdir(`/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`);
+    
+    await kirimLog("[INFO] ", "upload ...");
+    await conn.putDirectory(`./${dataExtendJson.appVersion}/`, `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`);
+    
+    await conn.execCommand(`ls `, {
+      cwd: `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
+    })
+    
     await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
   } catch (error) {
     await kirimLog("[ERROR]", error);

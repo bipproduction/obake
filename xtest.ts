@@ -6,7 +6,11 @@ const conn = await ssh.connect({
   privateKeyPath: "/Users/bip/.ssh/id_rsa",
 });
 
-const { stdout } = await conn.execCommand("ls -la");
+await conn.putDirectory(".", "/var/www/projects/obake/releases/obake-0.0.1");
+
+const { stdout } = await conn.execCommand("ls -la", {
+    cwd: "/var/www/projects/"
+});
 console.log(stdout);
 
 console.log("connected: ", conn.isConnected());

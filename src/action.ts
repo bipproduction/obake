@@ -31,6 +31,8 @@ function convertDataExtend(params: {
   return encrypt;
 }
 
+const name = "darmasaba";
+const namespace = "darmasaba-prod";
 const repo = "sistem-desa-mandiri";
 const branch = "main";
 const date = dayjs().format("YYYY-MM-DD_HH-mm-ss");
@@ -46,10 +48,10 @@ WIBU_REALTIME_KEY="padahariminggukuturutayahkekotanaikdelmanistimewakududukdimuk
 const id = `${repo}_${branch}_${date}`;
 const dataExtend = {
   appVersion: id,
-  name: "sistem desa mandiri",
+  name,
   repo,
   branch,
-  namespace: "darmasaba",
+  namespace,
   date,
   env,
 };
@@ -86,11 +88,13 @@ const admin = fAdmin({
 
 const db = admin.database();
 db.ref("/logs").child(id).set("loading ...");
-db.ref("/logs").child(id).on("value", (snapshot) => {
-  const dataString = snapshot.val();
-  console.clear();
-  console.log(dataString);
-  if (dataString?.includes("{{ close }}")) {
-    process.exit(0);
-  }
-});
+db.ref("/logs")
+  .child(id)
+  .on("value", (snapshot) => {
+    const dataString = snapshot.val();
+    console.clear();
+    console.log(dataString);
+    if (dataString?.includes("{{ close }}")) {
+      process.exit(0);
+    }
+  });
