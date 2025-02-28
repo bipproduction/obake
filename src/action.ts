@@ -95,16 +95,19 @@ async function watchLog() {
     .child("log")
     .on("value", (snapshot) => {
       const dataString = snapshot.val();
-      console.clear();
-      console.log(dataString);
-      if (dataString?.includes("{{ close }}")) {
-        process.exit(0);
+      if (typeof dataString === "object") {
+        for (const key in dataString) {
+          console.log(dataString[key]);
+        }
+      } else {
+        console.log(dataString);
       }
     });
 }
 
 async function upadateStatus() {
-  db.ref("/logs").child(dataExtend.namespace).child("log").set("loading ...");
+  db.ref("/logs").child(dataExtend.namespace).child("log").remove();
+  db.ref("/logs").child(dataExtend.namespace).child("log").push("loading ...");
   db.ref("/logs").child(dataExtend.namespace).child("isRunning").set(true);
 }
 
@@ -122,5 +125,6 @@ async function upadateStatus() {
 
   await dispatch();
   await upadateStatus();
+
   await watchLog();
 })();

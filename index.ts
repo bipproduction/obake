@@ -193,7 +193,6 @@ async function handleStep(
     {
       recursive: true,
       async tick(localFile, remoteFile, error) {
-        await kirimLog("[INFO] ", `upload ${localFile} -> ${remoteFile}`);
         if (error) {
           await kirimLog("[ERROR] ", error);
           throw error;
