@@ -93,6 +93,15 @@ async function handleStep(
 
   await handleStep(
     async () => {
+      return await $`ls -la`;
+    },
+    {
+      info: "ls ...",
+    }
+  );
+
+  await handleStep(
+    async () => {
       return await $`git clone --branch ${dataExtendJson.branch} https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
         .nothrow()
         .quiet();
@@ -176,7 +185,7 @@ async function handleStep(
   // check dir
   await handleStep(
     async () => {
-      return await $`ls -a`.cwd(dataExtendJson.appVersion).nothrow().quiet();
+      return await $`ls `.cwd(dataExtendJson.appVersion);
     },
     {
       info: "check dir ...",
@@ -230,7 +239,9 @@ async function handleStep(
     await kirimLog("[INFO-FINAL] ", "Proccess Finished ...");
   })
   .catch(async (error) => {
+    await updateStatusRunning(false);
     await kirimLog("[ERROR-FINAL]", JSON.stringify(error));
+    process.exit(1);
   })
   .finally(async () => {
     await updateStatusRunning(false);
