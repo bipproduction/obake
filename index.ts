@@ -66,22 +66,13 @@ async function handleStep(
   shell: () => Promise<ShellOutput>,
   params?: {
     info?: string;
-    skipError?: boolean;
   }
 ) {
-  const { info = "running ...", skipError = false } = params || {};
-  await kirimLog("[INFO] ", info);
+  const { info = "running ..." } = params || {};
+  await kirimLog("[INFO ] ", info);
   const output = await shell();
-  if (output.exitCode !== 0 && !skipError) {
-    await kirimLog("[ERROR]", output.stderr.toString());
-    throw new Error(output.stderr.toString());
-  } else if (output.exitCode !== 0 && skipError) {
-    await kirimLog("[ERROR]", "skipping ...");
-    await kirimLog("[ERROR]", output.stderr.toString());
-  } else {
-    await kirimLog("[INFO] ", "success");
-    await kirimLog("[INFO] ", output.stdout.toString());
-  }
+  await kirimLog("[INFO ] ", output.stdout.toString());
+  await kirimLog("[ERROR] ", output.stderr.toString());
 }
 
 (async () => {
@@ -93,7 +84,7 @@ async function handleStep(
 
   await handleStep(
     async () => {
-      return await $`tree -a -I node_modules -I .next -L 1`;
+      return await $`tree -a -I node_modules -I .next -L 1`.nothrow();
     },
     {
       info: "tree sebelum clone ...",
@@ -102,9 +93,7 @@ async function handleStep(
 
   await handleStep(
     async () => {
-      return await $`git clone --branch ${dataExtendJson.branch} https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
-        .nothrow()
-        .quiet();
+      return await $`git clone --branch ${dataExtendJson.branch} https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`;
     },
     {
       info: "clone ...",
@@ -113,7 +102,9 @@ async function handleStep(
 
   await handleStep(
     async () => {
-      return await $`tree -a -I node_modules -L 1`.cwd(dataExtendJson.appVersion);
+      return await $`tree -a -I node_modules -L 1`
+        .cwd(dataExtendJson.appVersion)
+        .nothrow();
     },
     {
       info: "tree setelah clone ...",
@@ -122,10 +113,7 @@ async function handleStep(
 
   await handleStep(
     async () =>
-      $`echo ${dataExtendJson.env} > .env`
-        .cwd(dataExtendJson.appVersion)
-        .quiet()
-        .nothrow(),
+      $`echo ${dataExtendJson.env} > .env`.cwd(dataExtendJson.appVersion),
     {
       info: "generate env ...",
     }
@@ -133,10 +121,7 @@ async function handleStep(
 
   await handleStep(
     async () => {
-      return await $`bun install`
-        .cwd(dataExtendJson.appVersion)
-        .nothrow()
-        .quiet();
+      return await $`bun install`.cwd(dataExtendJson.appVersion);
     },
     {
       info: "install ...",
@@ -145,14 +130,10 @@ async function handleStep(
 
   await handleStep(
     async () => {
-      return await $`bunx prisma db push`
-        .cwd(dataExtendJson.appVersion)
-        .nothrow()
-        .quiet();
+      return await $`bunx prisma db push`.cwd(dataExtendJson.appVersion);
     },
     {
       info: "db push ...",
-      skipError: true,
     }
   );
 
@@ -160,19 +141,16 @@ async function handleStep(
     async () => {
       return await $`bunx prisma db seed`
         .cwd(dataExtendJson.appVersion)
-        .nothrow()
-        .quiet();
+        .nothrow();
     },
     {
       info: "seed ...",
-      skipError: true,
     }
   );
 
   // handle build
   await handleStep(
-    async () =>
-      $`bun --bun run build`.quiet().nothrow().cwd(dataExtendJson.appVersion),
+    async () => $`bun --bun run build`.cwd(dataExtendJson.appVersion),
     {
       info: "run build ...",
     }
@@ -183,8 +161,7 @@ async function handleStep(
     async () => {
       return await $`rm -rf .git node_modules`
         .cwd(dataExtendJson.appVersion)
-        .nothrow()
-        .quiet();
+        .nothrow();
     },
     {
       info: "cleaning ...",
@@ -194,7 +171,9 @@ async function handleStep(
   // check dir
   await handleStep(
     async () => {
-      return await $`tree -a -I node_modules -L 1`.cwd(dataExtendJson.appVersion);
+      return await $`tree -a -I node_modules -L 1`
+        .cwd(dataExtendJson.appVersion)
+        .nothrow();
     },
     {
       info: "tree sesudah build ...",
@@ -237,6 +216,17 @@ async function handleStep(
 
     await kirimLog("[INFO] ", installProd.stdout.toString());
     await kirimLog("[INFO] ", installProd.stderr.toString());
+
+    // create symlink
+    await kirimLog("[INFO] ", "create symlink ...");
+    const symlink = await conn.execCommand(
+      `ln -s /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion} /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/current`,
+    );
+
+    await kirimLog("[INFO] ", symlink.stdout.toString());
+    await kirimLog("[INFO] ", symlink.stderr.toString());
+
+   
   } catch (error) {
     await kirimLog("[ERROR-FINAL]", JSON.stringify(error));
     throw error;
