@@ -2,7 +2,7 @@ import minimist from "minimist";
 import { fAdmin } from "./fadmin";
 import getRequiredData from "./get-required-data";
 import { file } from "bun";
-import path from "path";
+import path, { resolve } from "path";
 import CryptoJS from "crypto-js";
 import dayjs from "dayjs";
 import dedent from "dedent";
@@ -90,17 +90,30 @@ const admin = fAdmin({
 const db = admin.database();
 
 async function watchLog() {
+  await new Promise((resolve) => {
+    db.ref("/logs")
+      .child(dataExtend.namespace)
+      .child("log")
+      .on("value", (snapshot) => {
+        const dataString = snapshot.val();
+        if (typeof dataString === "object") {
+          for (const key in dataString) {
+            console.log(dataString[key]);
+          }
+        } else {
+          console.log(dataString);
+        }
+        resolve(true);
+      });
+  });
+
   db.ref("/logs")
     .child(dataExtend.namespace)
-    .child("log")
+    .child("isRunning")
     .on("value", (snapshot) => {
-      const dataString = snapshot.val();
-      if (typeof dataString === "object") {
-        for (const key in dataString) {
-          console.log(dataString[key]);
-        }
-      } else {
-        console.log(dataString);
+      const isRunning = snapshot.val();
+      if (!isRunning) {
+        process.exit(0);
       }
     });
 }
