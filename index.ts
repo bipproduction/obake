@@ -241,9 +241,13 @@ async function handleStep(
   .catch(async (error) => {
     await updateStatusRunning(false);
     await kirimLog("[ERROR-FINAL]", JSON.stringify(error));
-    process.exit(1);
+    setTimeout(() => {
+      process.exit(1);
+    }, 2000);
   })
   .finally(async () => {
     await updateStatusRunning(false);
-    process.exit(0);
+    setTimeout(() => {
+      process.exit(0);
+    }, 2000);
   });
