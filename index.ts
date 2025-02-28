@@ -74,8 +74,7 @@ async function handleStep(
   const output = await shell();
   if (output.exitCode !== 0 && !skipError) {
     await kirimLog("[ERROR]", output.stderr.toString());
-    await kirimLog("{{ close }}");
-    process.exit(1);
+    throw new Error(output.stderr.toString());
   } else if (output.exitCode !== 0 && skipError) {
     await kirimLog("[ERROR]", "skipping ...");
     await kirimLog("[ERROR]", output.stderr.toString());
@@ -177,10 +176,7 @@ async function handleStep(
   // check dir
   await handleStep(
     async () => {
-      return await $`ls -la`
-        .cwd(dataExtendJson.appVersion)
-        .nothrow()
-        .quiet();
+      return await $`ls -a`.cwd(dataExtendJson.appVersion).nothrow().quiet();
     },
     {
       info: "check dir ...",
