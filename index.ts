@@ -93,10 +93,10 @@ async function handleStep(
 
   await handleStep(
     async () => {
-      return await $`ls -la`;
+      return await $`tree -a -I node_modules -I .next -L 1`;
     },
     {
-      info: "ls ...",
+      info: "tree ...",
     }
   );
 
@@ -185,10 +185,10 @@ async function handleStep(
   // check dir
   await handleStep(
     async () => {
-      return await $`ls `.cwd(dataExtendJson.appVersion);
+      return await $`tree -a -I node_modules -I .next -L 1`.cwd(dataExtendJson.appVersion);
     },
     {
-      info: "check dir ...",
+      info: "tree ...",
     }
   );
 
@@ -241,13 +241,10 @@ async function handleStep(
   .catch(async (error) => {
     await updateStatusRunning(false);
     await kirimLog("[ERROR-FINAL]", JSON.stringify(error));
-    setTimeout(() => {
-      process.exit(1);
-    }, 2000);
   })
   .finally(async () => {
     await updateStatusRunning(false);
     setTimeout(() => {
       process.exit(0);
-    }, 2000);
+    }, 3000);
   });
