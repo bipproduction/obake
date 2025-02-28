@@ -3,6 +3,7 @@ import CryptoJS from "crypto-js";
 import minimist from "minimist";
 import _ from "lodash";
 import { NodeSSH } from "node-ssh";
+import { fAdmin } from "@/fadmin";
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
@@ -33,37 +34,24 @@ const extendData = CryptoJS.AES.decrypt(data_extend, key).toString(
 );
 const dataExtendJson = JSON.parse(extendData);
 
+const admin = fAdmin({
+  credential: dataRequiredJson.firebase.credential,
+  databaseURL: dataRequiredJson.firebase.databaseURL,
+});
+
+const db = admin.database();
+
 // save rsa
 await Bun.write("~/.ssh/id_rsa", dataRequiredJson.ssh.key);
 
-let logData = "";
 async function kirimLog(...args: any[]) {
   const body = args.join(" ");
-
-  logData += `\n${body}`;
-
-  await fetch(
-    `${dataRequiredJson.firebase.databaseURL}/logs/${dataExtendJson.namespace}/log.json`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: logData,
-    }
-  );
+  db.ref("/logs").child(dataExtendJson.namespace).child("log").push(body);
 }
 
 async function updateStatusRunning(isRunning: boolean = true) {
-  await fetch(
-    `${dataRequiredJson.firebase.databaseURL}/logs/${dataExtendJson.namespace}/isRunning.json`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: isRunning ? "true" : "false",
-    }
+  db.ref("/logs").child(dataExtendJson.namespace).child("isRunning").set(
+    isRunning
   );
 }
 

@@ -115,6 +115,7 @@ async function upadateStatus() {
     .child("isRunning")
     .once("value");
   if (isRunning.val()) {
+    console.log("already running ...");
     await watchLog();
     return;
   }
