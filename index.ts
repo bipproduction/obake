@@ -96,7 +96,7 @@ async function handleStep(
       return await $`tree -a -I node_modules -I .next -L 1`;
     },
     {
-      info: "tree ...",
+      info: "tree sebelum clone ...",
     }
   );
 
@@ -108,6 +108,15 @@ async function handleStep(
     },
     {
       info: "clone ...",
+    }
+  );
+
+  await handleStep(
+    async () => {
+      return await $`tree -a -I node_modules -L 1`.cwd(dataExtendJson.appVersion);
+    },
+    {
+      info: "tree setelah clone ...",
     }
   );
 
@@ -185,10 +194,10 @@ async function handleStep(
   // check dir
   await handleStep(
     async () => {
-      return await $`tree -a -I node_modules -I .next -L 1`.cwd(dataExtendJson.appVersion);
+      return await $`tree -a -I node_modules -L 1`.cwd(dataExtendJson.appVersion);
     },
     {
-      info: "tree ...",
+      info: "tree sesudah build ...",
     }
   );
 
