@@ -50,9 +50,10 @@ async function kirimLog(...args: any[]) {
 }
 
 async function updateStatusRunning(isRunning: boolean = true) {
-  db.ref("/logs").child(dataExtendJson.namespace).child("isRunning").set(
-    isRunning
-  );
+  db.ref("/logs")
+    .child(dataExtendJson.namespace)
+    .child("isRunning")
+    .set(isRunning);
 }
 
 async function getPort() {
@@ -173,43 +174,61 @@ async function handleStep(
     }
   );
 
-  const ssh = new NodeSSH();
-  const conn = await ssh.connect({
-    host: dataRequiredJson.ssh.host,
-    username: dataRequiredJson.ssh.user,
-    privateKeyPath: "~/.ssh/id_rsa",
-  });
-
-  // create release dir
-  await kirimLog("[INFO] ", "create release dir ...");
-  await conn.mkdir(
-    `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`
-  );
-
-  await kirimLog("[INFO] ", "upload ...");
-  await conn.putDirectory(
-    `./${dataExtendJson.appVersion}/`,
-    `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
+  // check dir
+  await handleStep(
+    async () => {
+      return await $`ls -la`
+        .cwd(dataExtendJson.appVersion)
+        .nothrow()
+        .quiet();
+    },
     {
-      recursive: true,
-      async tick(localFile, remoteFile, error) {
-        if (error) {
-          await kirimLog("[ERROR] ", error);
-          throw error;
-        }
-      },
+      info: "check dir ...",
     }
   );
 
-  await kirimLog("[INFO] ", "ls ...");
-  const ls = await conn.execCommand(`ls `, {
-    cwd: `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
-  });
+  const ssh = new NodeSSH();
+  try {
+    const conn = await ssh.connect({
+      host: dataRequiredJson.ssh.host,
+      username: dataRequiredJson.ssh.user,
+      privateKeyPath: "~/.ssh/id_rsa",
+    });
 
-  await kirimLog("[INFO] ", ls.stdout.toString());
-  await kirimLog("[INFO] ", ls.stderr.toString());
+    // create release dir
+    await kirimLog("[INFO] ", "create release dir ...");
+    await conn.mkdir(
+      `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`
+    );
 
-  await kirimLog("[INFO] ", "is ssh connected", conn.isConnected());
+    await kirimLog("[INFO] ", "upload ...");
+    await conn.putDirectory(
+      `./${dataExtendJson.appVersion}/`,
+      `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
+      {
+        recursive: true,
+        async tick(localFile, remoteFile, error) {
+          if (error) {
+            await kirimLog("[ERROR] ", error);
+            throw error;
+          }
+        },
+      }
+    );
+
+    await kirimLog("[INFO] ", "bun install production");
+    const installProd = await conn.execCommand(`bun install --production`, {
+      cwd: `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
+    });
+
+    await kirimLog("[INFO] ", installProd.stdout.toString());
+    await kirimLog("[INFO] ", installProd.stderr.toString());
+  } catch (error) {
+    await kirimLog("[ERROR-FINAL]", JSON.stringify(error));
+    throw error;
+  } finally {
+    ssh.dispose();
+  }
 })()
   .then(async () => {
     await kirimLog("[INFO-FINAL] ", "Proccess Finished ...");
