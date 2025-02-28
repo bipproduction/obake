@@ -190,12 +190,12 @@ async function handleStep(
 
     // create release dir
     await kirimLog("[INFO] ", "create release dir ...");
-    await conn.mkdir(
+    const mkdir = await conn.mkdir(
       `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`
     );
 
     await kirimLog("[INFO] ", "upload ...");
-    await conn.putDirectory(
+    const upload = await conn.putDirectory(
       `./${dataExtendJson.appVersion}/`,
       `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
       {
@@ -208,25 +208,27 @@ async function handleStep(
         },
       }
     );
+    await kirimLog("[INFO] ", upload ? "Upload success" : "Upload failed");
 
-    await kirimLog("[INFO] ", "bun install production");
     const installProd = await conn.execCommand(`bun install --production`, {
       cwd: `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
     });
-
     await kirimLog("[INFO] ", installProd.stdout.toString());
     await kirimLog("[INFO] ", installProd.stderr.toString());
+
+    const treeServer = await conn.execCommand(`tree -L 1`, {
+      cwd: `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
+    });
+    await kirimLog("[INFO] ", treeServer.stdout.toString());
+    await kirimLog("[INFO] ", treeServer.stderr.toString());
 
     // create symlink
     await kirimLog("[INFO] ", "create symlink ...");
     const symlink = await conn.execCommand(
-      `ln -s /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion} /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/current`,
+      `ln -s /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion} /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/current`
     );
-
     await kirimLog("[INFO] ", symlink.stdout.toString());
     await kirimLog("[INFO] ", symlink.stderr.toString());
-
-   
   } catch (error) {
     await kirimLog("[ERROR-FINAL]", JSON.stringify(error));
     throw error;
