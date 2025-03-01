@@ -10,6 +10,15 @@ const namespace = "darmasaba-prod";
 const repo = "sistem-desa-mandiri";
 const branch = "main";
 const date = dayjs().format("YYYY-MM-DD_HH-mm-ss");
+
+const TOKEN = process.env.TOKEN!;
+
+if (!TOKEN) {
+  console.error("TOKEN not found");
+  process.exit(1);
+}
+
+// Escape special characters in the `env` field
 const env = dedent`
 DATABASE_URL="postgresql://bip:Production_123@localhost:5433/sistem_desa_mandiri?schema=public"
 URL="http://localhost:3000"
@@ -17,7 +26,9 @@ WS_APIKEY="eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImlkIjoiY20wdnQ4bzFrMDAwMDEyenE1eXl1
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=BBC6ml3Ro9eBdhSq_DPx0zQ0hBH4NvOeJbFXdQy3cZ-UyJ2m6V1RyO1XD9B08kshTdVNoGZeqBDKBPzpWgwRBNY
 VAPID_PRIVATE_KEY=p9GfSmCRJe1_dzwKqe29HF81mTE2JwlrW4cXINnkI7c
 WIBU_REALTIME_KEY="padahariminggukuturutayahkekotanaikdelmanistimewakududukdimuka"
-`;
+`
+  .replace(/"/g, '\\"')
+  .replace(/\n/g, "\\n"); // Escape double quotes and newlines
 
 const id = `${repo}_${branch}_${date}`;
 const dataExtend = {
@@ -30,26 +41,42 @@ const dataExtend = {
   env,
 };
 
-const TOKEN = process.env.TOKEN;
+const encyptData = CryptoJS.AES.encrypt(
+  JSON.stringify(dataExtend),
+  process.env.TOKEN!
+);
+
 async function dispatch() {
-  const res = await fetch(
-    `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `token ${TOKEN}`,
-        Accept: "application/vnd.github.v3+json",
-      },
-      body: JSON.stringify({
-        ref: "main",
-        inputs: {
-          data: JSON.stringify(dataExtend),
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `token ${TOKEN}`,
+          Accept: "application/vnd.github.v3+json",
         },
-      }),
+        body: JSON.stringify({
+          ref: "main",
+          inputs: {
+            data: JSON.stringify(dataExtend),
+          },
+        }),
+      }
+    );
+
+    // Log response details
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Request failed with status ${res.status}: ${errorText}`);
+      return;
     }
-  );
-  const dataText = await res.text();
-  console.log(dataText);
+
+    const dataText = await res.text();
+    console.log("Dispatch successful:", dataText);
+  } catch (error) {
+    console.error("An error occurred while dispatching the workflow:", error);
+  }
 }
 
 dispatch();
