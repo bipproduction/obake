@@ -47,11 +47,11 @@ await Bun.write("~/.ssh/id_rsa", dataRequiredJson.ssh.key);
 
 async function kirimLog(...args: any[]) {
   const body = args.join(" ");
-  db.ref("/logs").child(dataExtendJson.namespace).child("log").push(body);
+  await db.ref("/logs").child(dataExtendJson.namespace).child("log").push(body);
 }
 
 async function updateStatusRunning(isRunning: boolean = true) {
-  db.ref("/logs")
+  await db.ref("/logs")
     .child(dataExtendJson.namespace)
     .child("isRunning")
     .set(isRunning);
@@ -305,7 +305,5 @@ async function handleStep(
   })
   .finally(async () => {
     await updateStatusRunning(false);
-    setTimeout(() => {
-      process.exit(0);
-    }, 3000);
+    process.exit(0);
   });
