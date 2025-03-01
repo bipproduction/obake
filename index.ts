@@ -193,7 +193,7 @@ async function handleStep(
   );
 
   const filePath = os.tmpdir() + "/ssh_key.tmp";
-  await fs.writeFile(filePath, dataExtendJson.ssh.key, {mode: "0600"});
+  await fs.writeFile(filePath, dataExtendJson.ssh.key);
 
   // create dir on the server
   const cmdCreateDir = dedent`
@@ -231,8 +231,8 @@ async function handleStep(
   })
   .catch(async (error) => {
     console.log(error);
-    await updateStatusRunning(false);
     await kirimLog("[ERROR-FINAL]", JSON.stringify(error));
+    await updateStatusRunning(false);
   })
   .finally(async () => {
     await kirimLog("[FINAL]", "Proccess Finished ...");

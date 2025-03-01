@@ -1,0 +1,24 @@
+name: ngetest bun global
+on:
+  workflow_dispatch:
+    inputs:
+      key:
+        description: "env"
+        required: true
+        default: "null"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: save key
+        run: |
+          echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ls -la ~/.ssh
+
+      - name: connect server
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{secrets.VPS_USER}}@${{secrets.VPS_HOST}} -t "ls -la ~"
