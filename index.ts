@@ -2,7 +2,7 @@ import { fAdmin } from "@/fadmin";
 import { $, type ShellOutput } from "bun";
 import CryptoJS from "crypto-js";
 import dedent from "dedent";
-import _ from "lodash";
+import _, { initial } from "lodash";
 import minimist from "minimist";
 import fs from "fs/promises";
 const argv = minimist(process.argv.splice(2));
@@ -183,10 +183,17 @@ async function handleStep(
     }
   );
 
-  await fs.mkdir("~/.ssh", { recursive: true });
-  await fs.writeFile("~/.ssh/id_rsa", dataRequiredJson.ssh.key, "utf8");
-  await fs.writeFile("~/.ssh/id_rsa.pub", dataRequiredJson.ssh.key, "utf8");
-  await fs.writeFile("~/.ssh/config", "", "utf8");
+  const cmdRsa = dedent`
+  mkdir -p ~/.ssh
+  chmod 700 ~/.ssh
+  cat <<EOF > ~/.ssh/id_rsa
+  ${dataRequiredJson.ssh.key}
+  EOF
+  chmod 600 ~/.ssh/id_rsa
+  `;
+  await handleStep(async () => $`${cmdRsa}`, {
+    info: "create rsa ...",
+  });
 
   // create dir on the server
   const cmdCreateDir = dedent`
