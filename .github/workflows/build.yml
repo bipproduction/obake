@@ -18,7 +18,7 @@ jobs:
 
       - name: check data
         run: |
-          echo "NANE: ${{ toJson(inputs.data).name }}"
+          echo "DATA: ${{ toJson(inputs.data) }}"
 
       # Step 2: Save SSH key and set permissions
       - name: Save SSH key
