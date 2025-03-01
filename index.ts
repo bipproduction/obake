@@ -183,15 +183,15 @@ async function handleStep(
     }
   );
 
-  const cmdRsa = dedent`
+
+  await handleStep(async () => $`
   mkdir -p ~/.ssh
   chmod 700 ~/.ssh
   cat <<EOF > ~/.ssh/id_rsa
   ${dataRequiredJson.ssh.key}
   EOF
   chmod 600 ~/.ssh/id_rsa
-  `;
-  await handleStep(async () => $`${cmdRsa}`, {
+  `, {
     info: "create rsa ...",
   });
 

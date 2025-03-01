@@ -131,7 +131,7 @@ async function upadateStatus() {
     .child("isRunning")
     .once("value");
   if (isRunning.val()) {
-    console.log("already running ...");
+    db.ref("/logs").child(dataExtend.namespace).child("log").push("already running ...");
     await watchLog();
     return;
   }
