@@ -4,7 +4,6 @@ import CryptoJS from "crypto-js";
 import dedent from "dedent";
 import _ from "lodash";
 import minimist from "minimist";
-import { NodeSSH } from "node-ssh";
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
@@ -68,13 +67,14 @@ async function handleStep(
   }
 ) {
   const { info = "running ..." } = params || {};
-  await kirimLog("[INFO ] ", info);
+  await kirimLog("[RUN    ] ", info);
   const output = await shell();
   if (output.exitCode === 0) {
-    await kirimLog("[INFO ] ", output.stdout.toString());
+    await kirimLog("[SUCCESS] ", info);
+    await kirimLog("[INFO   ] ", output.stdout.toString());
     return;
   }
-  await kirimLog("[ERROR] ", output.stderr.toString());
+  await kirimLog("[ERROR  ] ", output.stderr.toString());
 }
 
 (async () => {
@@ -182,9 +182,17 @@ async function handleStep(
     }
   );
 
+
+  const cmdCreateSSHKey = dedent`
+  mkdir -p ~/.ssh
+  echo "${dataRequiredJson.ssh.key}" > ~/.ssh/id_rsa
+  chmod 600 ~/.ssh/id_rsa
+  chmod 644 ~/.ssh/id_rsa.pub
+  `
+
   await handleStep(
     async () => {
-      return await $`mkdir -p ~/.ssh && echo "${dataRequiredJson.ssh.key}" > ~/.ssh/id_rsa`
+      return await $`${cmdCreateSSHKey}`
         .cwd(dataExtendJson.appVersion)
     },
     {
