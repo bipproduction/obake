@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import dedent from "dedent";
+import CryptoJS from "crypto-js";
 
 const OWNER = "bipproduction";
 const REPO = "obake";
@@ -59,7 +60,7 @@ async function dispatch() {
         body: JSON.stringify({
           ref: "main",
           inputs: {
-            data: JSON.stringify(dataExtend),
+            data: JSON.stringify(encyptData),
           },
         }),
       }
