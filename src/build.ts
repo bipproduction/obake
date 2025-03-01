@@ -60,7 +60,7 @@ async function dispatch() {
         body: JSON.stringify({
           ref: "main",
           inputs: {
-            data: JSON.stringify(encyptData),
+            data: encyptData,
           },
         }),
       }
