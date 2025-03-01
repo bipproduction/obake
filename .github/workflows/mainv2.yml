@@ -51,4 +51,5 @@ jobs:
       - name: jalankan
         run: |
           bun install
-          bun run index.ts --key "${{ inputs.key }}" --data-required "${{ inputs.data_required }}" --data-extend "${{ inputs.data_extend }}"
+          bun run index_test.ts
+          # bun run index.ts --key "${{ inputs.key }}" --data-required "${{ inputs.data_required }}" --data-extend "${{ inputs.data_extend }}"
