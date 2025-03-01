@@ -15,6 +15,7 @@ jobs:
 
       - name: save key
         run: |
+          mkdir -p ~/.ssh
           echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ls -la ~/.ssh
