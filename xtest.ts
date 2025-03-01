@@ -1,5 +1,12 @@
-import path from "path";
-import os from "os";
-import fs from "fs/promises";
+import {$} from 'bun'
 
-console.log(os.tmpdir()+"/apa")
+const {stdout, stderr , exitCode} = await $`echo "test"`.cwd(process.cwd())
+
+console.log(stdout.toString())
+console.log(stderr.toString())
+console.log(exitCode)
+
+
+$.prototype.uppercase = function() {
+    return this.stdout.toString().toUpperCase()
+}

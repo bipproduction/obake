@@ -11,6 +11,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: bip
+          POSTGRES_PASSWORD: Production_123
+          POSTGRES_DB: db
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       # Step 1: Checkout code
       - name: Checkout code
@@ -21,10 +35,6 @@ jobs:
 
       - name: run install
         run: bun install
-
-      - name: check data
-        run: |
-          bun run index.ts --data ${{ inputs.data }} --key ${{ secrets.WIBU_GIT_TOKEN }}
 
       # Step 2: Save SSH key and set permissions
       - name: Save SSH key
@@ -41,6 +51,10 @@ jobs:
           ssh-keyscan ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts  # Set appropriate permissions for known_hosts
           echo "Known hosts added successfully!"
+
+      - name: check data
+        run: |
+          bun run index.ts --data ${{ inputs.data }} --key ${{ secrets.WIBU_GIT_TOKEN }}
 
       # Step 4: Connect to the server
       - name: Connect to server
