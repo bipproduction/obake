@@ -194,7 +194,9 @@ async function handleStep(
     EOF
     chmod 600 ~/.id_rsa
   `;
-  await handleStep(async () => $`${cmdCreateRsa}`, {
+  await handleStep(async () => $`${cmdCreateRsa}`.env({
+    ...process.env as Record<string, string>,
+  }), {
     info: "create rsa ...",
   });
 
@@ -206,7 +208,9 @@ async function handleStep(
     async () =>
       $`ssh -i ~/.id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdCreateDir}"`.cwd(
         process.cwd()
-      ),
+      ).env({
+       ...process.env as Record<string, string>,
+      }),
     {
       info: "create dir on the server ...",
     }
