@@ -19,6 +19,9 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: run install
+        run: bun install
+
       - name: check data
         run: |
           echo "${{ toJson(inputs.data) }}" > data.json
