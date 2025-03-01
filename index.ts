@@ -2,9 +2,8 @@ import { fAdmin } from "@/fadmin";
 import { $, type ShellOutput } from "bun";
 import CryptoJS from "crypto-js";
 import dedent from "dedent";
-import _, { initial } from "lodash";
+import _ from "lodash";
 import minimist from "minimist";
-import fs from "fs/promises";
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
@@ -69,13 +68,18 @@ async function handleStep(
 ) {
   const { info = "running ..." } = params || {};
   await kirimLog("[RUN    ] ", info);
-  const output = await shell();
-  if (output.exitCode === 0) {
-    await kirimLog("[SUCCESS] ", info);
-    await kirimLog("[INFO   ] ", output.stdout.toString());
-    return;
+  try {
+    const output = await shell();
+    if (output.exitCode === 0) {
+      await kirimLog("[SUCCESS] ", info);
+      await kirimLog("[INFO   ] ", output.stdout.toString());
+    } else {
+      throw new Error(output.stderr.toString());
+    }
+  } catch (error) {
+    await kirimLog("[ERROR  ] ", error || "Unknown error");
+    throw error; // Re-throw untuk memastikan proses berhenti jika gagal
   }
-  await kirimLog("[ERROR  ] ", output.stderr.toString());
 }
 
 (async () => {
@@ -184,13 +188,15 @@ async function handleStep(
   );
 
   const cmdCreateRsa = dedent`
-  mkdir -p ~/.ssh
-  chmod 700 ~/.ssh
-  cat <<EOF > ~/.ssh/id_rsa
-  ${dataRequiredJson.ssh.key}
-  EOF
-  chmod 600 ~/.ssh/id_rsa
-  `
+    mkdir -p ~/.ssh
+    chmod 700 ~/.ssh
+    cat <<EOF > ~/.ssh/id_rsa
+    ${dataRequiredJson.ssh.key}
+    EOF
+    chmod 600 ~/.ssh/id_rsa
+    ssh-keyscan ${dataRequiredJson.ssh.host} >> ~/.ssh/known_hosts
+    chmod 644 ~/.ssh/known_hosts
+  `;
   await handleStep(async () => $`${cmdCreateRsa}`, {
     info: "create rsa ...",
   });
@@ -223,34 +229,6 @@ async function handleStep(
       info: "upload dir ...",
     }
   );
-
-  // // install on the server
-  // const cmdInstall = dedent`
-  // cd /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}
-  // bun install
-  // `;
-  // await handleStep(
-  //   async () => {
-  //     return await $`ssh -i ~/.ssh/id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdInstall}"`.nothrow();
-  //   },
-  //   {
-  //     info: "install on the server ...",
-  //   }
-  // );
-
-  // // create symlink
-  // const cmdSymLink = dedent`
-  // ln -s /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion} \
-  // /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/current
-  // `;
-  // await handleStep(
-  //   async () => {
-  //     return await $`ssh -i ~/.ssh/id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdSymLink}"`.nothrow();
-  //   },
-  //   {
-  //     info: "create symlink ...",
-  //   }
-  // );
 })()
   .then(async () => {
     await kirimLog("[INFO-FINAL] ", "Proccess Finished ...");
