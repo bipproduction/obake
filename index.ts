@@ -42,9 +42,6 @@ const admin = fAdmin({
 
 const db = admin.database();
 
-// save rsa
-await Bun.write("~/.ssh/id_rsa", dataRequiredJson.ssh.key);
-
 async function kirimLog(...args: any[]) {
   const body = args.join(" ");
   await db.ref("/logs").child(dataExtendJson.namespace).child("log").push(body);
@@ -185,6 +182,17 @@ async function handleStep(
     }
   );
 
+  await handleStep(
+    async () => {
+      return await $`echo "${dataRequiredJson.ssh.key}" > ~/.ssh/id_rsa`
+        .cwd(dataExtendJson.appVersion)
+        .nothrow();
+    },
+    {
+      info: "create ssh key ...",
+    }
+  );
+
   // create dir on the server
   const cmdCreateDir = dedent`
   mkdir -p /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}
@@ -251,5 +259,7 @@ async function handleStep(
   })
   .finally(async () => {
     await updateStatusRunning(false);
-    process.exit(0);
+    setTimeout(() => {
+      process.exit(0);
+    }, 3000);
   });
