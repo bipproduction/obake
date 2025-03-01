@@ -204,97 +204,41 @@ async function handleStep(
  `;
   await handleStep(
     async () => {
-      return await $`${cmdUploadDir}`.nothrow();
+      return await $`${cmdUploadDir}`;
     },
     {
       info: "upload dir ...",
     }
   );
 
-  // install on the server
-  const cmdInstall = dedent`
-  cd /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}
-  bun install
-  `;
-  await handleStep(
-    async () => {
-      return await $`ssh -i ~/.ssh/id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdInstall}"`.nothrow();
-    },
-    {
-      info: "install on the server ...",
-    }
-  );
+  // // install on the server
+  // const cmdInstall = dedent`
+  // cd /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}
+  // bun install
+  // `;
+  // await handleStep(
+  //   async () => {
+  //     return await $`ssh -i ~/.ssh/id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdInstall}"`.nothrow();
+  //   },
+  //   {
+  //     info: "install on the server ...",
+  //   }
+  // );
 
-  // create symlink
-  const cmdSymLink = dedent`
-  ln -s /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion} \
-  /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/current
-  `;
-  await handleStep(
-    async () => {
-      return await $`ssh -i ~/.ssh/id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdSymLink}"`.nothrow();
-    },
-    {
-      info: "create symlink ...",
-    }
-  );
+  // // create symlink
+  // const cmdSymLink = dedent`
+  // ln -s /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion} \
+  // /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/current
+  // `;
+  // await handleStep(
+  //   async () => {
+  //     return await $`ssh -i ~/.ssh/id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdSymLink}"`.nothrow();
+  //   },
+  //   {
+  //     info: "create symlink ...",
+  //   }
+  // );
 
-  // const ssh = new NodeSSH();
-  // try {
-  //   const conn = await ssh.connect({
-  //   const conn = await ssh.connect({
-  //     host: dataRequiredJson.ssh.host,
-  //     username: dataRequiredJson.ssh.user,
-  //     privateKeyPath: "~/.ssh/id_rsa",
-  //   });
-
-  //   // create release dir
-  //   await kirimLog("[INFO] ", "create release dir ...");
-  //   const mkdir = await conn.mkdir(
-  //     `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`
-  //   );
-
-  //   await kirimLog("[INFO] ", "upload ...");
-  //   const upload = await conn.putDirectory(
-  //     `./${dataExtendJson.appVersion}/`,
-  //     `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
-  //     {
-  //       recursive: true,
-  //       async tick(localFile, remoteFile, error) {
-  //         if (error) {
-  //           await kirimLog("[ERROR] ", error);
-  //           throw error;
-  //         }
-  //       },
-  //     }
-  //   );
-  //   await kirimLog("[INFO] ", upload ? "Upload success" : "Upload failed");
-
-  //   const installProd = await conn.execCommand(`bun install --production`, {
-  //     cwd: `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
-  //   });
-  //   await kirimLog("[INFO] ", installProd.stdout.toString());
-  //   await kirimLog("[INFO] ", installProd.stderr.toString());
-
-  //   const treeServer = await conn.execCommand(`tree -L 1`, {
-  //     cwd: `/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}`,
-  //   });
-  //   await kirimLog("[INFO] ", treeServer.stdout.toString());
-  //   await kirimLog("[INFO] ", treeServer.stderr.toString());
-
-  //   // create symlink
-  //   await kirimLog("[INFO] ", "create symlink ...");
-  //   const symlink = await conn.execCommand(
-  //     `ln -s /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion} /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/current`
-  //   );
-  //   await kirimLog("[INFO] ", symlink.stdout.toString());
-  //   await kirimLog("[INFO] ", symlink.stderr.toString());
-  // } catch (error) {
-  //   await kirimLog("[ERROR-FINAL]", JSON.stringify(error));
-  //   throw error;
-  // } finally {
-  //   ssh.dispose();
-  // }
 })()
   .then(async () => {
     await kirimLog("[INFO-FINAL] ", "Proccess Finished ...");
