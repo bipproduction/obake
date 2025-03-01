@@ -1,21 +1,8 @@
-// import { NodeSSH } from "node-ssh";
-// const ssh = new NodeSSH();
-// const conn = await ssh.connect({
-//   host: "wibudev.com",
-//   username: "root",
-//   privateKeyPath: "/Users/bip/.ssh/id_rsa",
-// });
+import { $ } from "bun";
+import dedent from "dedent";
 
-// await conn.putDirectory(".", "/var/www/projects/obake/releases/obake-0.0.1");
-
-// const { stdout } = await conn.execCommand("ls -la", {
-//     cwd: "/var/www/projects/"
-// });
-// console.log(stdout);
-
-// console.log("connected: ", conn.isConnected());
-// process.exit(0);
-
-import { $ } from 'bun';
-const apa = await $`tree`.text()
-console.log(apa)
+const apaCmd = dedent`
+scp --help
+`
+const apa = await $`ssh -i ~/.ssh/id_rsa root@wibudev.com -t "${apaCmd}"`;
+console.log(apa.text());
