@@ -3,7 +3,7 @@ name: ngetest bun global
 on:
   workflow_dispatch:
     inputs:
-      key:
+      data:
         description: "env"
         required: true
         default: "null"
@@ -15,6 +15,10 @@ jobs:
       # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: check data
+        run: |
+          echo "NANE: ${{ toJson(inputs.data).name }}"
 
       # Step 2: Save SSH key and set permissions
       - name: Save SSH key
@@ -36,4 +40,4 @@ jobs:
       - name: Connect to server
         run: |
           echo "Attempting to connect to VPS..."
-          ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} -o StrictHostKeyChecking=no -t "ls -la ~"
+        #   ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} -o StrictHostKeyChecking=no -t "ls -la ~"
