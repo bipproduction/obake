@@ -24,7 +24,7 @@ jobs:
 
       - name: check data
         run: |
-          echo "${{ toJson(inputs.data) }}" > data.json
+          echo "${{ inputs.data }}" > data.json
           bun run index.ts
 
       # Step 2: Save SSH key and set permissions
