@@ -16,9 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
       - name: check data
         run: |
-          echo "DATA: ${{ toJson(inputs.data) }}"
+          echo "${{ toJson(inputs.data) }}" > data.json
+          bun run index.ts
 
       # Step 2: Save SSH key and set permissions
       - name: Save SSH key
