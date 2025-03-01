@@ -184,9 +184,8 @@ async function handleStep(
 
   await handleStep(
     async () => {
-      return await $`echo "${dataRequiredJson.ssh.key}" > ~/.ssh/id_rsa`
+      return await $`mkdir -p ~/.ssh && echo "${dataRequiredJson.ssh.key}" > ~/.ssh/id_rsa`
         .cwd(dataExtendJson.appVersion)
-        .nothrow();
     },
     {
       info: "create ssh key ...",
