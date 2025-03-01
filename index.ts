@@ -183,15 +183,15 @@ async function handleStep(
     }
   );
 
-
-  await handleStep(async () => $`
+  const cmdCreateRsa = dedent`
   mkdir -p ~/.ssh
   chmod 700 ~/.ssh
   cat <<EOF > ~/.ssh/id_rsa
   ${dataRequiredJson.ssh.key}
   EOF
   chmod 600 ~/.ssh/id_rsa
-  `, {
+  `
+  await handleStep(async () => $`${cmdCreateRsa}`, {
     info: "create rsa ...",
   });
 
@@ -256,12 +256,14 @@ async function handleStep(
     await kirimLog("[INFO-FINAL] ", "Proccess Finished ...");
   })
   .catch(async (error) => {
+    console.log(error);
     await updateStatusRunning(false);
     await kirimLog("[ERROR-FINAL]", JSON.stringify(error));
   })
   .finally(async () => {
+    await kirimLog("[FINAL]", "Proccess Finished ...");
     await updateStatusRunning(false);
     setTimeout(() => {
       process.exit(0);
-    }, 3000);
+    }, 5000);
   });
