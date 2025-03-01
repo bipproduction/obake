@@ -4,6 +4,7 @@ import CryptoJS from "crypto-js";
 import dedent from "dedent";
 import _ from "lodash";
 import minimist from "minimist";
+import fs from "fs/promises";
 const argv = minimist(process.argv.splice(2));
 
 const key = argv.key;
@@ -182,23 +183,10 @@ async function handleStep(
     }
   );
 
-
-  const cmdCreateSSHKey = dedent`
-  mkdir -p ~/.ssh
-  echo "${dataRequiredJson.ssh.key}" > ~/.ssh/id_rsa
-  chmod 600 ~/.ssh/id_rsa
-  chmod 644 ~/.ssh/id_rsa.pub
-  `
-
-  await handleStep(
-    async () => {
-      return await $`${cmdCreateSSHKey}`
-        .cwd(dataExtendJson.appVersion)
-    },
-    {
-      info: "create ssh key ...",
-    }
-  );
+  await fs.mkdir("~/.ssh", { recursive: true });
+  await fs.writeFile("~/.ssh/id_rsa", dataRequiredJson.ssh.key, "utf8");
+  await fs.writeFile("~/.ssh/id_rsa.pub", dataRequiredJson.ssh.key, "utf8");
+  await fs.writeFile("~/.ssh/config", "", "utf8");
 
   // create dir on the server
   const cmdCreateDir = dedent`
