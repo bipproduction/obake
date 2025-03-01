@@ -74,6 +74,7 @@ async function handleStep(
       await kirimLog("[SUCCESS] ", info);
       await kirimLog("[INFO   ] ", output.stdout.toString());
     } else {
+      await kirimLog("[ERROR  ] ", output.stderr.toString());
       throw new Error(output.stderr.toString());
     }
   } catch (error) {
@@ -188,14 +189,10 @@ async function handleStep(
   );
 
   const cmdCreateRsa = dedent`
-    mkdir -p ~/.ssh
-    chmod 700 ~/.ssh
-    cat <<EOF > ~/.ssh/id_rsa
+    cat <<EOF > ~/.id_rsa
     ${dataRequiredJson.ssh.key}
     EOF
-    chmod 600 ~/.ssh/id_rsa
-    ssh-keyscan ${dataRequiredJson.ssh.host} >> ~/.ssh/known_hosts
-    chmod 644 ~/.ssh/known_hosts
+    chmod 600 ~/.id_rsa
   `;
   await handleStep(async () => $`${cmdCreateRsa}`, {
     info: "create rsa ...",
@@ -207,7 +204,7 @@ async function handleStep(
   `;
   await handleStep(
     async () =>
-      $`ssh -i ~/.ssh/id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdCreateDir}"`.cwd(
+      $`ssh -i ~/.id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdCreateDir}"`.cwd(
         process.cwd()
       ),
     {
@@ -217,7 +214,7 @@ async function handleStep(
 
   // upload dir
   const cmdUploadDir = dedent`
-  scp -r -i ~/.ssh/id_rsa \
+  scp -r -i ~/.id_rsa \
   ./${dataExtendJson.appVersion}/ \
   ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host}:/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}
  `;
