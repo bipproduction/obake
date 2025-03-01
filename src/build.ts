@@ -28,8 +28,6 @@ NEXT_PUBLIC_VAPID_PUBLIC_KEY=BBC6ml3Ro9eBdhSq_DPx0zQ0hBH4NvOeJbFXdQy3cZ-UyJ2m6V1
 VAPID_PRIVATE_KEY=p9GfSmCRJe1_dzwKqe29HF81mTE2JwlrW4cXINnkI7c
 WIBU_REALTIME_KEY="padahariminggukuturutayahkekotanaikdelmanistimewakududukdimuka"
 `
-  .replace(/"/g, '\\"')
-  .replace(/\n/g, "\\n"); // Escape double quotes and newlines
 
 const id = `${repo}_${branch}_${date}`;
 const dataExtend = {
@@ -60,7 +58,7 @@ async function dispatch() {
         body: JSON.stringify({
           ref: "main",
           inputs: {
-            data: encyptData,
+            data: encyptData.toString(),
           },
         }),
       }
@@ -79,5 +77,6 @@ async function dispatch() {
     console.error("An error occurred while dispatching the workflow:", error);
   }
 }
+
 
 dispatch();
