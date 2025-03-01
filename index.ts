@@ -51,7 +51,8 @@ async function kirimLog(...args: any[]) {
 }
 
 async function updateStatusRunning(isRunning: boolean = true) {
-  await db.ref("/logs")
+  await db
+    .ref("/logs")
     .child(dataExtendJson.namespace)
     .child("isRunning")
     .set(isRunning);
@@ -190,7 +191,9 @@ async function handleStep(
   `;
   await handleStep(
     async () =>
-      $`ssh -i ~/.ssh/id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdCreateDir}"`.nothrow(),
+      $`ssh -i ~/.ssh/id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdCreateDir}"`.cwd(
+        process.cwd()
+      ),
     {
       info: "create dir on the server ...",
     }
@@ -238,7 +241,6 @@ async function handleStep(
   //     info: "create symlink ...",
   //   }
   // );
-
 })()
   .then(async () => {
     await kirimLog("[INFO-FINAL] ", "Proccess Finished ...");
