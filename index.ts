@@ -1,63 +1,55 @@
-import { exec } from "child_process";
-import { promisify } from "util";
 import { fAdmin } from "@/fadmin";
+import { $, type ShellOutput } from "bun";
 import CryptoJS from "crypto-js";
 import dedent from "dedent";
 import _ from "lodash";
 import minimist from "minimist";
-
-// Promisify exec untuk menggunakan async/await
-const execPromise = promisify(exec);
-
-// Tipe untuk output shell
-interface ShellOutput {
-  stdout: string;
-  stderr: string;
-}
-
-// Parsing argumen CLI
+import fs from "fs/promises";
+import path from "path";
+import os from "os";
 const argv = minimist(process.argv.splice(2));
+
+
 const key = argv.key;
 const data_required = argv["data-required"];
 const data_extend = argv["data-extend"];
-
 if (!key) {
   console.error("key not found");
   process.exit(1);
 }
+
 if (!data_required) {
   console.error("data_required not found");
   process.exit(1);
 }
+
 if (!data_extend) {
   console.error("data_extend not found");
   process.exit(1);
 }
 
-// Dekripsi data
 const dataRequired = CryptoJS.AES.decrypt(data_required, key).toString(
   CryptoJS.enc.Utf8
 );
-const dataRequiredJson = JSON.parse(dataRequired);
+const dataRequiredJson: RequiredData = JSON.parse(dataRequired);
+
 const extendData = CryptoJS.AES.decrypt(data_extend, key).toString(
   CryptoJS.enc.Utf8
 );
 const dataExtendJson = JSON.parse(extendData);
 
-// Firebase Admin SDK
 const admin = fAdmin({
   credential: dataRequiredJson.firebase.credential,
   databaseURL: dataRequiredJson.firebase.databaseURL,
 });
+
 const db = admin.database();
 
-// Logging ke Firebase
-async function kirimLog(...args: string[]) {
+async function kirimLog(...args: any[]) {
   const body = args.join(" ");
   await db.ref("/logs").child(dataExtendJson.namespace).child("log").push(body);
 }
 
-// Update status running
 async function updateStatusRunning(isRunning: boolean = true) {
   await db
     .ref("/logs")
@@ -66,168 +58,173 @@ async function updateStatusRunning(isRunning: boolean = true) {
     .set(isRunning);
 }
 
-// Fungsi untuk menjalankan perintah shell
-async function runCommand(
-  command: string,
-  options: { cwd?: string } = {}
-): Promise<ShellOutput> {
-  try {
-    const { stdout, stderr } = await execPromise(command, options);
-    return { stdout, stderr };
-  } catch (error: any) {
-    throw new Error(error.stderr || error.message || "Unknown error");
-  }
+async function getPort() {
+  const res = await fetch("https://wibu-bot.wibudev.com/api/find-port");
+  const portJson = await res.json();
+  return portJson;
 }
 
-// Handler untuk setiap langkah
 async function handleStep(
   shell: () => Promise<ShellOutput>,
-  params?: { info?: string }
+  params?: {
+    info?: string;
+  }
 ) {
   const { info = "running ..." } = params || {};
   await kirimLog("[RUN    ] ", info);
   try {
     const output = await shell();
-    if (output.stderr) {
-      await kirimLog("[ERROR  ] ", output.stderr);
-      throw new Error(output.stderr);
+    if (output.exitCode === 0) {
+      await kirimLog("[SUCCESS] ", info);
+      await kirimLog("[INFO   ] ", output.stdout.toString());
+    } else {
+      await kirimLog("[ERROR  ] ", output.stderr.toString());
+      throw new Error(output.stderr.toString());
     }
-    await kirimLog("[SUCCESS] ", info);
-    await kirimLog("[INFO   ] ", output.stdout);
-  } catch (error: any) {
-    await kirimLog("[ERROR  ] ", error.message || "Unknown error");
-    throw error;
+  } catch (error) {
+    await kirimLog("[ERROR  ] ", error || "Unknown error");
+    throw error; // Re-throw untuk memastikan proses berhenti jika gagal
   }
 }
 
 (async () => {
   await updateStatusRunning();
 
-  // Logging initial data
-  await kirimLog(JSON.stringify(_.omit(dataExtendJson, ["env"])));
+  const port = await getPort();
 
-  // Tree before clone
+  await kirimLog(Bun.inspect.table(_.omit(dataExtendJson, ["env"])));
+
   await handleStep(
-    () =>
-      runCommand(`tree -a -I node_modules -I .next -L 1`, {
-        cwd: process.cwd(),
-      }),
-    { info: "tree sebelum clone ..." }
+    async () => {
+      return await $`tree -a -I node_modules -I .next -L 1`.nothrow();
+    },
+    {
+      info: "tree sebelum clone ...",
+    }
   );
 
-  // Git clone
   await handleStep(
-    () =>
-      runCommand(
-        `git clone --branch ${dataExtendJson.branch} https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`
-      ),
-    { info: "clone ..." }
+    async () => {
+      return await $`git clone --branch ${dataExtendJson.branch} https://x-access-token:${dataRequiredJson.githubToken}@github.com/bipproduction/${dataExtendJson.repo}.git ${dataExtendJson.appVersion}`;
+    },
+    {
+      info: "clone ...",
+    }
   );
 
-  // Tree after clone
   await handleStep(
-    () =>
-      runCommand(`tree -a -I node_modules -L 1`, {
-        cwd: dataExtendJson.appVersion,
-      }),
-    { info: "tree setelah clone ..." }
+    async () => {
+      return await $`tree -a -I node_modules -L 1`
+        .cwd(dataExtendJson.appVersion)
+        .nothrow();
+    },
+    {
+      info: "tree setelah clone ...",
+    }
   );
 
-  // Generate .env
   await handleStep(
-    () =>
-      runCommand(`echo '${dataExtendJson.env}' > .env`, {
-        cwd: dataExtendJson.appVersion,
-      }),
-    { info: "generate env ..." }
+    async () =>
+      $`echo ${dataExtendJson.env} > .env`.cwd(dataExtendJson.appVersion),
+    {
+      info: "generate env ...",
+    }
   );
 
-  // Bun install
   await handleStep(
-    () =>
-      runCommand(`bun install`, {
-        cwd: dataExtendJson.appVersion,
-      }),
-    { info: "install ..." }
+    async () => {
+      return await $`bun install`.cwd(dataExtendJson.appVersion);
+    },
+    {
+      info: "install ...",
+    }
   );
 
-  // Prisma db push
   await handleStep(
-    () =>
-      runCommand(`bunx prisma db push`, {
-        cwd: dataExtendJson.appVersion,
-      }),
-    { info: "db push ..." }
+    async () => {
+      return await $`bunx prisma db push`.cwd(dataExtendJson.appVersion);
+    },
+    {
+      info: "db push ...",
+    }
   );
 
-  // Prisma db seed
   await handleStep(
-    () =>
-      runCommand(`bunx prisma db seed`, {
-        cwd: dataExtendJson.appVersion,
-      }),
-    { info: "seed ..." }
+    async () => {
+      return await $`bunx prisma db seed`
+        .cwd(dataExtendJson.appVersion)
+        .nothrow();
+    },
+    {
+      info: "seed ...",
+    }
   );
 
-  // Build
+  // handle build
   await handleStep(
-    () =>
-      runCommand(`bun --bun run build`, {
-        cwd: dataExtendJson.appVersion,
-      }),
-    { info: "run build ..." }
+    async () => $`bun --bun run build`.cwd(dataExtendJson.appVersion),
+    {
+      info: "run build ...",
+    }
   );
 
-  // Cleaning
+  // hapus .git dan node_modules
   await handleStep(
-    () =>
-      runCommand(`rm -rf .git node_modules`, {
-        cwd: dataExtendJson.appVersion,
-      }),
-    { info: "cleaning ..." }
+    async () => {
+      return await $`rm -rf .git node_modules`
+        .cwd(dataExtendJson.appVersion)
+        .nothrow();
+    },
+    {
+      info: "cleaning ...",
+    }
   );
 
-  // Tree after build
+  // check dir
   await handleStep(
-    () =>
-      runCommand(`tree -a -I node_modules -L 1`, {
-        cwd: dataExtendJson.appVersion,
-      }),
-    { info: "tree sesudah build ..." }
+    async () => {
+      return await $`tree -a -I node_modules -L 1`
+        .cwd(dataExtendJson.appVersion)
+        .nothrow();
+    },
+    {
+      info: "tree sesudah build ...",
+    }
   );
 
-  // Create RSA key
-  const cmdCreateRsa = dedent`
-    mkdir -p ~/.ssh
-    chmod 700 ~/.ssh
-    cat <<EOF > ~/.ssh/id_rsa
-    ${dataRequiredJson.ssh.key}
-    EOF
-    chmod 600 ~/.ssh/id_rsa
-    ssh-keyscan ${dataRequiredJson.ssh.host} >> ~/.ssh/known_hosts
-    chmod 644 ~/.ssh/known_hosts
-  `;
-  await handleStep(() => runCommand(cmdCreateRsa), { info: "create rsa ..." });
+  const filePath = os.tmpdir() + "/ssh_key.tmp";
+  await fs.writeFile(filePath, dataExtendJson.ssh.key, {mode: "0600"});
 
-  // Create directory on the server
+  // create dir on the server
   const cmdCreateDir = dedent`
-    mkdir -p /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}
+  mkdir -p /var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}
   `;
   await handleStep(
-    () =>
-      runCommand(
-        `ssh -i ~/.ssh/id_rsa ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdCreateDir}"`
-      ),
-    { info: "create dir on the server ..." }
+    async () =>
+      $`ssh -i ${filePath} ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host} -t "${cmdCreateDir}"`.cwd(
+        process.cwd()
+      ).env({
+       ...process.env as Record<string, string>,
+      }),
+    {
+      info: "create dir on the server ...",
+    }
   );
 
-  // Upload directory
+  // upload dir
   const cmdUploadDir = dedent`
-    scp -r -i ~/.ssh/id_rsa \
-    ./${dataExtendJson.appVersion}/ \
-    ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host}:/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}
-  `;
-  await handleStep(() => runCommand(cmdUploadDir), { info: "upload dir ..." });
+  scp -r -i ${filePath} \
+  ./${dataExtendJson.appVersion}/ \
+  ${dataRequiredJson.ssh.user}@${dataRequiredJson.ssh.host}:/var/www/projects/${dataExtendJson.name}/${dataExtendJson.namespace}/releases/${dataExtendJson.appVersion}
+ `;
+  await handleStep(
+    async () => {
+      return await $`${cmdUploadDir}`;
+    },
+    {
+      info: "upload dir ...",
+    }
+  );
 })()
   .then(async () => {
     await kirimLog("[INFO-FINAL] ", "Proccess Finished ...");
