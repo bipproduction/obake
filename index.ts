@@ -72,7 +72,10 @@ async function handleStep(
   const { info = "running ..." } = params || {};
   await kirimLog("[INFO ] ", info);
   const output = await shell();
-  await kirimLog("[INFO ] ", output.stdout.toString());
+  if (output.exitCode === 0) {
+    await kirimLog("[INFO ] ", output.stdout.toString());
+    return;
+  }
   await kirimLog("[ERROR] ", output.stderr.toString());
 }
 
