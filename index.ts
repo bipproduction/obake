@@ -65,7 +65,7 @@ async function step(
   shell: () => Promise<ShellOutput>
 ) {
   await kirimLog("[RUN]".padEnd(10, " "), title);
-  const { stdout, stderr, exitCode } = await shell();
+  const { stdout, stderr, exitCode, text } = await shell();
   if (exitCode !== 0) {
     await kirimLog("[ERROR]".padEnd(10, " "), stderr.toString());
     throw new Error(stderr.toString());
@@ -85,7 +85,42 @@ async function main() {
       $`git clone --branch \
     ${dataJson.branch} \
     https://x-access-token:${key}@github.com/bipproduction/${dataJson.repo}.git \
-    ${dataJson.appVersion}`.quiet()
+    ${dataJson.appVersion}`
+  );
+
+  await step(
+    {
+      title: "create env",
+    },
+    () => $`echo "${dataJson.env}" > .env`.cwd(dataJson.appVersion)
+  );
+
+  await step(
+    {
+      title: "install dependencies",
+    },
+    () => $`bun install`.cwd(dataJson.appVersion)
+  );
+
+  await step(
+    {
+      title: "db push",
+    },
+    () => $`bunx prisma db push`.cwd(dataJson.appVersion)
+  );
+
+  await step(
+    {
+      title: "db seeder",
+    },
+    () => $`bunx prisma db seed`.cwd(dataJson.appVersion).nothrow()
+  );
+
+  await step(
+    {
+      title: "run build",
+    },
+    () => $`bun --bun run build`.cwd(dataJson.appVersion)
   );
 }
 
