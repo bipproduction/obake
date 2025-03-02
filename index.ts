@@ -143,6 +143,13 @@ async function main() {
     },
     () => $`ssh -i ~/.ssh/id_rsa ${vps_user}@${vps_host} -t "mkdir -p /var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}"`
   );
+
+  await step(
+    {
+      title: "server push",
+    },
+    () => $`scp -i ~/.ssh/id_rsa -r ${dataJson.appVersion}/* ${vps_user}@${vps_host}:/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}`
+  );
 }
 
 main()

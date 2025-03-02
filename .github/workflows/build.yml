@@ -1,4 +1,4 @@
-name: ngetest bun global
+name: build and deploy
 
 on:
   workflow_dispatch:
