@@ -1,0 +1,15 @@
+name: test workflow
+on:
+ push:
+    branches:
+      - main
+ pull_request:
+    branches:
+      - main
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: coba
+      run: |
+        echo "apa kabar"
