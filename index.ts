@@ -12,7 +12,6 @@ const key = argv.key;
 const vps_host = argv["vps-host"];
 const vps_user = argv["vps-user"];
 
-
 if (!data) {
   console.error("data not found");
   process.exit(1);
@@ -137,7 +136,6 @@ async function main() {
     () => $`bun --bun run build`.cwd(dataJson.appVersion)
   );
 
-
   await step(
     {
       title: "clean up node modules and .git",
@@ -149,16 +147,21 @@ async function main() {
     {
       title: "server create dir",
     },
-    () => $`ssh -i ~/.ssh/id_rsa ${vps_user}@${vps_host} -t "mkdir -p /var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}"`
+    () =>
+      $`ssh -i ~/.ssh/id_rsa ${vps_user}@${vps_host} -t "mkdir -p /var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}"`
   );
 
   await step(
     {
       title: "server push",
     },
-    () => $`rsync -avz --progress -e "ssh -i ~/.ssh/id_rsa" ${dataJson.appVersion}/ ${vps_user}@${vps_host}:/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}/`
+    () =>
+      $`rsync -avz --progress -e "ssh -i ~/.ssh/id_rsa" ${dataJson.appVersion}/ ${vps_user}@${vps_host}:/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}/`.env(
+        {
+          ...process.env as any,
+        }
+      )
   );
-
 }
 
 main()
