@@ -12,4 +12,4 @@ jobs:
     steps:
     - name: coba
       run: |
-        echo "$RAHASIA"
+        echo "${{ vars.VPS_HOST }}"
