@@ -137,6 +137,14 @@ async function main() {
     () => $`bun --bun run build`.cwd(dataJson.appVersion)
   );
 
+
+  await step(
+    {
+      title: "clean up node modules and .git",
+    },
+    () => $`rm -rf .git node_modules`
+  );
+
   await step(
     {
       title: "server create dir",
@@ -150,6 +158,7 @@ async function main() {
     },
     () => $`scp -i ~/.ssh/id_rsa -r ${dataJson.appVersion}/* ${vps_user}@${vps_host}:/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}`
   );
+
 }
 
 main()
