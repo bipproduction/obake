@@ -52,7 +52,7 @@ jobs:
           chmod 644 ~/.ssh/known_hosts  # Set appropriate permissions for known_hosts
           echo "Known hosts added successfully!"
 
-      - name: check data
+      - name: run index.ts
         run: |
           bun run index.ts --data ${{ inputs.data }} --key ${{ secrets.WIBU_GIT_TOKEN }}
 

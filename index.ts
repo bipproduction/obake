@@ -48,15 +48,11 @@ const db = admin.database();
 
 async function kirimLog(...args: any[]) {
   const body = args.join(" ");
-  await db.ref("/logs").child(dataJson.namespace).child("log").push(body);
+  db.ref("/logs").child(dataJson.namespace).child("log").push(body);
 }
 
 async function updateStatusRunning(isRunning: boolean = true) {
-  await db
-    .ref("/logs")
-    .child(dataJson.namespace)
-    .child("isRunning")
-    .set(isRunning);
+  db.ref("/logs").child(dataJson.namespace).child("isRunning").set(isRunning);
 }
 
 async function step(
@@ -85,10 +81,9 @@ async function main() {
 main()
   .then(() => {
     kirimLog("[SUCCESS]", "Proccess Finished ...");
+    process.exit(0);
   })
   .catch((error) => {
     kirimLog("[ERROR]", error);
+    process.exit(1);
   })
-  .finally(() => {
-    updateStatusRunning(false);
-  });
