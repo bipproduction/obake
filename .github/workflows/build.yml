@@ -95,3 +95,8 @@ jobs:
           script: |
             cd ${{ env.DIR_TARGET_PROJECT }}
             bun install --production
+      
+      - name: finish
+        run: |
+          bun run log-cli.ts "FINISH !"
+          bun run log-cli-status.ts false

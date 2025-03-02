@@ -10,7 +10,7 @@ if (!process.stdin.isTTY) {
 
   process.stdin.on("end", () => {
     console.log("Piped input:", inputData.trim());
-    kirimLog("[INPUT]".padEnd(10, " "), inputData.trim());
+    kirimLog("[INFO]".padEnd(10, " "), inputData.trim());
   });
 } else {
   console.log("No piped input detected.");
