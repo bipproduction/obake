@@ -66,6 +66,6 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key: ~/.ssh/id_rsa
+          key: ${{ secrets.VPS_KEY }}
           source: "${{ env.DIR_SOURCE }}"
           target: "${{ env.DIR_TARGET }}"
