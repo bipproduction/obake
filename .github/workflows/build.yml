@@ -26,6 +26,11 @@ jobs:
           --health-timeout=5s
           --health-retries=5
     steps:
+      - name: Install rsync
+        run: |
+          sudo apt update
+          sudo apt install -y rsync
+
       # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
