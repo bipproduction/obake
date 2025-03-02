@@ -1,9 +1,10 @@
-import minimist from "minimist";
-import fs from "fs/promises";
-import CryptoJS from "crypto-js";
 import { fAdmin } from "@/lib/fadmin";
-import { $, password, type ShellOutput } from "bun";
-import { Client } from "node-scp";
+import { $, type ShellOutput } from "bun";
+import CryptoJS from "crypto-js";
+import fs from "fs/promises";
+import minimist from "minimist";
+import { NodeSSH } from "node-ssh";
+import path from "path";
 
 const argv = minimist(process.argv.splice(2));
 
@@ -144,31 +145,18 @@ async function main() {
     () => $`rm -rf .git node_modules`
   );
 
-  try {
-    const server = await Client({
-      host: vps_host,
-      username: vps_user,
-      password: "Makuro_123",
-    });
-
-    await server.mkdir(
-      `/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}`,
-      "-p"
-    );
-    await server.uploadDir(
-      dataJson.appVersion,
-      `/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}`
-    );
-
-    kirimLog("[SUCCESS]".padEnd(10, " "), "Server Uploaded");
-    server.close();
-  } catch (error) {
-    kirimLog("[ERROR]".padEnd(10, " "), error);
-    throw error;
-  }
+  await step(
+    {
+      title: "create dir on server",
+    },
+    () =>
+      $`ssh -i ~/.ssh/id_rsa ${vps_user}@${vps_host} -t "mkdir -p /var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}"`
+  );
 
   // await step(
   //   {
+  //     title: "server create dir",
+  //   },
   //     title: "server create dir",
   //   },
   //   () =>
@@ -186,6 +174,41 @@ async function main() {
   //       }
   //     )
   // );
+
+  let tick = ".";
+  const ssh = new NodeSSH();
+  await ssh.connect({
+    host: vps_host,
+    username: vps_user,
+    privateKeyPath: "~/.ssh/id_rsa",
+  });
+
+  await ssh
+    .putDirectory(
+      dataJson.appVersion,
+      `/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}`,
+      {
+        recursive: true,
+        concurrency: 10,
+        validate: function (itemPath) {
+          const baseName = path.basename(itemPath);
+          return (
+            baseName.substr(0, 1) !== "." && // do not allow dot files
+            baseName !== "node_modules"
+          ); // do not allow node_modules
+        },
+        tick: function (localPath, remotePath, error) {
+          tick = tick + ".";
+          console.log(tick);
+        },
+      }
+    )
+    .then(function (status) {
+      console.log(
+        "the directory transfer was",
+        status ? "successful" : "unsuccessful"
+      );
+    });
 }
 
 main()
