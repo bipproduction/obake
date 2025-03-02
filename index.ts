@@ -72,6 +72,7 @@ async function step(
 }
 
 async function main() {
+  await updateStatusRunning();
   await step(
     {
       title: "clone project",
@@ -83,9 +84,11 @@ async function main() {
 main()
   .then(() => {
     kirimLog("[SUCCESS]", "Proccess Finished ...");
+    updateStatusRunning(false);
     process.exit(0);
   })
   .catch((error) => {
     kirimLog("[ERROR]", error);
+    updateStatusRunning(false);
     process.exit(1);
   })
