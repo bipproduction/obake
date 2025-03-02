@@ -12,4 +12,4 @@ jobs:
     steps:
     - name: coba
       run: |
-        echo "apa kabar"
+        echo "${{ vars }}"
