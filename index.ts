@@ -2,7 +2,8 @@ import minimist from "minimist";
 import fs from "fs/promises";
 import CryptoJS from "crypto-js";
 import { fAdmin } from "@/lib/fadmin";
-import { $, type ShellOutput } from "bun";
+import { $, password, type ShellOutput } from "bun";
+import { Client } from "node-scp";
 
 const argv = minimist(process.argv.splice(2));
 
@@ -143,25 +144,48 @@ async function main() {
     () => $`rm -rf .git node_modules`
   );
 
-  await step(
-    {
-      title: "server create dir",
-    },
-    () =>
-      $`ssh -i ~/.ssh/id_rsa ${vps_user}@${vps_host} -t "mkdir -p /var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}"`
-  );
+  try {
+    const server = await Client({
+      host: vps_host,
+      username: vps_user,
+      password: "Makuro_123",
+    });
 
-  await step(
-    {
-      title: "server push",
-    },
-    () =>
-      $`rsync -avz --progress -e "ssh -i ~/.ssh/id_rsa" ${dataJson.appVersion}/ ${vps_user}@${vps_host}:/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}/`.env(
-        {
-          ...process.env as any,
-        }
-      )
-  );
+    await server.mkdir(
+      `/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}`,
+      "-p"
+    );
+    await server.uploadDir(
+      dataJson.appVersion,
+      `/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}`
+    );
+
+    kirimLog("[SUCCESS]".padEnd(10, " "), "Server Uploaded");
+    server.close();
+  } catch (error) {
+    kirimLog("[ERROR]".padEnd(10, " "), error);
+    throw error;
+  }
+
+  // await step(
+  //   {
+  //     title: "server create dir",
+  //   },
+  //   () =>
+  //     $`ssh -i ~/.ssh/id_rsa ${vps_user}@${vps_host} -t "mkdir -p /var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}"`
+  // );
+
+  // await step(
+  //   {
+  //     title: "server push",
+  //   },
+  //   () =>
+  //     $`rsync -avz --progress -e "ssh -i ~/.ssh/id_rsa" ${dataJson.appVersion}/ ${vps_user}@${vps_host}:/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}/`.env(
+  //       {
+  //         ...(process.env as any),
+  //       }
+  //     )
+  // );
 }
 
 main()
