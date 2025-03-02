@@ -3,11 +3,12 @@ import minimist from "minimist";
 
 const argv = minimist(process.argv.slice(2));
 
-const message = argv._[0];
-if (!message) {
+const status = argv._[0];
+if (!status) {
   console.error("args not found");
   process.exit(1);
 }
 
-const { kirimLog } = await log();
-kirimLog("[MESSAGE]".padEnd(10, " "),message);
+const { updateStatusRunning } = await log();
+
+updateStatusRunning(status === "true");

@@ -50,7 +50,7 @@ jobs:
       # DIR_TARGET_PROJECT
       - name: init data
         run: |
-          echo "${{ secrets.WIBU_GIT_TOKEN }}" > .env
+          echo "TOKEN=${{ secrets.WIBU_GIT_TOKEN }}" > .env
           bun run init-data.ts --data ${{ inputs.data }}
           echo "$(cat data-app.txt)" >> $GITHUB_ENV
           echo "$(cat data-upload.txt)" >> $GITHUB_ENV
