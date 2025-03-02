@@ -9,6 +9,10 @@ const argv = minimist(process.argv.splice(2));
 const data = argv.data;
 const key = argv.key;
 
+const vps_host = argv["vps-host"];
+const vps_user = argv["vps-user"];
+
+
 if (!data) {
   console.error("data not found");
   process.exit(1);
@@ -16,6 +20,16 @@ if (!data) {
 
 if (!key) {
   console.error("key not found");
+  process.exit(1);
+}
+
+if (!vps_host) {
+  console.error("vps_host not found");
+  process.exit(1);
+}
+
+if (!vps_user) {
+  console.error("vps_user not found");
   process.exit(1);
 }
 
@@ -121,6 +135,13 @@ async function main() {
       title: "run build",
     },
     () => $`bun --bun run build`.cwd(dataJson.appVersion)
+  );
+
+  await step(
+    {
+      title: "server create dir",
+    },
+    () => $`ssh -i ~/.ssh/id_rsa ${vps_user}@${vps_host} -t "mkdir -p /var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}"`
   );
 }
 

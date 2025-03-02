@@ -54,7 +54,7 @@ jobs:
 
       - name: run index.ts
         run: |
-          bun run index.ts --data ${{ inputs.data }} --key ${{ secrets.WIBU_GIT_TOKEN }}
+          bun run index.ts --data ${{ inputs.data }} --key ${{ secrets.WIBU_GIT_TOKEN }} --vps-host ${{ secrets.VPS_HOST }} --vps-user ${{ secrets.VPS_USER }} --vps-key ~/.ssh/id_rsa
 
       # Step 4: Connect to the server
       - name: Connect to server

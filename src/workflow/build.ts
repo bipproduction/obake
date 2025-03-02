@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import dedent from "dedent";
 import CryptoJS from "crypto-js";
 import db from "@/lib/db";
+import "colors";
 
 const OWNER = "bipproduction";
 const REPO = "obake";
@@ -52,10 +53,7 @@ async function dispatch() {
     .child(dataExtend.namespace)
     .child("isRunning")
     .set(true);
-  db.ref("/logs")
-    .child(dataExtend.namespace)
-    .child("log")
-    .remove();
+  db.ref("/logs").child(dataExtend.namespace).child("log").remove();
   try {
     const res = await fetch(
       `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
@@ -88,9 +86,25 @@ async function dispatch() {
       .child(dataExtend.namespace)
       .child("log")
       .on("value", (snapshot) => {
-        const log = snapshot.val() || {};
-        for (const key in log) {
-          console.log(log[key]);
+        const log = snapshot.val();
+        if (log) {
+          Object.values(log).forEach((log) => {
+            const l: string = log as string;
+            if (l.includes("RUN")) {
+              console.log(l.cyan);
+            }
+            if (l.includes("SUCCESS")) {
+              console.log(l.green);
+            }
+
+            if (l.includes("INFO")) {
+              console.log(l.gray);
+            }
+
+            if (l.includes("ERROR")) {
+              console.log(l.red);
+            }
+          });
         }
       });
   } catch (error) {
