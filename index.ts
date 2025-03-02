@@ -156,7 +156,7 @@ async function main() {
     {
       title: "server push",
     },
-    () => $`scp -i ~/.ssh/id_rsa -r ${dataJson.appVersion}/* ${vps_user}@${vps_host}:/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}`
+    () => $`rsync -avz --progress -e "ssh -i ~/.ssh/id_rsa" ${dataJson.appVersion}/ ${vps_user}@${vps_host}:/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}/`
   );
 
 }
