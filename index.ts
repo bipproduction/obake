@@ -53,7 +53,11 @@ async function kirimLog(...args: any[]) {
 }
 
 async function updateStatusRunning(isRunning: boolean = true) {
-  await db.ref("/logs").child(dataJson.namespace).child("isRunning").set(isRunning);
+  await db
+    .ref("/logs")
+    .child(dataJson.namespace)
+    .child("isRunning")
+    .set(isRunning);
 }
 
 async function step(
@@ -77,7 +81,11 @@ async function main() {
     {
       title: "clone project",
     },
-    () => $`git clone --branch ${dataJson.branch} https://x-access-token:${key}@github.com/bipproduction/${dataJson.repo}.git ${dataJson.appVersion}`
+    () =>
+      $`git clone --branch \
+    ${dataJson.branch} \
+    https://x-access-token:${key}@github.com/bipproduction/${dataJson.repo}.git \
+    ${dataJson.appVersion}`.quiet()
   );
 }
 
@@ -91,4 +99,4 @@ main()
     kirimLog("[ERROR]".padEnd(10, " "), error);
     updateStatusRunning(false);
     process.exit(1);
-  })
+  });
