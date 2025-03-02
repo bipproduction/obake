@@ -1,5 +1,5 @@
 import minimist from "minimist";
-import { fAdmin } from "./fadmin";
+import { fAdmin } from "./lib/fadmin";
 import getRequiredData from "./get-required-data";
 import { file } from "bun";
 import path, { resolve } from "path";

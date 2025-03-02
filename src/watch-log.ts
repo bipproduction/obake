@@ -1,4 +1,4 @@
-import { fAdmin } from "./fadmin";
+import { fAdmin } from "./lib/fadmin";
 import getRequiredData from "./get-required-data";
 import minimist from "minimist";
 

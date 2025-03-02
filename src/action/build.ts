@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import dedent from "dedent";
 import CryptoJS from "crypto-js";
+import db from "@/lib/db";
 
 const OWNER = "bipproduction";
 const REPO = "obake";
@@ -27,7 +28,7 @@ WS_APIKEY="eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjp7ImlkIjoiY20wdnQ4bzFrMDAwMDEyenE1eXl1
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=BBC6ml3Ro9eBdhSq_DPx0zQ0hBH4NvOeJbFXdQy3cZ-UyJ2m6V1RyO1XD9B08kshTdVNoGZeqBDKBPzpWgwRBNY
 VAPID_PRIVATE_KEY=p9GfSmCRJe1_dzwKqe29HF81mTE2JwlrW4cXINnkI7c
 WIBU_REALTIME_KEY="padahariminggukuturutayahkekotanaikdelmanistimewakududukdimuka"
-`
+`;
 
 const id = `${repo}_${branch}_${date}`;
 const dataExtend = {
@@ -46,6 +47,15 @@ const encyptData = CryptoJS.AES.encrypt(
 );
 
 async function dispatch() {
+  await db
+    .ref("/logs")
+    .child(dataExtend.namespace)
+    .child("isRunning")
+    .set(true);
+  db.ref("/logs")
+    .child(dataExtend.namespace)
+    .child("log")
+    .push("Dispatching workflow...");
   try {
     const res = await fetch(
       `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
@@ -73,10 +83,17 @@ async function dispatch() {
 
     const dataText = await res.text();
     console.log("Dispatch successful:", dataText);
+
+    db.ref("/logs")
+      .child(dataExtend.namespace)
+      .child("log")
+      .on("value", (snapshot) => {
+        const log = snapshot.val()?.log || "";
+        console.log(log);
+      });
   } catch (error) {
     console.error("An error occurred while dispatching the workflow:", error);
   }
 }
-
 
 dispatch();

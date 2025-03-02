@@ -1,7 +1,7 @@
 import minimist from "minimist";
 import fs from "fs/promises";
 import CryptoJS from "crypto-js";
-import { fAdmin } from "@/fadmin";
+import { fAdmin } from "@/lib/fadmin";
 import { $, type ShellOutput } from "bun";
 
 const argv = minimist(process.argv.splice(2));
@@ -48,12 +48,12 @@ const db = admin.database();
 
 async function kirimLog(...args: any[]) {
   const body = args.join(" ");
-  db.ref("/logs").child(dataJson.namespace).child("log").push(body);
+  await db.ref("/logs").child(dataJson.namespace).child("log").push(body);
   console.log(body);
 }
 
 async function updateStatusRunning(isRunning: boolean = true) {
-  db.ref("/logs").child(dataJson.namespace).child("isRunning").set(isRunning);
+  await db.ref("/logs").child(dataJson.namespace).child("isRunning").set(isRunning);
 }
 
 async function step(
