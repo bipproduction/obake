@@ -36,26 +36,25 @@ jobs:
       - name: run install
         run: bun install
 
-      # Step 2: Save SSH key and set permissions
-      - name: Save SSH key
+      - name: clone and build
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa  # Set strict permissions for the private key
-          ls -la ~/.ssh
-          echo "SSH key saved successfully!"
-
-      # Step 3: Add known hosts to avoid host key verification prompt
-      - name: Add known hosts
+          bun run index.ts --data ${{ inputs.data }} --key ${{ secrets.WIBU_GIT_TOKEN }}
+          
+      ## Data App    
+      # DATA_NAME
+      # DATA_APP_VERSION
+      # DATA_NAMESPACE
+      # DATA_REPO
+      # DATA_BRANCH
+      # DATA_ENV
+      # DATA_DATE
+      - name: manage data app
         run: |
-          ssh-keyscan ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts  # Set appropriate permissions for known_hosts
-          echo "Known hosts added successfully!"
-
-      - name: run index.ts
-        run: |
-          bun run index.ts --data ${{ inputs.data }} --key ${{ secrets.WIBU_GIT_TOKEN }} --vps-host ${{ secrets.VPS_HOST }} --vps-user ${{ secrets.VPS_USER }} --vps-key ~/.ssh/id_rsa
-
+          echo "$(cat data-upload.txt)" >> $GITHUB_ENV
+            
+      ## Data Upload
+      # DIR_SOURCE
+      # DIR_TARGET
       - name: set data upload
         run: |
           echo "$(cat data-upload.txt)" >> $GITHUB_ENV
@@ -69,3 +68,24 @@ jobs:
           key: ${{ secrets.VPS_KEY }}
           source: "${{ env.DIR_SOURCE }}"
           target: "${{ env.DIR_TARGET }}"
+
+      # Deploy env
+      - name: Deploy to VPS (New Version)
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          source: "${{ env.DIR_SOURCE }}/.env"
+          target: "${{ env.DIR_TARGET_PROJECT }}"
+      
+      - name: manage install on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            cd ${{ env.DIR_TARGET_PROJECT }}
+            bun install --production
+            

@@ -4,16 +4,10 @@ import CryptoJS from "crypto-js";
 import dedent from "dedent";
 import fs from "fs/promises";
 import minimist from "minimist";
-import { NodeSSH } from "node-ssh";
-import path from "path";
-
 const argv = minimist(process.argv.splice(2));
 
 const data = argv.data;
 const key = argv.key;
-
-const vps_host = argv["vps-host"];
-const vps_user = argv["vps-user"];
 
 if (!data) {
   console.error("data not found");
@@ -25,20 +19,11 @@ if (!key) {
   process.exit(1);
 }
 
-if (!vps_host) {
-  console.error("vps_host not found");
-  process.exit(1);
-}
-
-if (!vps_user) {
-  console.error("vps_user not found");
-  process.exit(1);
-}
-
 const decryptedData = CryptoJS.AES.decrypt(data, key).toString(
   CryptoJS.enc.Utf8
 );
-const dataJson: {
+
+type DataJson = {
   appVersion: string;
   name: string;
   namespace: string;
@@ -46,7 +31,27 @@ const dataJson: {
   branch: string;
   env: string;
   date: string;
-} = JSON.parse(decryptedData);
+};
+const dataJson: DataJson = JSON.parse(decryptedData);
+
+const dataApp = dedent`
+DATA_NAME=${dataJson.name}
+DATA_APP_VERSION=${dataJson.appVersion}
+DATA_NAMESPACE=${dataJson.namespace}
+DATA_REPO=${dataJson.repo}
+DATA_BRANCH=${dataJson.branch}
+DATA_ENV=${dataJson.env}
+DATA_DATE=${dataJson.date}
+`;
+await fs.writeFile("data-app.txt", dataApp);
+
+// generate data upload
+const dataUpl = dedent`
+DIR_SOURCE=${dataJson.appVersion}
+DIR_TARGET=/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases
+DIR_TARGET_PROJECT=/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}
+`;
+await fs.writeFile("data-upload.txt", dataUpl);
 
 const firebaseString = await fs.readFile("firebase.txt", "utf-8");
 const decryptFirebase = CryptoJS.AES.decrypt(firebaseString, key).toString(
@@ -146,30 +151,11 @@ async function main() {
     () => $`rm -rf .git node_modules`
   );
 
-  await step(
-    {
-      title: "create dir on server",
-    },
-    () =>
-      $`ssh -i ~/.ssh/id_rsa ${vps_user}@${vps_host} -t "mkdir -p /var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}"`
-  );
-
-  const dataUpload = {
-    source: dataJson.appVersion,
-    target: `/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases`,
-  };
-
-  const dataUpl = dedent`
-  DIR_SOURCE=${dataUpload.source}
-  DIR_TARGET=${dataUpload.target}
-  `;
-
-  await fs.writeFile("data-upload.txt", dataUpl);
 }
 
 main()
   .then(() => {
-    kirimLog("[SUCCESS]".padEnd(10, " "), "Proccess Finished ...");
+    kirimLog("[SUCCESS]".padEnd(10, " "), "Build Finished ...");
     updateStatusRunning(false);
     process.exit(0);
   })
