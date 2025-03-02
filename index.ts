@@ -49,6 +49,7 @@ const db = admin.database();
 async function kirimLog(...args: any[]) {
   const body = args.join(" ");
   db.ref("/logs").child(dataJson.namespace).child("log").push(body);
+  console.log(body);
 }
 
 async function updateStatusRunning(isRunning: boolean = true) {
