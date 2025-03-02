@@ -1,5 +1,5 @@
 import { fAdmin } from "./lib/fadmin";
-import getRequiredData from "./get-required-data";
+import getRequiredData from "../xsampah/get-required-data";
 import minimist from "minimist";
 
 const argv = minimist(process.argv.splice(2));

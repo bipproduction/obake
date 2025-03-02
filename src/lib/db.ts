@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 import CryptoJS from "crypto-js";
-import { fAdmin } from "@/lib/fadmin";
+import admin from "firebase-admin";
 
 const TOKEN = process.env.TOKEN!;
 
@@ -19,11 +19,10 @@ const decryptedFirebase = CryptoJS.AES.decrypt(firebase, TOKEN).toString(
 );
 
 const firebaseConfig = JSON.parse(decryptedFirebase);
-
-const admin = fAdmin({
-  credential: firebaseConfig.credential,
+const app = admin.initializeApp({
+  credential: admin.credential.cert(firebaseConfig.credential),
   databaseURL: firebaseConfig.databaseURL,
 });
 
-const db = admin.database();
+const db = app.database();
 export default db;

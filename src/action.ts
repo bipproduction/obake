@@ -1,6 +1,6 @@
 import minimist from "minimist";
 import { fAdmin } from "./lib/fadmin";
-import getRequiredData from "./get-required-data";
+import getRequiredData from "../xsampah/get-required-data";
 import { file } from "bun";
 import path, { resolve } from "path";
 import CryptoJS from "crypto-js";
