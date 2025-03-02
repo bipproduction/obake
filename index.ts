@@ -65,16 +65,17 @@ async function step(
     await kirimLog("[ERROR  ] ", stderr.toString());
     throw new Error(stderr.toString());
   } else {
-    await kirimLog("[SUCCESS] ", stdout.toString());
+    await kirimLog("[SUCCESS] ", title);
+    await kirimLog("[INFO   ] ", stdout.toString());
   }
 }
 
 async function main() {
   await step(
     {
-      title: "text",
+      title: "clone project",
     },
-    () => $`echo "ini dimana"`
+    () => $`git clone --branch ${dataJson.branch} https://x-access-token:${key}@github.com/bipproduction/${dataJson.repo}.git ${dataJson.appVersion}`
   );
 }
 
