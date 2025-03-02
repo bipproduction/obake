@@ -3,7 +3,7 @@ import log from "@/lib/log";
 import type { ShellOutput } from "bun";
 import { $ } from "bun";
 
-const { dataAppJson, dataUploadJson } = await getRequiredData();
+const { dataAppJson } = await getRequiredData();
 const { kirimLog, updateStatusRunning } = await log();
 const key = process.env.TOKEN!;
 
