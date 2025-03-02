@@ -1,6 +1,7 @@
 import dedent from "dedent";
 import minimist from "minimist";
 import fs from "fs/promises";
+import CryptoJS from "crypto-js";
 
 const argv = minimist(process.argv.splice(2));
 
