@@ -1,6 +1,7 @@
 import { fAdmin } from "@/lib/fadmin";
 import { $, type ShellOutput } from "bun";
 import CryptoJS from "crypto-js";
+import dedent from "dedent";
 import fs from "fs/promises";
 import minimist from "minimist";
 import { NodeSSH } from "node-ssh";
@@ -153,62 +154,17 @@ async function main() {
       $`ssh -i ~/.ssh/id_rsa ${vps_user}@${vps_host} -t "mkdir -p /var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}"`
   );
 
-  // await step(
-  //   {
-  //     title: "server create dir",
-  //   },
-  //     title: "server create dir",
-  //   },
-  //   () =>
-  //     $`ssh -i ~/.ssh/id_rsa ${vps_user}@${vps_host} -t "mkdir -p /var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}"`
-  // );
+  const dataUpload = {
+    source: dataJson.appVersion,
+    target: `/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases`,
+  };
 
-  // await step(
-  //   {
-  //     title: "server push",
-  //   },
-  //   () =>
-  //     $`rsync -avz --progress -e "ssh -i ~/.ssh/id_rsa" ${dataJson.appVersion}/ ${vps_user}@${vps_host}:/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}/`.env(
-  //       {
-  //         ...(process.env as any),
-  //       }
-  //     )
-  // );
+  const dataUpl = dedent`
+  DIR_SOURCE=${dataUpload.source}
+  DIR_TARGET=${dataUpload.target}
+  `;
 
-  let tick = ".";
-  const ssh = new NodeSSH();
-  await ssh.connect({
-    host: vps_host,
-    username: vps_user,
-    privateKeyPath: "~/.ssh/id_rsa",
-  });
-
-  await ssh
-    .putDirectory(
-      dataJson.appVersion,
-      `/var/www/projects/${dataJson.name}/${dataJson.namespace}/releases/${dataJson.appVersion}`,
-      {
-        recursive: true,
-        concurrency: 10,
-        validate: function (itemPath) {
-          const baseName = path.basename(itemPath);
-          return (
-            baseName.substr(0, 1) !== "." && // do not allow dot files
-            baseName !== "node_modules"
-          ); // do not allow node_modules
-        },
-        tick: function (localPath, remotePath, error) {
-          tick = tick + ".";
-          console.log(tick);
-        },
-      }
-    )
-    .then(function (status) {
-      console.log(
-        "the directory transfer was",
-        status ? "successful" : "unsuccessful"
-      );
-    });
+  await fs.writeFile("data-upload.txt", dataUpl);
 }
 
 main()
