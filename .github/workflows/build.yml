@@ -57,7 +57,7 @@ jobs:
 
       - name: clone 
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/bipproduction/${{ env.DATA_REPO }}.git ${{ env.DATA_APP_VERSION }}
+          git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.DATA_REPO }}.git ${{ env.DATA_APP_VERSION }}
 
       - name: handle env
         working-directory: ${{ env.DATA_APP_VERSION }}

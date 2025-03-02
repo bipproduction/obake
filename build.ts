@@ -5,7 +5,7 @@ import { $ } from "bun";
 
 const { dataAppJson, dataUploadJson } = await getRequiredData();
 const { kirimLog, updateStatusRunning } = await log();
-const key = process.env.WIBU_GIT_TOKEN!;
+const key = process.env.TOKEN!;
 
 if (!key) {
   console.error("key not found");

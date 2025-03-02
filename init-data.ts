@@ -5,7 +5,7 @@ import fs from "fs/promises";
 const argv = minimist(process.argv.splice(2));
 
 const data = argv.data;
-const key = process.env.WIBU_GIT_TOKEN!;
+const key = process.env.TOKEN!;
 
 if (!data) {
   console.error("data not found");
