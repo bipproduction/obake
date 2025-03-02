@@ -60,14 +60,14 @@ async function step(
   { title }: { title: string },
   shell: () => Promise<ShellOutput>
 ) {
-  await kirimLog("[RUN    ] ", title);
+  await kirimLog("[RUN]".padEnd(10, " "), title);
   const { stdout, stderr, exitCode } = await shell();
   if (exitCode !== 0) {
-    await kirimLog("[ERROR  ] ", stderr.toString());
+    await kirimLog("[ERROR]".padEnd(10, " "), stderr.toString());
     throw new Error(stderr.toString());
   } else {
-    await kirimLog("[SUCCESS] ", title);
-    await kirimLog("[INFO   ] ", stdout.toString());
+    await kirimLog("[SUCCESS]".padEnd(10, " "), title);
+    await kirimLog("[INFO]".padEnd(10, " "), stdout.toString());
   }
 }
 
@@ -83,12 +83,12 @@ async function main() {
 
 main()
   .then(() => {
-    kirimLog("[SUCCESS]", "Proccess Finished ...");
+    kirimLog("[SUCCESS]".padEnd(10, " "), "Proccess Finished ...");
     updateStatusRunning(false);
     process.exit(0);
   })
   .catch((error) => {
-    kirimLog("[ERROR]", error);
+    kirimLog("[ERROR]".padEnd(10, " "), error);
     updateStatusRunning(false);
     process.exit(1);
   })

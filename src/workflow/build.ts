@@ -55,7 +55,7 @@ async function dispatch() {
   db.ref("/logs")
     .child(dataExtend.namespace)
     .child("log")
-    .push("Dispatching workflow...");
+    .remove();
   try {
     const res = await fetch(
       `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
@@ -82,14 +82,16 @@ async function dispatch() {
     }
 
     const dataText = await res.text();
-    console.log("Dispatch successful:", dataText);
+    console.log("Dispatch running ...", dataText);
 
     db.ref("/logs")
       .child(dataExtend.namespace)
       .child("log")
       .on("value", (snapshot) => {
-        const log = snapshot.val()?.log || "";
-        console.log(log);
+        const log = snapshot.val() || {};
+        for (const key in log) {
+          console.log(log[key]);
+        }
       });
   } catch (error) {
     console.error("An error occurred while dispatching the workflow:", error);
