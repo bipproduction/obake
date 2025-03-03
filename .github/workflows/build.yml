@@ -35,7 +35,6 @@ jobs:
       - name: run install
         run: |
           bun install
-          echo "${{ secrets.WIBU_GIT_TOKEN }}" > token.txt
           echo "TOKEN=${{ secrets.WIBU_GIT_TOKEN }}" > .env
 
       # === data app ===

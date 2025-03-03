@@ -4,10 +4,12 @@ import type { ShellOutput } from "bun";
 import { $ } from "bun";
 import path from "path";
 import fs from "fs/promises";
+import dotenv from "dotenv";
 
 const { dataAppJson } = await getRequiredData();
 const { kirimLog, updateStatusRunning } = await log();
-const key = await fs.readFile(path.resolve(process.cwd(), "token.txt"), "utf-8");
+const env = dotenv.parse(await fs.readFile(path.resolve(process.cwd(), ".env"), "utf-8"));
+const key = env["TOKEN"];
 
 if (!key) {
   console.error("key not found");

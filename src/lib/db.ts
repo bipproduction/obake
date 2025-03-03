@@ -2,15 +2,19 @@ import path from "path";
 import fs from "fs/promises";
 import CryptoJS from "crypto-js";
 import admin from "firebase-admin";
+import dotenv from "dotenv";
 
 async function loadDb() {
-  const TOKEN = await fs.readFile(path.resolve(process.cwd(), "token.txt"), "utf-8");
+  const env = dotenv.parse(
+    await fs.readFile(path.resolve(process.cwd(), ".env"), "utf-8")
+  );
+  const key = env["TOKEN"];
 
   const firebase = await fs.readFile(
     path.resolve(process.cwd(), "firebase.txt"),
     "utf-8"
   );
-  const decryptedFirebase = CryptoJS.AES.decrypt(firebase, TOKEN).toString(
+  const decryptedFirebase = CryptoJS.AES.decrypt(firebase, key).toString(
     CryptoJS.enc.Utf8
   );
 

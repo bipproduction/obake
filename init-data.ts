@@ -3,12 +3,13 @@ import minimist from "minimist";
 import fs from "fs/promises";
 import CryptoJS from "crypto-js";
 import path from "path";
+import dotenv from "dotenv";
 
 const argv = minimist(process.argv.splice(2));
 
 const data = argv.data;
-const key = await fs.readFile(path.resolve(process.cwd(), "token.txt"), "utf-8");
-console.log(key)
+const env = dotenv.parse(await fs.readFile(path.resolve(process.cwd(), ".env"), "utf-8"));
+const key = env["TOKEN"];
 
 if (!data) {
   console.error("data not found");
