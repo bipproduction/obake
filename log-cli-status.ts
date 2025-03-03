@@ -12,4 +12,6 @@ if (!status) {
 const { updateStatusRunning, close } = await log();
 
 updateStatusRunning(status === "true");
-close();
+setTimeout(() => {
+  close();
+}, 3000);

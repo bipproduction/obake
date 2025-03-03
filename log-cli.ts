@@ -11,4 +11,6 @@ if (!message) {
 
 const { kirimLog, close } = await log();
 kirimLog("[MESSAGE]".padEnd(10, " "), message);
-close();
+setTimeout(() => {
+    close();
+}, 3000)
