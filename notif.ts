@@ -8,7 +8,10 @@ const argv = minimist(process.argv.splice(2));
 
 const data = argv.data;
 
-console.log(data)
+const descyptFirebase = CryptoJS.AES.decrypt(data.split("--")[1], data.split("--")[0]).toString(CryptoJS.enc.Utf8);
+
+console.log(descyptFirebase);
+
 
 
 // const finish = argv.finish;
