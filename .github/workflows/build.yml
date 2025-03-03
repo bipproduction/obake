@@ -7,7 +7,6 @@ on:
         description: "env"
         required: true
         default: "null"
-
 jobs:
   build:
     runs-on: ubuntu-latest
