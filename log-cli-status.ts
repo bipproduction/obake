@@ -13,4 +13,3 @@ const { updateStatusRunning, close } = await log();
 
 updateStatusRunning(status === "true");
 close();
-process.exit(0);

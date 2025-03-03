@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import dedent from "dedent";
 import CryptoJS from "crypto-js";
-import {db} from "@/lib/db";
+import loadDb from "@/lib/db";
 import "colors";
 
 const OWNER = "bipproduction";
@@ -48,6 +48,7 @@ const encyptData = CryptoJS.AES.encrypt(
 );
 
 async function dispatch() {
+  const { db } = await loadDb();
   await db
     .ref("/logs")
     .child(dataExtend.namespace)

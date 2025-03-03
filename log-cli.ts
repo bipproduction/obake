@@ -12,4 +12,3 @@ if (!message) {
 const { kirimLog, close } = await log();
 kirimLog("[MESSAGE]".padEnd(10, " "), message);
 close();
-process.exit(0);

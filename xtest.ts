@@ -1,4 +1,7 @@
-import { db } from "@/lib/db";
+import loadDb from "@/lib/db";
+
+const { db } = await loadDb();
+
 // Read piped input from stdin
 let inputData = "";
 if (!process.stdin.isTTY) {

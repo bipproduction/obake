@@ -11,7 +11,6 @@ if (!process.stdin.isTTY) {
     console.log("Piped input:", inputData.trim());
     kirimLog("[INFO]".padEnd(10, " "), inputData.trim());
     close();
-    process.exit(0);
   });
 
 } else {

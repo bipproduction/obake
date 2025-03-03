@@ -1,7 +1,8 @@
-import { db } from "@/lib/db";
+import loadDb from "@/lib/db";
 import getRequiredData from "./get-required-data";
 
 async function log() {
+  const { db } = await loadDb();
   const { dataAppJson } = await getRequiredData();
   async function kirimLog(...args: any[]) {
     const body = args.join(" ");
