@@ -36,6 +36,8 @@ jobs:
       - name: run install
         run: |
           bun install
+          echo "${{ secrets.WIBU_GIT_TOKEN }}" > token.txt
+          echo "TOKEN=${{ secrets.WIBU_GIT_TOKEN }}" > .env
 
       # === data app ===
       # DATA_NAME
@@ -52,8 +54,6 @@ jobs:
       - name: init data
         run: |
           bun run init-data.ts --data ${{ inputs.data }}
-          echo "${{ secrets.WIBU_GIT_TOKEN }}" > token.txt
-          echo "TOKEN=${{ secrets.WIBU_GIT_TOKEN }}" > .env
           echo "$(cat data-app.txt)" >> $GITHUB_ENV
           echo "$(cat data-upload.txt)" >> $GITHUB_ENV
           echo "TOKEN=${{ secrets.WIBU_GIT_TOKEN }}" >> $GITHUB_ENV
