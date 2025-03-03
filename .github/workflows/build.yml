@@ -51,7 +51,7 @@ jobs:
       # DIR_TARGET_PROJECT
       - name: init data
         run: |
-          echo "jalankan" | bun notif --token ${{ secrets.WIBU_GIT_TOKEN }} --firebase ${{ secrets.FIREBASE }} --data ${{ inputs.data }}
+          bun notif --data ${{ secrets.WIBU_GIT_TOKEN }}--${{ secrets.FIREBASE }}--${{ inputs.data }}
       # - name: install global
       #   run: |
       #     bun add .
