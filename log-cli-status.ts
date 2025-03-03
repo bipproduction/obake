@@ -9,6 +9,8 @@ if (!status) {
   process.exit(1);
 }
 
-const { updateStatusRunning } = await log();
+const { updateStatusRunning, close } = await log();
 
 updateStatusRunning(status === "true");
+close();
+process.exit(0);

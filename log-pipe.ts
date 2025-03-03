@@ -13,7 +13,7 @@ if (!process.stdin.isTTY) {
     close();
     process.exit(0);
   });
-  process.stdin.unref();
+
 } else {
   console.log("No piped input detected.");
 }

@@ -9,5 +9,7 @@ if (!message) {
   process.exit(1);
 }
 
-const { kirimLog } = await log();
-kirimLog("[MESSAGE]".padEnd(10, " "),message);
+const { kirimLog, close } = await log();
+kirimLog("[MESSAGE]".padEnd(10, " "), message);
+close();
+process.exit(0);

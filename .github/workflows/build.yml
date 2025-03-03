@@ -100,4 +100,3 @@ jobs:
         run: |
           echo "FINISH !" | bun run log-pipe.ts
           bun run log-cli-status.ts false
-          exit 0
