@@ -34,7 +34,8 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: run install
-        run: bun install
+        run: |
+          bun install
 
       # === data app ===
       # DATA_NAME
@@ -55,13 +56,19 @@ jobs:
           echo "$(cat data-app.txt)" >> $GITHUB_ENV
           echo "$(cat data-upload.txt)" >> $GITHUB_ENV
 
-      - name: clone 
+      - name: install global
         run: |
+          bun i -g .
+
+      - name: clone
+        run: |
+          echo "clone project ..." | log-pipe
           git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.DATA_REPO }}.git ${{ env.DATA_APP_VERSION }}
 
       - name: handle env
         working-directory: ${{ env.DATA_APP_VERSION }}
         run: |
+          echo "handle env ..." | log-pipe
           echo "${{ env.DATA_ENV }}" > .env
 
       - name: clone and build
@@ -93,10 +100,12 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
+            echo "manage install on server ..." | log-pipe
             cd ${{ env.DIR_TARGET_PROJECT }}
             bun install --production
-      
+
       - name: finish
+        if: always()
         run: |
           echo "FINISH !" | bun run log-pipe.ts
           bun run log-cli-status.ts false

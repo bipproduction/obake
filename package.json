@@ -6,7 +6,8 @@
     "@types/bun": "latest"
   },
   "bin": {
-    "obake": "index.ts"
+    "obake": "index.ts",
+    "log-pipe": "log-pipe.ts"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

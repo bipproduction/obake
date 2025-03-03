@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import log from "./src/lib/log";
 
 const { kirimLog, close } = await log();
