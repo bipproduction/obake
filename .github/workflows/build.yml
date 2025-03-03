@@ -57,13 +57,11 @@ jobs:
 
       - name: clone 
         run: |
-          echo "clone project" | bun run log-pipe.ts
           git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.DATA_REPO }}.git ${{ env.DATA_APP_VERSION }}
 
       - name: handle env
         working-directory: ${{ env.DATA_APP_VERSION }}
         run: |
-          echo "handle env" | bun run log-pipe.ts
           echo "${{ env.DATA_ENV }}" > .env
 
       - name: clone and build
