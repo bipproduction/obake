@@ -50,6 +50,7 @@ jobs:
       # DIR_TARGET_PROJECT
       - name: init data
         run: |
+          echo "init data" | bun run log-pipe.ts
           echo "TOKEN=${{ secrets.WIBU_GIT_TOKEN }}" > .env
           bun run init-data.ts --data ${{ inputs.data }}
           echo "$(cat data-app.txt)" >> $GITHUB_ENV
@@ -57,11 +58,13 @@ jobs:
 
       - name: clone 
         run: |
+          echo "clone project" | bun run log-pipe.ts
           git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.DATA_REPO }}.git ${{ env.DATA_APP_VERSION }}
 
       - name: handle env
         working-directory: ${{ env.DATA_APP_VERSION }}
         run: |
+          echo "handle env" | bun run log-pipe.ts
           echo "${{ env.DATA_ENV }}" > .env
 
       - name: clone and build
@@ -93,8 +96,10 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
+            echo "manage install on server" | bun run log-pipe.ts
             cd ${{ env.DIR_TARGET_PROJECT }}
             bun install --production
+            echo "manage install on server done" | bun run log-pipe.ts
       
       - name: finish
         run: |
