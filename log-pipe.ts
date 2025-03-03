@@ -1,9 +1,8 @@
 import log from "./src/lib/log";
 
-const { kirimLog } = await log();
+const { kirimLog, close } = await log();
 let inputData = "";
 if (!process.stdin.isTTY) {
-  // If stdin is not a terminal (i.e., piped input exists)
   process.stdin.on("data", (chunk) => {
     inputData += chunk.toString();
   });
@@ -11,7 +10,10 @@ if (!process.stdin.isTTY) {
   process.stdin.on("end", () => {
     console.log("Piped input:", inputData.trim());
     kirimLog("[INFO]".padEnd(10, " "), inputData.trim());
+    close();
+    process.exit(0);
   });
+  process.stdin.unref();
 } else {
   console.log("No piped input detected.");
 }

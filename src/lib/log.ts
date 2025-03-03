@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { db } from "@/lib/db";
 import getRequiredData from "./get-required-data";
 
 async function log() {
@@ -10,14 +10,17 @@ async function log() {
   }
 
   async function updateStatusRunning(isRunning: boolean = true) {
-    db
-      .ref("/logs")
+    db.ref("/logs")
       .child(dataAppJson.namespace)
       .child("isRunning")
       .set(isRunning);
   }
-  
-  return { kirimLog, updateStatusRunning };
+
+  async function close() {
+    db.app.delete();
+  }
+
+  return { kirimLog, updateStatusRunning, close };
 }
 
 export default log;

@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import dedent from "dedent";
 import CryptoJS from "crypto-js";
-import db from "@/lib/db";
+import {db} from "@/lib/db";
 import "colors";
 
 const OWNER = "bipproduction";
