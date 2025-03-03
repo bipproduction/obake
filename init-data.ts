@@ -8,6 +8,7 @@ const argv = minimist(process.argv.splice(2));
 
 const data = argv.data;
 const key = await fs.readFile(path.resolve(process.cwd(), "token.txt"), "utf-8");
+console.log(key)
 
 if (!data) {
   console.error("data not found");
