@@ -2,11 +2,12 @@ import dedent from "dedent";
 import minimist from "minimist";
 import fs from "fs/promises";
 import CryptoJS from "crypto-js";
+import path from "path";
 
 const argv = minimist(process.argv.splice(2));
 
 const data = argv.data;
-const key = process.env.TOKEN!;
+const key = await fs.readFile(path.resolve(process.cwd(), "token.txt"), "utf-8");
 
 if (!data) {
   console.error("data not found");

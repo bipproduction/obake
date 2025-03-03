@@ -51,10 +51,12 @@ jobs:
       # DIR_TARGET_PROJECT
       - name: init data
         run: |
+          echo "${{ secrets.WIBU_GIT_TOKEN }}" > token.txt
           echo "TOKEN=${{ secrets.WIBU_GIT_TOKEN }}" > .env
-          bun run init-data.ts --data ${{ inputs.data }}
           echo "$(cat data-app.txt)" >> $GITHUB_ENV
           echo "$(cat data-upload.txt)" >> $GITHUB_ENV
+          echo "TOKEN=${{ secrets.WIBU_GIT_TOKEN }}" >> $GITHUB_ENV
+          bun run init-data.ts --data ${{ inputs.data }}
 
       - name: install global
         run: |
@@ -68,8 +70,8 @@ jobs:
       - name: handle env
         working-directory: ${{ env.DATA_APP_VERSION }}
         run: |
-          echo "handle env ..." | bun log-pipe
           echo "${{ env.DATA_ENV }}" > .env
+          echo "handle env ..." | bun log-pipe
 
       - name: clone and build
         run: |

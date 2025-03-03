@@ -2,10 +2,12 @@ import getRequiredData from "@/lib/get-required-data";
 import log from "@/lib/log";
 import type { ShellOutput } from "bun";
 import { $ } from "bun";
+import path from "path";
+import fs from "fs/promises";
 
 const { dataAppJson } = await getRequiredData();
 const { kirimLog, updateStatusRunning } = await log();
-const key = process.env.TOKEN!;
+const key = await fs.readFile(path.resolve(process.cwd(), "token.txt"), "utf-8");
 
 if (!key) {
   console.error("key not found");
