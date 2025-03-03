@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import path from "path";
 import type { DataRequired } from "./init-data";
 import minimist from "minimist";
+import CryptoJS from "crypto-js";
 
 const argv = minimist(process.argv.splice(2));
 const finish = argv.finish;
