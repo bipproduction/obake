@@ -32,6 +32,10 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: init data
+        run: |
+          echo "DATA=${{ secrets.WIBU_GIT_TOKEN }}--${{ secrets.FIREBASE }}--${{ inputs.data }}" > $GITHUB_ENV
+
       - name: run install
         run: |
           bun install
@@ -51,7 +55,8 @@ jobs:
       # DIR_TARGET_PROJECT
       - name: init data
         run: |
-          bun notif --data ${{ secrets.WIBU_GIT_TOKEN }}--${{ secrets.FIREBASE }}--${{ inputs.data }}
+          bun notif --data ${{ env.DATA }}
+
       # - name: install global
       #   run: |
       #     bun add .
