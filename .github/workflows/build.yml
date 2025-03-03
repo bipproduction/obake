@@ -93,10 +93,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            echo "manage install on server" | bun run log-pipe.ts
             cd ${{ env.DIR_TARGET_PROJECT }}
             bun install --production
-            echo "manage install on server done" | bun run log-pipe.ts
       
       - name: finish
         run: |
