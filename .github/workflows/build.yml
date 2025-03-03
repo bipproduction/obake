@@ -62,18 +62,18 @@ jobs:
 
       - name: clone
         run: |
-          echo "clone project ..." | bun log-pipe
+          echo "clone project ..." | bun notif
           git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.DATA_REPO }}.git ${{ env.DATA_APP_VERSION }}
 
       - name: handle env
         working-directory: ${{ env.DATA_APP_VERSION }}
         run: |
           echo "${{ env.DATA_ENV }}" > .env
-          echo "handle env ..." | bun log-pipe
+          echo "handle env ..." | bun notif
 
       - name: clone and build
         run: |
-          echo "clone and build ..." | bun log-pipe
+          echo "clone and build ..." | bun notif
           bun run build.ts
 
       - name: Deploy to VPS (New Version)
@@ -101,12 +101,12 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            echo "manage install on server ..." | bun run log-pipe.ts
+            echo "manage install on server ..." | bun notif
             cd ${{ env.DIR_TARGET_PROJECT }}
             bun install --production
 
       - name: finish
         if: always()
         run: |
-          echo "FINISH !" | bun run log-pipe.ts
-          bun run log-cli-status.ts false
+          echo "FINISH !" | bun notif
+          bun notif --finish

@@ -7,7 +7,8 @@
   },
   "bin": {
     "obake": "index.ts",
-    "log-pipe": "log-pipe.ts"
+    "log-pipe": "log-pipe.ts",
+    "notif": "notif.ts"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

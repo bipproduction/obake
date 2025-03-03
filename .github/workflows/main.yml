@@ -65,7 +65,7 @@ jobs:
           echo "APP_PORT=$PORT" >> $GITHUB_ENV
 
       - name: install dependencies
-        run: bun install
+        run: bun install 
 
       - name: clone repo
         run: |
