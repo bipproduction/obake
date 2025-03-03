@@ -9,23 +9,33 @@ import CryptoJS from "crypto-js";
 
 const argv = minimist(process.argv.splice(2));
 const finish = argv.finish;
+const data = argv.data;
+const firebase = argv.firebase;
+const token = argv.token;
 
-const env = dotenv.parse(
-  await fs.readFile(path.resolve(process.cwd(), ".env"), "utf-8")
-);
-const key = env["TOKEN"];
+if (!data) {
+  console.error("data not found");
+  process.exit(1);
+}
 
-const dataAppJsonString = await fs.readFile(
-  path.resolve(process.cwd(), "data-app.json"),
-  "utf-8"
+if (!firebase) {
+  console.error("firebase not found");
+  process.exit(1);
+}
+
+if (!token) {
+  console.error("token not found");
+  process.exit(1);
+}
+
+
+const dataAppJsonString = CryptoJS.AES.decrypt(data, token).toString(
+  CryptoJS.enc.Utf8
 );
+
 const dataAppJson: DataRequired["dataApp"] = JSON.parse(dataAppJsonString);
 
-const firebase = await fs.readFile(
-  path.resolve(process.cwd(), "firebase.txt"),
-  "utf-8"
-);
-const decryptedFirebase = CryptoJS.AES.decrypt(firebase, key).toString(
+const decryptedFirebase = CryptoJS.AES.decrypt(firebase, token).toString(
   CryptoJS.enc.Utf8
 );
 

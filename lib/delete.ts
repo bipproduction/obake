@@ -32,6 +32,7 @@ async function deleteAllWorkflowRuns() {
     }
 
     console.log("All workflow runs deleted.");
+    await deleteAllWorkflowRuns();
   } catch (error) {
     console.log(error);
   }

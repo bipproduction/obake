@@ -4,26 +4,26 @@ on:
   workflow_dispatch:
     inputs:
       data:
-        description: "env"
+        description: "data"
         required: true
         default: "null"
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_USER: bip
-          POSTGRES_PASSWORD: Production_123
-          POSTGRES_DB: db
-        ports:
-          - 5433:5432
-        options: >-
-          --health-cmd="pg_isready"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+    # services:
+    #   postgres:
+    #     image: postgres:14
+    #     env:
+    #       POSTGRES_USER: bip
+    #       POSTGRES_PASSWORD: Production_123
+    #       POSTGRES_DB: db
+    #     ports:
+    #       - 5433:5432
+    #     options: >-
+    #       --health-cmd="pg_isready"
+    #       --health-interval=10s
+    #       --health-timeout=5s
+    #       --health-retries=5
     steps:
       # Step 1: Checkout code
       - name: Checkout code
@@ -35,7 +35,7 @@ jobs:
       - name: run install
         run: |
           bun install
-          echo "TOKEN=${{ secrets.WIBU_GIT_TOKEN }}" > .env
+          bun add .
 
       # === data app ===
       # DATA_NAME
@@ -51,62 +51,58 @@ jobs:
       # DIR_TARGET_PROJECT
       - name: init data
         run: |
-          bun run init-data.ts --data ${{ inputs.data }}
-          echo "$(cat data-app.txt)" >> $GITHUB_ENV
-          echo "$(cat data-upload.txt)" >> $GITHUB_ENV
-          echo "TOKEN=${{ secrets.WIBU_GIT_TOKEN }}" >> $GITHUB_ENV
+          echo "jalankan" | bun notif --token ${{ secrets.WIBU_GIT_TOKEN }} --firebase ${{ secrets.FIREBASE }} --data ${{ inputs.data }}
+      # - name: install global
+      #   run: |
+      #     bun add .
 
-      - name: install global
-        run: |
-          bun add .
+      # - name: clone
+      #   run: |
+      #     echo "clone project ..." | bun notif
+      #     git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.DATA_REPO }}.git ${{ env.DATA_APP_VERSION }}
 
-      - name: clone
-        run: |
-          echo "clone project ..." | bun notif
-          git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.DATA_REPO }}.git ${{ env.DATA_APP_VERSION }}
+      # - name: handle env
+      #   working-directory: ${{ env.DATA_APP_VERSION }}
+      #   run: |
+      #     echo "${{ env.DATA_ENV }}" > .env
+      #     echo "handle env ..." | bun notif
 
-      - name: handle env
-        working-directory: ${{ env.DATA_APP_VERSION }}
-        run: |
-          echo "${{ env.DATA_ENV }}" > .env
-          echo "handle env ..." | bun notif
+      # - name: clone and build
+      #   run: |
+      #     echo "clone and build ..." | bun notif
+      #     bun run build.ts
 
-      - name: clone and build
-        run: |
-          echo "clone and build ..." | bun notif
-          bun run build.ts
+      # - name: Deploy to VPS (New Version)
+      #   uses: appleboy/scp-action@master
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USER }}
+      #     key: ${{ secrets.VPS_KEY }}
+      #     source: "${{ env.DIR_SOURCE }}"
+      #     target: "${{ env.DIR_TARGET }}"
 
-      - name: Deploy to VPS (New Version)
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          source: "${{ env.DIR_SOURCE }}"
-          target: "${{ env.DIR_TARGET }}"
+      # - name: deploy env to server
+      #   uses: appleboy/scp-action@master
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USER }}
+      #     key: ${{ secrets.VPS_KEY }}
+      #     source: "${{ env.DIR_SOURCE }}/.env"
+      #     target: "${{ env.DIR_TARGET_PROJECT }}"
 
-      - name: deploy env to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          source: "${{ env.DIR_SOURCE }}/.env"
-          target: "${{ env.DIR_TARGET_PROJECT }}"
+      # - name: manage install on server
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USER }}
+      #     key: ${{ secrets.VPS_KEY }}
+      #     script: |
+      #       echo "manage install on server ..." | bun notif
+      #       cd ${{ env.DIR_TARGET_PROJECT }}
+      #       bun install --production
 
-      - name: manage install on server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            echo "manage install on server ..." | bun notif
-            cd ${{ env.DIR_TARGET_PROJECT }}
-            bun install --production
-
-      - name: finish
-        if: always()
-        run: |
-          echo "FINISH !" | bun notif
-          bun notif --finish
+      # - name: finish
+      #   if: always()
+      #   run: |
+      #     echo "FINISH !" | bun notif
+      #     bun notif --finish
