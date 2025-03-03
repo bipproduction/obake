@@ -98,5 +98,5 @@ jobs:
       
       - name: finish
         run: |
-          bun run log-cli.ts "FINISH !"
+          echo "FINISH !" | bun run log-pipe.ts
           bun run log-cli-status.ts false
