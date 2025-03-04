@@ -101,7 +101,13 @@ jobs:
 
       - name: handle ecosystem config string
         run: |
-          echo "WIBU_ECOSYSTEM='$( bun run ecosystem.ts --data ${{ env.WIBU_DATA }} )'" >> $GITHUB_ENV
+          WIBU_ECOSYSTEM=$( bun run ecosystem.ts --data ${{ env.WIBU_DATA }} )
+          if [[ -z "$WIBU_ECOSYSTEM" ]]; then
+            echo "WIBU_ECOSYSTEM is empty"
+            exit 1
+          else
+            echo WIBU_ECOSYSTEM='$WIBU_ECOSYSTEM' >> $GITHUB_ENV
+          fi
 
       - name: create ecosystem config on server
         uses: appleboy/ssh-action@master
