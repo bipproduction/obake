@@ -124,7 +124,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            ln -sf ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }} ${{ env.DIR_TARGET_CWD}}
+            ln -sf ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }} ${{ env.DIR_TARGET_CWD}}/current
 
       - name: send log
         run: |
