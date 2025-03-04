@@ -35,11 +35,11 @@ const app = admin.initializeApp({
 
 const db = app.database();
 
-
 async function main() {
     const envNameSpace = await $`echo NAME_SPACE="${appDataJson.namespace}" >> $GITHUB_ENV`
     const envProjectSource = await $`echo DIR_SOURCE="${appDataJson.appVersion}" >> $GITHUB_ENV`
-    const envProjectTarget = await $`echo DIR_TARGET="/var/www/projects/${appDataJson.name}/${appDataJson.appVersion}/releases" >> $GITHUB_ENV`
+    const envProjectTarget = await $`echo DIR_RELEASES="/var/www/projects/${appDataJson.name}/${appDataJson.namespace}/releases" >> $GITHUB_ENV`
+    const envProjectRoot = await $`echo DIR_TARGET_CWD="/var/www/projects/${appDataJson.name}/${appDataJson.namespace}" >> $GITHUB_ENV`
 
     const clone = await $`git clone --branch ${appDataJson.branch} https://x-access-token:${key}@github.com/bipproduction/${appDataJson.repo}.git ${appDataJson.appVersion}`
     const env = await $`echo "${appDataJson.env}" > .env`.cwd(appDataJson.appVersion)

@@ -40,7 +40,7 @@ jobs:
         run: |
           bun run build.ts --data ${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}
           echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}" >> $GITHUB_ENV
-      
+
       - name: seed on server
         uses: appleboy/ssh-action@master
         with:
@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            mkdir -p ${{ env.DIR_TARGET }}
+            mkdir -p ${{ env.DIR_RELEASES }}
 
       - name: Deploy to VPS (New Version)
         uses: appleboy/scp-action@master
@@ -57,7 +57,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           source: "${{ env.DIR_SOURCE }}"
-          target: "${{ env.DIR_TARGET }}"
+          target: "${{ env.DIR_RELEASES }}"
 
       - name: Deploy env to VPS
         uses: appleboy/scp-action@master
@@ -66,7 +66,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           source: "${{ env.DIR_SOURCE }}/.env"
-          target: "${{ env.DIR_TARGET }}/${{ env.DIR_SOURCE }}"
+          target: "${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}"
 
       - name: install on server
         uses: appleboy/ssh-action@master
@@ -75,7 +75,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            cd ${{ env.DIR_TARGET }}/${{ env.DIR_SOURCE }}
+            cd ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}
             bun install --production
 
       - name: db push on server
@@ -85,9 +85,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            cd ${{ env.DIR_TARGET }}/${{ env.DIR_SOURCE }}
+            cd ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}
             bunx prisma db push
-      
+
       - name: seed on server
         uses: appleboy/ssh-action@master
         continue-on-error: true
@@ -96,13 +96,40 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            cd ${{ env.DIR_TARGET }}/${{ env.DIR_SOURCE }}
+            cd ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}
             bunx prisma db seed || echo "[server] tidak membutuhkan seed"
+
+      - name: handle ecosystem config string
+        run: |
+          echo "WIBU_ECOSYSTEM='$( bun run ecosystem.ts --data ${{ env.WIBU_DATA }} )'" >> $GITHUB_ENV
+
+      - name: create ecosystem config on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            ECOSYSTEM_FILE="${{ env.DIR_TARGET_CWD }}/ecosystem.config.json"
+            if [[ ! -f "$ECOSYSTEM_FILE" ]]; then
+              echo "${{ env.WIBU_ECOSYSTEM }}" > "$ECOSYSTEM_FILE"
+            else
+              echo "ecosystem.config.json already exists" 2>&1 | bun notif --data ${{ env.WIBU_DATA }}
+            fi
+
+      - name: create symbolic link
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            ln -sf ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }} /var/www/projects/${{ env.DIR_TARGET_CWD}}/current
 
       - name: send log
         run: |
           bun notif --data ${{ env.WIBU_DATA }} --log
-      
+
       - name: success
         if: success()
         run: |
@@ -112,7 +139,7 @@ jobs:
         if: failure()
         run: |
           echo "FAILED !" 2>&1 | bun notif --data ${{ env.WIBU_DATA }}
-      
+
       - name: finish
         run: |
           bun notif --data ${{ env.WIBU_DATA }} --finish

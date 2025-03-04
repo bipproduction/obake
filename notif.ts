@@ -69,17 +69,3 @@ if (!process.stdin.isTTY) {
 if (finish) {
   db.ref("/logs").child(appDataJson.namespace).child("isRunning").set(false);
 }
-
-// async function main(){
-//   const log = await fs.readFile(path.resolve(process.cwd(), appDataJson.appVersion, "build.log"), "utf-8");
-//   db.ref("/logs").child(appDataJson.namespace).child("log").push(log);
-//   db.ref("/logs").child(appDataJson.namespace).child("isRunning").set(false);
-// }
-
-// main()
-// .then(() => {
-
-// })
-// .catch((error) => {
-//     console.error(error);
-// });
