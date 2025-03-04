@@ -7,6 +7,7 @@ const argv = minimist(process.argv.splice(2));
 
 const data = argv.data;
 const finish = argv.finish;
+const type = argv.type;
 
 if (!data) {
   console.error("data not found");
@@ -47,8 +48,8 @@ if (!process.stdin.isTTY) {
   });
 
   process.stdin.on("end", () => {
-    console.log("Piped input:", inputData.trim());
-    kirimNotify("[INFO]".padEnd(10, " "), inputData.trim());
+    const finalType = type ? type : "INFO";
+    kirimNotify(`[${finalType}]`.padEnd(10, " "), inputData.trim());
     setTimeout(() => {
       db.app.delete();
     }, 3000);
