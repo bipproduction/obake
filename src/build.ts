@@ -18,6 +18,7 @@ if (!TOKEN) {
 const data = {
   name: "darmasaba",
   namespace: "darmasaba-prod",
+  appVersion: "",
   repo: "sistem-desa-mandiri",
   branch: "main",
   date: dayjs().format("YYYY-MM-DD_HH-mm-ss"),
@@ -30,6 +31,8 @@ const data = {
         WIBU_REALTIME_KEY="padahariminggukuturutayahkekotanaikdelmanistimewakududukdimuka"
     `,
 };
+
+data["appVersion"] = `${data["repo"]}_${data["branch"]}_${data["date"]}`;
 
 const encryptData = CryptoJS.AES.encrypt(
   JSON.stringify(data),

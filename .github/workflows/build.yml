@@ -35,4 +35,7 @@ jobs:
       - name: install dependencies
         run: |
           bun install
-          bun add .
+      
+      - name: clone and build
+        run: |
+          bun run build.ts --data ${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}
