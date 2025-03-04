@@ -51,21 +51,21 @@ jobs:
       # WIBU_DATE
       - name: init data
         run: |
-          echo "init data ..." | bun notif --data ${{ env.WIBU_DATA }} --type RUN && \
-          echo "$(bun input-data --data ${{ env.WIBU_DATA }})" >> $GITHUB_ENV && \
+          echo "init data ..." | bun notif --data ${{ env.WIBU_DATA }} --type RUN
+          echo "$(bun input-data --data ${{ env.WIBU_DATA }})" >> $GITHUB_ENV 
           echo "init data selesai ..." | bun notif --data ${{ env.WIBU_DATA }} --type SUCCESS
 
       - name: clone
         run: |
-          echo "clone project ..." | bun notif --data ${{ env.WIBU_DATA }} --type RUN && \
-          git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.WIBU_REPO }}.git ${{ env.WIBU_APP_VERSION }} 2>&1 | bun notif --data ${{ env.WIBU_DATA }}  && \ 
+          echo "clone project ..." | bun notif --data ${{ env.WIBU_DATA }} --type RUN
+          git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.WIBU_REPO }}.git ${{ env.WIBU_APP_VERSION }} 2>&1 | bun notif --data ${{ env.WIBU_DATA }}
           echo "clone project ..." | bun notif --data ${{ env.WIBU_DATA }} --type SUCCESS
 
       - name: handle env
         working-directory: ${{ env.WIBU_APP_VERSION }}
         run: |
-          echo "handle env ..." | bun notif --data ${{ env.WIBU_DATA }} --type RUN && \
-          echo "${{ env.WIBU_ENV }}" > .env && \
+          echo "handle env ..." | bun notif --data ${{ env.WIBU_DATA }} --type RUN
+          echo "${{ env.WIBU_ENV }}" > .env
           echo "handle env ..." | bun notif --data ${{ env.WIBU_DATA }} --type SUCCESS
 
       - name: build
@@ -111,7 +111,12 @@ jobs:
       #       cd ${{ env.DIR_TARGET_PROJECT }}
       #       bun install --production
 
-      - name: finish
-        if: always()
+      - name: check success
+        if: success()
         run: |
-          echo "FINISH !" | bun notif --data ${{ env.WIBU_DATA }}
+          echo "SUCCESS !" | bun notif --data ${{ env.WIBU_DATA }} --type SUCCESS
+
+      - name: check failed
+        if: failure()
+        run: |
+          echo "FAILED !" | bun notif --data ${{ env.WIBU_DATA }} --type ERROR
