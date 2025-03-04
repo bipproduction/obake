@@ -44,7 +44,8 @@ async function main() {
     const dbSeed = await $`bunx prisma db seed`.nothrow().cwd(appDataJson.appVersion)
     const build = await $`bun --bun run build`.cwd(appDataJson.appVersion)
     const cleaning = await $`rm -rf .git node_modules`.cwd(appDataJson.appVersion)
-    const envProjectdir = await $`echo DIR_SOURCE="${appDataJson.appVersion}" >> $GITHUB_ENV`
+    const envProjectSource = await $`echo DIR_SOURCE="${appDataJson.appVersion}" >> $GITHUB_ENV`
+    const envProjectTarget = await $`echo DIR_TARGET="/var/www/projects/${appDataJson.name}/${appDataJson.appVersion}/releases" >> $GITHUB_ENV`
 }
 
 main()
