@@ -38,5 +38,9 @@ jobs:
       
       - name: clone and build
         run: |
-          bun run build.ts --data ${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}
-          echo ${{ env.DIR_SOURCE }}  
+          bun run build.ts --data ${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }} 
+
+      - name: lihat env
+        run: |
+          echo "lihat env"
+          echo ${{ env.DIR_SOURCE }}
