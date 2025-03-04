@@ -99,17 +99,12 @@ jobs:
             cd ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}
             bunx prisma db seed || echo "[server] tidak membutuhkan seed"
 
-      - name: handle ecosystem config string
+      - name: generate ecosystem config string
         run: |
-          WIBU_ECOSYSTEM=$( bun run ecosystem.ts --data ${{ env.WIBU_DATA }} )
-          if [[ -z "$WIBU_ECOSYSTEM" ]]; then
-            echo "WIBU_ECOSYSTEM is empty"
-            exit 1
-          else
-            echo WIBU_ECOSYSTEM='$WIBU_ECOSYSTEM' >> $GITHUB_ENV
-          fi
+          bun run ecosystem.ts --data ${{ env.WIBU_DATA }}
 
-      - name: create ecosystem config on server
+      - name: check ecosystem config on server
+        id: check-ecosystem
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -118,11 +113,21 @@ jobs:
           script: |
             ECOSYSTEM_FILE="${{ env.DIR_TARGET_CWD }}/ecosystem.config.json"
             if [[ ! -f "$ECOSYSTEM_FILE" ]]; then
-              echo "${{ env.WIBU_ECOSYSTEM }}" > "$ECOSYSTEM_FILE"
+              echo "HAS_ECOSYSTEM=0"
             else
-              echo "ecosystem.config.json already exists"
+              echo "HAS_ECOSYSTEM=1"
             fi
-
+      
+      - name: Deploy env to VPS
+        if: steps.check-ecosystem.outputs.result == '0'
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          source: ${{ env.DIR_SOURCE }}/ecosystem.config.json
+          target: ${{ env.DIR_TARGET_CWD }}
+          
       - name: create symbolic link
         uses: appleboy/ssh-action@master
         with:

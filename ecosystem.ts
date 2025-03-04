@@ -1,5 +1,6 @@
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
+import fs from "fs/promises";
 
 const argv = minimist(process.argv.slice(2));
 const data = argv.data;
@@ -54,4 +55,5 @@ const configString = {
 };
 
 const ecosystemString = JSON.stringify(configString);
-console.log(ecosystemString);
+
+await fs.writeFile("ecosystem.config.json", ecosystemString);
