@@ -10,20 +10,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # services:
-    #   postgres:
-    #     image: postgres:14
-    #     env:
-    #       POSTGRES_USER: bip
-    #       POSTGRES_PASSWORD: Production_123
-    #       POSTGRES_DB: db
-    #     ports:
-    #       - 5433:5432
-    #     options: >-
-    #       --health-cmd="pg_isready"
-    #       --health-interval=10s
-    #       --health-timeout=5s
-    #       --health-retries=5
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: bip
+          POSTGRES_PASSWORD: Production_123
+          POSTGRES_DB: db
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       # Step 1: Checkout code
       - name: Checkout code
@@ -34,43 +34,35 @@ jobs:
 
       - name: init data
         run: |
-          echo "DATA=${{ secrets.WIBU_GIT_TOKEN }}--${{ secrets.FIREBASE }}--${{ inputs.data }}" > $GITHUB_ENV
+          echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}" > $GITHUB_ENV
 
       - name: run install
         run: |
           bun install
           bun add .
 
-      # === data app ===
-      # DATA_NAME
-      # DATA_APP_VERSION
-      # DATA_NAMESPACE
-      # DATA_REPO
-      # DATA_BRANCH
-      # DATA_ENV
-      # DATA_DATE
-      # === data upload ===
-      # DIR_SOURCE
-      # DIR_TARGET
-      # DIR_TARGET_PROJECT
+      # === data app
+      # WIBU_NAME
+      # WIBU_APP_VERSION
+      # WIBU_NAMESPACE
+      # WIBU_REPO
+      # WIBU_BRANCH
+      # WIBU_ENV
+      # WIBU_DATE
       - name: init data
         run: |
-          bun notif --data ${{ env.DATA }}
+          echo "$(bun input-data --data ${{ env.WIBU_DATA }})" >> $GITHUB_ENV
 
-      # - name: install global
-      #   run: |
-      #     bun add .
+      - name: clone
+        run: |
+          echo "clone project ..." 2>&1 | bun notif --data ${{ env.WIBU_DATA }}
+          git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.WIBU_REPO }}.git ${{ env.WIBU_APP_VERSION }} 2>&1 | bun notif --data ${{ env.WIBU_DATA }}  
 
-      # - name: clone
-      #   run: |
-      #     echo "clone project ..." | bun notif
-      #     git clone https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.DATA_REPO }}.git ${{ env.DATA_APP_VERSION }}
-
-      # - name: handle env
-      #   working-directory: ${{ env.DATA_APP_VERSION }}
-      #   run: |
-      #     echo "${{ env.DATA_ENV }}" > .env
-      #     echo "handle env ..." | bun notif
+      - name: handle env
+        working-directory: ${{ env.WIBU_APP_VERSION }}
+        run: |
+          echo "${{ env.WIBU_ENV }}" > .env
+          echo "handle env ..." | bun notif --data ${{ env.WIBU_DATA }}
 
       # - name: clone and build
       #   run: |
@@ -106,8 +98,7 @@ jobs:
       #       cd ${{ env.DIR_TARGET_PROJECT }}
       #       bun install --production
 
-      # - name: finish
-      #   if: always()
-      #   run: |
-      #     echo "FINISH !" | bun notif
-      #     bun notif --finish
+      - name: finish
+        if: always()
+        run: |
+          echo "FINISH !" | bun notif --data ${{ env.WIBU_DATA }}

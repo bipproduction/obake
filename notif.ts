@@ -2,80 +2,61 @@
 import CryptoJS from "crypto-js";
 import admin from "firebase-admin";
 import minimist from "minimist";
-import type { DataRequired } from "./init-data";
 
 const argv = minimist(process.argv.splice(2));
 
 const data = argv.data;
+const finish = argv.finish;
 
-const descyptFirebase = CryptoJS.AES.decrypt(data.split("--")[1], data.split("--")[0]).toString(CryptoJS.enc.Utf8);
+if (!data) {
+  console.error("data not found");
+  process.exit(1);
+}
 
-console.log(descyptFirebase);
+const listData = data.split("[x]");
+const key = listData[0];
+const firebase = listData[1];
+const reqData = listData[2];
 
+const dataAppJsonString = CryptoJS.AES.decrypt(reqData, key).toString(
+  CryptoJS.enc.Utf8
+);
+const dataAppJson = JSON.parse(dataAppJsonString);
 
+const decryptedFirebase = CryptoJS.AES.decrypt(firebase, key).toString(
+  CryptoJS.enc.Utf8
+);
+const firebaseConfig = JSON.parse(decryptedFirebase);
+const app = admin.initializeApp({
+  credential: admin.credential.cert(firebaseConfig.credential),
+  databaseURL: firebaseConfig.databaseURL,
+});
 
-// const finish = argv.finish;
-// const data = argv.data;
-// const firebase = argv.firebase;
-// const token = argv.token;
+const db = app.database();
 
-// if (!data) {
-//   console.error("data not found");
-//   process.exit(1);
-// }
+async function kirimNotify(...args: any[]) {
+  const body = args.join(" ");
+  db.ref("/logs").child(dataAppJson.namespace).child("log").push(body);
+  console.log(body);
+}
 
-// if (!firebase) {
-//   console.error("firebase not found");
-//   process.exit(1);
-// }
+let inputData = "";
+if (!process.stdin.isTTY) {
+  process.stdin.on("data", (chunk) => {
+    inputData += chunk.toString();
+  });
 
-// if (!token) {
-//   console.error("token not found");
-//   process.exit(1);
-// }
+  process.stdin.on("end", () => {
+    console.log("Piped input:", inputData.trim());
+    kirimNotify("[INFO]".padEnd(10, " "), inputData.trim());
+    setTimeout(() => {
+      db.app.delete();
+    }, 3000);
+  });
+} else {
+  console.log("No piped input detected.");
+}
 
-
-// const dataAppJsonString = CryptoJS.AES.decrypt(data, token).toString(
-//   CryptoJS.enc.Utf8
-// );
-
-// const dataAppJson: DataRequired["dataApp"] = JSON.parse(dataAppJsonString);
-
-// const decryptedFirebase = CryptoJS.AES.decrypt(firebase, token).toString(
-//   CryptoJS.enc.Utf8
-// );
-
-// const firebaseConfig = JSON.parse(decryptedFirebase);
-// const app = admin.initializeApp({
-//   credential: admin.credential.cert(firebaseConfig.credential),
-//   databaseURL: firebaseConfig.databaseURL,
-// });
-
-// const db = app.database();
-
-// async function kirimNotify(...args: any[]) {
-//   const body = args.join(" ");
-//   db.ref("/logs").child(dataAppJson.namespace).child("log").push(body);
-//   console.log(body);
-// }
-
-// let inputData = "";
-// if (!process.stdin.isTTY) {
-//   process.stdin.on("data", (chunk) => {
-//     inputData += chunk.toString();
-//   });
-
-//   process.stdin.on("end", () => {
-//     console.log("Piped input:", inputData.trim());
-//     kirimNotify("[INFO]".padEnd(10, " "), inputData.trim());
-//     setTimeout(() => {
-//       db.app.delete();
-//     }, 3000);
-//   });
-// } else {
-//   console.log("No piped input detected.");
-// }
-
-// if (finish) {
-//   db.app.delete();
-// }
+if (finish) {
+  db.app.delete();
+}
