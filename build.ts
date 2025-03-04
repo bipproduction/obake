@@ -38,6 +38,7 @@ const db = app.database();
 
 async function main() {
     const clone = await $`git clone --branch ${appDataJson.branch} https://x-access-token:${key}@github.com/bipproduction/${appDataJson.repo}.git ${appDataJson.appVersion}`
+    const env = await $`echo "${appDataJson.env}" > .env`.cwd(appDataJson.appVersion)
     const install = await $`bun install`.cwd(appDataJson.appVersion)
     const dbPush = await $`bunx prisma db push`.cwd(appDataJson.appVersion)
     const dbSeed = await $`bunx prisma db seed`.nothrow().cwd(appDataJson.appVersion)
