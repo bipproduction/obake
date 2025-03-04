@@ -1,4 +1,4 @@
-import log from "./src/lib/log";
+import log from "../src/lib/log";
 import minimist from "minimist";
 
 const argv = minimist(process.argv.slice(2));
