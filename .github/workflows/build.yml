@@ -118,14 +118,14 @@ jobs:
               echo "HAS_ECOSYSTEM=1"
             fi
       
-      - name: Deploy env to VPS
+      - name: Deploy ecosystem config to VPS
         if: steps.check-ecosystem.outputs.result == '0'
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: ${{ env.DIR_SOURCE }}/ecosystem.config.json
+          source: ecosystem.config.json
           target: ${{ env.DIR_TARGET_CWD }}
           
       - name: create symbolic link
