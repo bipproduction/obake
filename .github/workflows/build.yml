@@ -67,7 +67,7 @@ jobs:
           source: "${{ env.DIR_SOURCE }}/.env"
           target: "${{ env.DIR_TARGET }}/${{ env.DIR_SOURCE }}"
 
-      - name: seed on server
+      - name: install on server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -76,3 +76,42 @@ jobs:
           script: |
             cd ${{ env.DIR_TARGET }}/${{ env.DIR_SOURCE }}
             bun install --production
+
+      - name: db push on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            cd ${{ env.DIR_TARGET }}/${{ env.DIR_SOURCE }}
+            bunx prisma db push
+      
+      - name: seed on server
+        uses: appleboy/ssh-action@master
+        continue-on-error: true
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            cd ${{ env.DIR_TARGET }}/${{ env.DIR_SOURCE }}
+            bunx prisma db seed || echo "[server] tidak membutuhkan seed"
+
+      - name: send log
+        run: |
+          bun notif --data ${{ env.WIBU_DATA }} --log
+      
+      - name: success
+        if: success()
+        run: |
+          echo "SUCCESS !" 2>&1 | bun notif --data ${{ env.WIBU_DATA }}
+
+      - name: check failed
+        if: failure()
+        run: |
+          echo "FAILED !" 2>&1 | bun notif --data ${{ env.WIBU_DATA }}
+      
+      - name: finish
+        run: |
+          bun notif --data ${{ env.WIBU_DATA }} --finish

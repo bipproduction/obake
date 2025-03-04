@@ -37,23 +37,26 @@ const db = app.database();
 
 
 async function main() {
+    const envNameSpace = await $`echo NAME_SPACE="${appDataJson.namespace}" >> $GITHUB_ENV`
+    const envProjectSource = await $`echo DIR_SOURCE="${appDataJson.appVersion}" >> $GITHUB_ENV`
+    const envProjectTarget = await $`echo DIR_TARGET="/var/www/projects/${appDataJson.name}/${appDataJson.appVersion}/releases" >> $GITHUB_ENV`
+
     const clone = await $`git clone --branch ${appDataJson.branch} https://x-access-token:${key}@github.com/bipproduction/${appDataJson.repo}.git ${appDataJson.appVersion}`
     const env = await $`echo "${appDataJson.env}" > .env`.cwd(appDataJson.appVersion)
     const install = await $`bun install`.cwd(appDataJson.appVersion)
     const dbPush = await $`bunx prisma db push`.cwd(appDataJson.appVersion)
     const dbSeed = await $`bunx prisma db seed`.nothrow().cwd(appDataJson.appVersion)
-    const build = await $`bun --bun run build`.cwd(appDataJson.appVersion)
+    const build = await $`bun --bun run build 2>&1 | tee build.log`.cwd(appDataJson.appVersion)
     const cleaning = await $`rm -rf .git node_modules`.cwd(appDataJson.appVersion)
-    const envProjectSource = await $`echo DIR_SOURCE="${appDataJson.appVersion}" >> $GITHUB_ENV`
-    const envProjectTarget = await $`echo DIR_TARGET="/var/www/projects/${appDataJson.name}/${appDataJson.appVersion}/releases" >> $GITHUB_ENV`
 }
 
 main()
-  .then(() => {
+  .then((err) => {
     console.log("success");
     process.exit(0);
   })
   .catch((error) => {
+    $`echo "error: ${error}" >> build.log`.cwd(appDataJson.appVersion)
     console.error(error);
     process.exit(1);
   });
