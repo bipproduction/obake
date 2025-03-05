@@ -41,6 +41,18 @@ const app = admin.initializeApp({
 });
 
 const db = app.database();
-
-const dataLog = await fs.readFile(filePath, "utf-8");
-db.ref("/logs").child(appDataJson.namespace).child("log").push(dataLog);
+try {
+  const dataLog = await fs.readFile(filePath, "utf-8");
+  console.log("[LOG]".padEnd(10, " "), dataLog.toString());
+  db.ref("/logs").child(appDataJson.namespace).child("log").push("send log");
+  db.ref("/logs")
+    .child(appDataJson.namespace)
+    .child("log")
+    .push(dataLog.toString());
+} catch (error) {
+  console.error(error);
+} finally {
+  setTimeout(() => {
+    app.delete();
+  }, 3000);
+}
