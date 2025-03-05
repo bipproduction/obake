@@ -87,7 +87,6 @@ jobs:
           script: |
             cd ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}
             bun install --production
-            nice -n 19 bun run build
 
       - name: db push on server
         uses: appleboy/ssh-action@master
