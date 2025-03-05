@@ -14,9 +14,11 @@ if (!data) {
 }
 
 const listData = data.split("[x]");
-const key = listData[0];
+const TOKEN = listData[0];
 const firebase = listData[1];
 const appData = listData[2];
+const key = listData[3];
+
 
 const dcryptFirebase = CryptoJS.AES.decrypt(firebase, key).toString(
   CryptoJS.enc.Utf8
@@ -41,7 +43,7 @@ async function main() {
   await $`echo DIR_RELEASES="/var/www/projects/${appDataJson.name}/${appDataJson.namespace}/releases" >> $GITHUB_ENV`;
   await $`echo DIR_TARGET_CWD="/var/www/projects/${appDataJson.name}/${appDataJson.namespace}" >> $GITHUB_ENV`;
 
-  await $`git clone --branch ${appDataJson.branch} https://x-access-token:${key}@github.com/bipproduction/${appDataJson.repo}.git ${appDataJson.appVersion}`;
+  await $`git clone --branch ${appDataJson.branch} https://x-access-token:${TOKEN}@github.com/bipproduction/${appDataJson.repo}.git ${appDataJson.appVersion}`;
   await $`echo "${appDataJson.env}" > .env`.cwd(appDataJson.appVersion);
   await $`bun install`.cwd(appDataJson.appVersion);
   await $`bunx prisma db push`.cwd(appDataJson.appVersion);

@@ -24,6 +24,7 @@
     "dayjs": "^1.11.13",
     "dedent": "^1.5.3",
     "dotenv": "^16.4.7",
+    "firebase": "^11.4.0",
     "firebase-admin": "^13.1.0",
     "json-schema-to-typescript": "^15.0.4",
     "json-to-ts": "^2.1.0",

@@ -12,10 +12,14 @@ if (!data) {
 }
 
 const listData = data.split("[x]");
-const key = listData[0];
+const TOKEN = listData[0];
 const firebase = listData[1];
 const appData = listData[2];
+const key = listData[3];
 
+const dcryptFirebase = CryptoJS.AES.decrypt(firebase, key).toString(
+  CryptoJS.enc.Utf8
+);
 const dcryptAppData = CryptoJS.AES.decrypt(appData, key).toString(
   CryptoJS.enc.Utf8
 );

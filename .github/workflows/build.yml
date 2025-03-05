@@ -33,7 +33,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: handle WIBU_DATA
-        run: echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}" >> $GITHUB_ENV
+        run: echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}" >> $GITHUB_ENV
 
       - name: create log file
         run: |
