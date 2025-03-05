@@ -33,9 +33,9 @@ const configString = {
   name: appDataJson.name+"-"+port,
   namespace: appDataJson.namespace,
   script: "bun",
-  args: "run start",
-  exec_mode: "cluster",
-  instances: 4,
+  args: "--bun run start",
+  exec_mode: "fork",
+  instances: 1,
   env: {
     NODE_ENV: "production",
     PORT: port,
