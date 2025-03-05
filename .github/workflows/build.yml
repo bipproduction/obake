@@ -37,19 +37,19 @@ jobs:
 
       - name: create log file
         run: |
-          touch ~/wibu.log
+          touch $GITHUB_WORKSPACE/wibu.log
 
       - name: install dependencies
         run: |
-          bun install > ~/wibu.log 2>&1
+          bun install > $GITHUB_WORKSPACE/wibu.log 2>&1
 
       - name: clone and build
         run: |
-          bun run build.ts --data ${{ env.WIBU_DATA }} > ~/wibu.log 2>&1
+          bun run build.ts --data ${{ env.WIBU_DATA }} > $GITHUB_WORKSPACE/wibu.log 2>&1
 
       - name: generate ecosystem config string
         run: |
-          bun run ecosystem.ts --data ${{ env.WIBU_DATA }} > ~/wibu.log 2>&1
+          bun run ecosystem.ts --data ${{ env.WIBU_DATA }} > $GITHUB_WORKSPACE/wibu.log 2>&1
 
       - name: make directory releases
         uses: appleboy/ssh-action@master
@@ -58,7 +58,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            mkdir -p ${{ env.DIR_RELEASES }} ~/wibu.log 2>&1
+            mkdir -p ${{ env.DIR_RELEASES }}
 
       - name: Deploy to VPS (New Version)
         uses: appleboy/scp-action@master

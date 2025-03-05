@@ -42,7 +42,7 @@ const db = app.database();
 
 if (log) {
   const log = await fs.readFile(
-    "~/wibu.log",
+    "$GITHUB_WORKSPACE/wibu.log",
     "utf-8"
   );
   db.ref("/logs").child(appDataJson.namespace).child("log").push(log);
