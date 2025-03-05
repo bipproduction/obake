@@ -42,7 +42,7 @@ const db = app.database();
 
 if (log) {
   const log = await fs.readFile(
-    path.resolve(process.cwd(), appDataJson.appVersion, "build.log"),
+    "/wibu.log",
     "utf-8"
   );
   db.ref("/logs").child(appDataJson.namespace).child("log").push(log);

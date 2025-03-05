@@ -1,6 +1,7 @@
 import CryptoJS from "crypto-js";
 import minimist from "minimist";
 import fs from "fs/promises";
+import path from "path";
 
 const argv = minimist(process.argv.slice(2));
 const data = argv.data;
@@ -30,7 +31,7 @@ async function findPort() {
 const port = await findPort();
 
 const configString = {
-  name: appDataJson.name+"-"+port,
+  name: appDataJson.name + "-" + port,
   namespace: appDataJson.namespace,
   script: "bun",
   args: "--bun run start",
@@ -56,4 +57,7 @@ const configString = {
 
 const ecosystemString = JSON.stringify(configString);
 
-await fs.writeFile("ecosystem.config.json", ecosystemString);
+await fs.writeFile(
+  path.resolve(process.cwd(), appDataJson.appVersion, "ecosystem.config.json"),
+  ecosystemString
+);

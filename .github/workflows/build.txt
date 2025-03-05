@@ -32,24 +32,14 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: handle WIBU_DATA
-        run: echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}" >> $GITHUB_ENV
-
-      - name: create log file
-        run: |
-          touch /wibu.log
-
       - name: install dependencies
         run: |
-          bun install > /wibu.log 2>&1
+          bun install
 
       - name: clone and build
         run: |
-          bun run build.ts --data ${{ env.WIBU_DATA }} > /wibu.log 2>&1
-
-      - name: generate ecosystem config string
-        run: |
-          bun run ecosystem.ts --data ${{ env.WIBU_DATA }} > /wibu.log 2>&1
+          bun run build.ts --data ${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}
+          echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}" >> $GITHUB_ENV
 
       - name: make directory releases
         uses: appleboy/ssh-action@master
@@ -58,7 +48,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            mkdir -p ${{ env.DIR_RELEASES }} /wibu.log 2>&1
+            mkdir -p ${{ env.DIR_RELEASES }}
 
       - name: Deploy to VPS (New Version)
         uses: appleboy/scp-action@master
@@ -110,6 +100,10 @@ jobs:
             cd ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}
             bunx prisma db seed || echo "[server] tidak membutuhkan seed"
 
+      - name: generate ecosystem config string
+        run: |
+          bun run ecosystem.ts --data ${{ env.WIBU_DATA }}
+
       - name: check ecosystem config on server
         id: check-ecosystem
         uses: appleboy/ssh-action@master
@@ -120,9 +114,21 @@ jobs:
           script: |
             ECOSYSTEM_FILE="${{ env.DIR_TARGET_CWD }}/ecosystem.config.json"
             if [[ ! -f "$ECOSYSTEM_FILE" ]]; then
-              cp ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}/ecosystem.config.json $ECOSYSTEM_FILE
+              echo "HAS_ECOSYSTEM=0"
+            else
+              echo "HAS_ECOSYSTEM=1"
             fi
-
+      
+      - name: Deploy ecosystem config to VPS
+        if: steps.check-ecosystem.outputs.result == '0'
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          source: ecosystem.config.json
+          target: ${{ env.DIR_TARGET_CWD }}
+          
       - name: create symbolic link
         uses: appleboy/ssh-action@master
         with:

@@ -17,7 +17,7 @@ if (!TOKEN) {
 
 const data = {
   name: "darmasaba",
-  namespace: "darmasaba-prod",
+  namespace: "drm-prod",
   appVersion: "",
   repo: "sistem-desa-mandiri",
   branch: "main",
