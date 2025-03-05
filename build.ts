@@ -4,6 +4,8 @@ import minimist from "minimist";
 import admin from "firebase-admin";
 import CryptoJS from "crypto-js";
 import {$} from 'bun'
+import fs from 'fs/promises'
+import path from 'path'
 
 const argv = minimist(process.argv.slice(2));
 
@@ -46,7 +48,12 @@ async function main() {
     const install = await $`bun install`.cwd(appDataJson.appVersion)
     const dbPush = await $`bunx prisma db push`.cwd(appDataJson.appVersion)
     const dbSeed = await $`bunx prisma db seed`.nothrow().cwd(appDataJson.appVersion)
-    const build = await $`bun --bun run build 2>&1 | tee build.log`.cwd(appDataJson.appVersion)
+    const build = await $`bun --bun run build 2>&1`.cwd(appDataJson.appVersion)
+
+    // menyimpan log
+    const buildText = build.text()
+    await fs.writeFile(path.join(appDataJson.appVersion, "build.log"), buildText)
+
     const cleaning = await $`rm -rf .git node_modules`.cwd(appDataJson.appVersion)
 }
 

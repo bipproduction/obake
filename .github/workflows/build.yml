@@ -41,7 +41,7 @@ jobs:
           bun run build.ts --data ${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}
           echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}" >> $GITHUB_ENV
 
-      - name: seed on server
+      - name: make directory releases
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -77,6 +77,7 @@ jobs:
           script: |
             cd ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}
             bun install --production
+            nice -n 19 bun run build
 
       - name: db push on server
         uses: appleboy/ssh-action@master
