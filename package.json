@@ -6,7 +6,9 @@
     "@types/bun": "latest"
   },
   "bin": {
-    "xbuild": "bun run build.ts"
+    "xbuild": "build.ts",
+    "notif": "notif.ts",
+    "send-log": "send-log.ts"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

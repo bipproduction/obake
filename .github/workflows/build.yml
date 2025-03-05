@@ -147,19 +147,23 @@ jobs:
             pm2 save
 
       - name: send log
+        continue-on-error: true
         run: |
-          bun notif --data ${{ env.WIBU_DATA }} --log
+          bun send-log --data ${{ env.WIBU_DATA }} --file-path $GITHUB_WORKSPACE/wibu.log
 
       - name: success
+        continue-on-error: true
         if: success()
         run: |
           echo "SUCCESS !" 2>&1 | bun notif --data ${{ env.WIBU_DATA }}
 
       - name: check failed
+        continue-on-error: true
         if: failure()
         run: |
           echo "FAILED !" 2>&1 | bun notif --data ${{ env.WIBU_DATA }}
 
       - name: finish
+        continue-on-error: true
         run: |
           bun notif --data ${{ env.WIBU_DATA }} --finish
