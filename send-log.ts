@@ -44,11 +44,11 @@ const db = app.database();
 try {
   const dataLog = await fs.readFile(filePath, "utf-8");
   console.log("[LOG]".padEnd(10, " "), dataLog.toString());
-  db.ref("/logs").child(appDataJson.namespace).child("log").push("send log");
+  db.ref("/logs").child(appDataJson.namespace).child("log").push("[LOG]".padEnd(10, " ") + "send log");
   db.ref("/logs")
     .child(appDataJson.namespace)
     .child("log")
-    .push(dataLog.toString());
+    .push("[LOG]".padEnd(10, " ") + dataLog.toString());
 } catch (error) {
   console.error(error);
 } finally {
