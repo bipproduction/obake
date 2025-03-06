@@ -44,7 +44,7 @@ jobs:
           bun install
 
       - name: notify loading
-        run: echo "[LOADING] ..." | bun run notif -data ${{ env.WIBU_DATA }}
+        run: echo "[LOADING] ..." | bun run notif --data ${{ env.WIBU_DATA }}
 
       - name: clone and build
         run: |
