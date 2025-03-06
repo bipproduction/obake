@@ -43,6 +43,9 @@ jobs:
         run: |
           bun install
 
+      - name: notify loading
+        run: echo "[LOADING] ..." | bun run notif -data ${{ env.WIBU_DATA }}
+
       - name: clone and build
         run: |
           bun run build.ts --data ${{ env.WIBU_DATA }} >> $GITHUB_WORKSPACE/wibu.log 2>&1

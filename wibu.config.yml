@@ -1,0 +1,12 @@
+# nama project / app
+name: "hipmi"
+# nama unik contoh hipmi-prd
+namespace: "hipmi-prd"
+# untuk production pilih main
+branch: "main"
+# repo github bagian belakannya aja karena hanya untuk project bip
+repo: "hipmi"
+# tambahkan env yang dibutuhkan
+env: |
+  DATABASE_URL="postgresql://bip:Production_123@localhost:5433/hipmi?schema=public"
+  NODE_ENV="production"

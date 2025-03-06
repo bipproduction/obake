@@ -2,16 +2,11 @@
 
 import CryptoJS from "crypto-js";
 import admin from "firebase-admin";
-import fs from "fs/promises";
 import minimist from "minimist";
-import path from "path";
 
 const argv = minimist(process.argv.slice(2));
 
 const data = argv.data;
-const log = argv.log;
-const type = argv.type;
-const finish = argv.finish;
 
 if (!data) {
   console.error("data not found");
@@ -41,14 +36,6 @@ const app = admin.initializeApp({
 
 const db = app.database();
 
-if (log) {
-  const log = await fs.readFile(
-    "$GITHUB_WORKSPACE/wibu.log",
-    "utf-8"
-  );
-  db.ref("/logs").child(appDataJson.namespace).child("log").push(log);
-}
-
 let inputData = "";
 if (!process.stdin.isTTY) {
   process.stdin.on("data", (chunk) => {
@@ -56,8 +43,7 @@ if (!process.stdin.isTTY) {
   });
 
   process.stdin.on("end", () => {
-    const finalType = type ? type : "INFO";
-    const text = `[${finalType}]`.padEnd(10, " ") + inputData.trim();
+    const text = `[INFO]`.padEnd(10, " ") + inputData.trim();
     db.ref("/logs").child(appDataJson.namespace).child("log").push(text);
     setTimeout(() => {
       db.app.delete();
@@ -65,8 +51,4 @@ if (!process.stdin.isTTY) {
   });
 } else {
   console.log("No piped input detected.");
-}
-
-if (finish) {
-  db.ref("/logs").child(appDataJson.namespace).child("isRunning").set(false);
 }
