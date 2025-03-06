@@ -1,0 +1,42 @@
+name: log
+
+on:
+  workflow_dispatch:
+    inputs:
+      data:
+        description: "data"
+        required: true
+        default: "null"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: install dependencies
+        run: bun install
+
+      - name: handle WIBU_DATA
+        run: echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}" >> $GITHUB_ENV
+
+      - name: handle env
+        run: bun run handle-env.ts
+
+      - name: make directory releases
+        id: server-log
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            timeout 5s pm2 logs ${{ env.WIBU_NAMESPACE }}
+      
+      - name: send log
+        run: |
+          echo ${{ steps.server-log.outputs.stdout }}
