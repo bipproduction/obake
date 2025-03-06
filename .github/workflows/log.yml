@@ -27,7 +27,7 @@ jobs:
       - name: handle env
         run: bun run handle-env.ts --data ${{ env.WIBU_DATA }}
 
-      - name: make directory releases
+      - name: check log on VPS server
         id: server-log
         uses: appleboy/ssh-action@master
         with:
@@ -37,6 +37,6 @@ jobs:
           script: |
             timeout 5s pm2 logs ${{ env.WIBU_NAMESPACE }}
       
-      - name: send log
+      - name: print log
         run: |
           echo ${{ steps.server-log.outputs.stdout }}
