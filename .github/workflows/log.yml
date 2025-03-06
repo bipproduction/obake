@@ -25,7 +25,7 @@ jobs:
         run: echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}" >> $GITHUB_ENV
 
       - name: handle env
-        run: bun run handle-env.ts
+        run: bun run handle-env.ts --data ${{ env.WIBU_DATA }}
 
       - name: make directory releases
         id: server-log
