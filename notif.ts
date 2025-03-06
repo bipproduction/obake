@@ -7,6 +7,7 @@ import minimist from "minimist";
 const argv = minimist(process.argv.slice(2));
 
 const data = argv.data;
+const finish = argv.finish;
 
 if (!data) {
   console.error("data not found");
@@ -51,4 +52,8 @@ if (!process.stdin.isTTY) {
   });
 } else {
   console.log("No piped input detected.");
+}
+
+if (finish) {
+  db.ref("/logs").child(appDataJson.namespace).child("isRunning").set(false);
 }
