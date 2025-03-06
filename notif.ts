@@ -44,7 +44,7 @@ if (!process.stdin.isTTY) {
   });
 
   process.stdin.on("end", () => {
-    const text = `[INFO]`.padEnd(10, " ") + inputData.trim();
+    const text = `[INFO]`.padEnd(14) + inputData.trim();
     db.ref("/logs").child(appDataJson.namespace).child("log").push(text);
     setTimeout(() => {
       db.app.delete();
