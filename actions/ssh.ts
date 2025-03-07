@@ -12,7 +12,6 @@ cat <<EOF > ~/.ssh/id_rsa
 ${key}
 EOF
 chmod 600 ~/.ssh/id_rsa
-ssh -i ~/.ssh/id_rsa ${user}@${host} -t "ls"
 `;
 
 console.log(log.text());
