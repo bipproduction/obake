@@ -28,11 +28,19 @@ jobs:
       - name: Handle env
         run: bun run handle-env.ts --data ${{ env.WIBU_DATA }}
     
-      - name: handle WIBU_DATA
-        run: | 
-            cat <<EOF > ./id_rsa
+      - name: Handle WIBU_DATA
+        run: |
+          # Write the SSH key to a file
+          cat <<EOF > ./id_rsa
             ${{ secrets.VPS_KEY }}
-            EOF
-            chmod 600 ./id_rsa
-
-            bun run actions/ssh.ts --data "${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}"
+          EOF
+      
+          # Set correct permissions for the SSH key
+          chmod 600 ./id_rsa
+      
+          # Debugging: Verify the SSH key file
+          echo "SSH key written to ./id_rsa"
+          ls -l ./id_rsa
+      
+          # Run the TypeScript script with the required data
+          bun run actions/ssh.ts --data "${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}"
