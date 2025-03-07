@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           source: "/tmp/${{ env.WIBU_NAMESPACE }}.txt"
-          target: "/tmp/${{ env.WIBU_NAMESPACE }}.txt"
+          target: "${{ github.workspace }}/${{ env.WIBU_NAMESPACE }}.txt"
 
       - name: print log
-        run: cat /tmp/${{ env.WIBU_NAMESPACE }}.txt
+        run: cat ${{ github.workspace }}/${{ env.WIBU_NAMESPACE }}.txt
