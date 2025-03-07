@@ -39,6 +39,8 @@ const appDataJson = JSON.parse(dcryptAppData);
 ;(async () => {
   const listKey = Object.keys(appDataJson);
   for (const key of listKey) {
-    await $`echo "WIBU_${_.snakeCase(_.upperCase(key))}=${appDataJson[key]}" >> $GITHUB_ENV`;
+    const dataEnv = `WIBU_${_.snakeCase(_.upperCase(key))}=${appDataJson[key]}`;
+    await $`echo "${dataEnv}" >> $GITHUB_ENV`;
+    console.log(dataEnv);
   }
 })();
