@@ -32,7 +32,7 @@ try {
   conn
     .on("ready", () => {
       console.log("Client :: ready");
-      conn.exec(`pm2 logs ${namespace}`, (err, stream) => {
+      conn.exec(`timeout 5s pm2 log ${namespace}`, (err, stream) => {
         if (err) {
           console.error("Error executing command:", err.message);
           conn.end();
