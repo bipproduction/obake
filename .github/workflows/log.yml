@@ -53,3 +53,7 @@ jobs:
           "timeout 10s pm2 log ${{ env.WIBU_NAMESPACE }} 2>&1 || true" | bun run send-notify.ts \
           --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
           --path "/logs/live/${{ env.WIBU_NAMESPACE }}/log"
+
+          echo "false" | bun run send-notify.ts \
+          --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
+          --path "/logs/live/${{ env.WIBU_NAMESPACE }}/isRunning"
