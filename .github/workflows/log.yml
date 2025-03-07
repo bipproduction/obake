@@ -30,19 +30,21 @@ jobs:
         # WIBU_APP_VERSION
       - name: Handle env
         run: |
-            echo "NAME=${{ fromJson(inputs.data).name }}" >> $GITHUB_ENV
-            echo "NAMESPACE=${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
-            echo "REPO=${{ fromJson(inputs.data).repo }}" >> $GITHUB_ENV
-            echo "BRANCH=${{ fromJson(inputs.data).branch }}" >> $GITHUB_ENV
-            echo "DATE=${{ fromJson(inputs.data).date }}" >> $GITHUB_ENV
-            echo "APP_VERSION=${{ fromJson(inputs.data).app_version }}" >> $GITHUB_ENV
+          echo "NAME=${{ fromJson(inputs.data).name }}" >> $GITHUB_ENV
+          echo "NAMESPACE=${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
+          echo "REPO=${{ fromJson(inputs.data).repo }}" >> $GITHUB_ENV
+          echo "BRANCH=${{ fromJson(inputs.data).branch }}" >> $GITHUB_ENV
+          echo "DATE=${{ fromJson(inputs.data).date }}" >> $GITHUB_ENV
+          echo "APP_VERSION=${{ fromJson(inputs.data).app_version }}" >> $GITHUB_ENV
 
-            echo "${{ env.NAME }}"
-            echo "${{ env.NAMESPACE }}"
-            echo "${{ env.REPO }}"
-            echo "${{ env.BRANCH }}"
-            echo "${{ env.DATE }}"
-            echo "${{ env.APP_VERSION }}"
+      - name: print env
+        run: |
+          echo "${{ env.NAME }}"
+          echo "${{ env.NAMESPACE }}"
+          echo "${{ env.REPO }}"
+          echo "${{ env.BRANCH }}"
+          echo "${{ env.DATE }}"
+          echo "${{ env.APP_VERSION }}"
 
     #   - name: Handle WIBU_DATA
     #     run: |
