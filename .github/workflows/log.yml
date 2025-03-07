@@ -64,4 +64,4 @@ jobs:
 
       - name: Send WIBU_DATA
         run: |
-            scp -o StrictHostKeyChecking=no -i ./id_rsa ./wibu.log ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/result.txt
+            scp -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/result.txt ./wibu.log
