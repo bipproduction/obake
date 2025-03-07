@@ -9,9 +9,9 @@ const host = data[1];
 const key = data[2];
 const dir = data[3];
 
-await fs.writeFile(`${dir}/id_rsa`, key);
-await fs.writeFile(`${dir}/id_rsa.pub`, key);
-await $`chmod 600 ${dir}/id_rsa`;
-await $`chmod 600 ${dir}/id_rsa.pub`;
+await fs.writeFile(`./id_rsa`, key);
+await fs.writeFile(`./id_rsa.pub`, key);
+await $`chmod 600 ./id_rsa`;
+await $`chmod 600 ./id_rsa.pub`;
 
-console.log(await fs.readFile(`${dir}/id_rsa`, "utf-8"));
+console.log(await fs.readFile(`./id_rsa`, "utf-8"));
