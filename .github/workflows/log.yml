@@ -30,7 +30,7 @@ jobs:
         # WIBU_APP_VERSION
       - name: Handle env
         run: |
-            echo "${{ toJson(inputs) }}"
+            echo "${{ toJson(inputs.data) }}"
             # bun run handle-env.ts --data ${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}
 
     #   - name: Handle WIBU_DATA
