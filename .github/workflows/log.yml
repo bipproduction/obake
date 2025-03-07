@@ -26,34 +26,37 @@ jobs:
         # WIBU_NAMESPACE
         # WIBU_REPO
         # WIBU_BRANCH
-        # WIBU_ENV
         # WIBU_DATE
         # WIBU_APP_VERSION
       - name: Handle env
         run: |
-            bun run handle-env.ts --data ${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}
+            echo "${{ toJson(inputs) }}"
+            # bun run handle-env.ts --data ${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}
 
-      - name: Handle WIBU_DATA
-        run: |
-          # Write the SSH key to a file with proper formatting
-          cat <<EOF > ./id_rsa
-          ${{ secrets.VPS_KEY }}
-          EOF
+    #   - name: Handle WIBU_DATA
+    #     run: |
+    #       # Write the SSH key to a file with proper formatting
+    #       cat <<EOF > ./id_rsa
+    #       ${{ secrets.VPS_KEY }}
+    #       EOF
 
-          # Set correct permissions for the SSH key
-          chmod 600 ./id_rsa
+    #       # Set correct permissions for the SSH key
+    #       chmod 600 ./id_rsa
 
-          # Debugging: Verify the SSH key file
-          echo "SSH key written to ./id_rsa"
-          ls -l ./id_rsa
-          cat ./id_rsa  # Optional: Print the key for debugging (ensure no extra spaces or newlines)
+    #       # Debugging: Verify the SSH key file
+    #       echo "SSH key written to ./id_rsa"
+    #       ls -l ./id_rsa
+    #       cat ./id_rsa  # Optional: Print the key for debugging (ensure no extra spaces or newlines)
 
-          # Test SSH connection
-          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "timeout 10s pm2 log ${{ env.WIBU_NAMESPACE }} 2>&1 || true" | bun run send-notify.ts \
-          --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
-          --path "/logs/live/${{ env.WIBU_NAMESPACE }}/log"
+    #       # Test SSH connection
+    #       ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+    #       "timeout 10s pm2 log ${{ env.WIBU_NAMESPACE }} 2>&1 || true" | bun run send-notify.ts \
+    #       --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
+    #       --path "/logs/live/${{ env.WIBU_NAMESPACE }}/log"
 
-          echo "false" | bun run send-notify.ts \
-          --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
-          --path "/logs/live/${{ env.WIBU_NAMESPACE }}/isRunning"
+    #       echo "false" | bun run send-notify.ts \
+    #       --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
+    #       --path "/logs/live/${{ env.WIBU_NAMESPACE }}/isRunning"
+
+    #       # delete rsa
+    #       rm ./id_rsa
