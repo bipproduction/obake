@@ -7,10 +7,11 @@ const data = args.data.split("[x]");
 const user = data[0];
 const host = data[1];
 const key = data[2];
+const dir = data[3];
 
-await fs.writeFile("~/.ssh/id_rsa", key);
-await fs.writeFile("~/.ssh/id_rsa.pub", key);
-await $`chmod 600 ~/.ssh/id_rsa`;
-await $`chmod 600 ~/.ssh/id_rsa.pub`;
+await fs.writeFile(`${dir}/id_rsa`, key);
+await fs.writeFile(`${dir}/id_rsa.pub`, key);
+await $`chmod 600 ${dir}/id_rsa`;
+await $`chmod 600 ${dir}/id_rsa.pub`;
 
-console.log(await fs.readFile("~/.ssh/id_rsa", "utf-8"));
+console.log(await fs.readFile(`${dir}/id_rsa`, "utf-8"));
