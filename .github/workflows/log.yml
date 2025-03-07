@@ -53,4 +53,4 @@ jobs:
           bun run actions/log.ts --data "${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}[x]${{ env.WIBU_NAMESPACE}}"
     
       - name: print log
-        run: echo "${{ env.WIBU_LIVE_LOG }}"
+        run: cat ./live-log.txt
