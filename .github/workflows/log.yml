@@ -46,4 +46,4 @@ jobs:
           WIBU_NAMESPACE: ${{ env.WIBU_NAMESPACE }}
 
       - name: Print log
-        run: echo "${{ toJson(steps.server-log.outputs) }}"
+        run: echo "${{ toJson(steps.server-log) }}"
