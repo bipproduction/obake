@@ -27,15 +27,6 @@ jobs:
 
       - name: Handle env
         run: bun run handle-env.ts --data ${{ env.WIBU_DATA }}
-
-      - name: Fetch File from VPS
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          source: "/tmp/result.txt"
-          target: "./"
-
-      - name: Log to file   
-        run: cat ./result.txt
+    
+      - name: handle WIBU_DATA
+        run: bun run actions/ssh.ts --data ${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}
