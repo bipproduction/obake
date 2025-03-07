@@ -1,17 +1,34 @@
-import minimist from "minimist";
 import { $ } from "bun";
-import fs from "fs/promises";
+import minimist from "minimist";
 
+// Parse arguments
 const args = minimist(process.argv.slice(2));
-const data = args.data.split("[x]");
-const user = data[0];
-const host = data[1];
-
-try {
-    const log = await $`ssh -i ./id_rsa root@wibudev.com "echo 'Hello World'"`.text();
-    console.log(log);
-} catch (error) {
-    console.log(error);
+if (!args.data) {
+    console.error("Error: Missing --data argument");
+    process.exit(1);
 }
 
+// Split user and host
+const [user, host] = args.data.split("[x]");
+if (!user || !host) {
+    console.error("Error: Invalid --data format. Expected 'user[x]host'");
+    process.exit(1);
+}
 
+try {
+    // Check if the SSH key exists
+    const sshKeyPath = "./id_rsa";
+    const { existsSync } = await import("fs");
+    if (!existsSync(sshKeyPath)) {
+        console.error(`Error: SSH key not found at ${sshKeyPath}`);
+        process.exit(1);
+    }
+
+    // Execute SSH command
+    console.log(`Connecting to ${user}@${host}...`);
+    const log = await $`ssh -i ${sshKeyPath} ${user}@${host} "echo 'Hello World'"`.text();
+    console.log("Output from server:", log.trim());
+} catch (error) {
+    console.error("SSH command failed:", error);
+    process.exit(1);
+}
