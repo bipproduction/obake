@@ -32,7 +32,7 @@ jobs:
       - name: Handle env
         run: |
             bun run handle-env.ts --data ${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}
-            echo "${{ env.WIBU_NAMESPACE }}"
+            echo "${{ toJson(env) }}"
 
     #   - name: Handle WIBU_DATA
     #     run: |
