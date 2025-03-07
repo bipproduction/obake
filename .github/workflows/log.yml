@@ -36,7 +36,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-           echo "RESULT=thi is from server"
+           echo "RESULT=thi is from server" >> $GITHUB_ENV
         env:
           WIBU_NAMESPACE: ${{ env.WIBU_NAMESPACE }}
 
