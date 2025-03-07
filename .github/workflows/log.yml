@@ -41,7 +41,7 @@ jobs:
 
             # Baca isi file log dan kirim ke stdout
             LOG_CONTENT=$(cat /tmp/${{ env.WIBU_NAMESPACE }}.txt)
-            echo "log_content=$LOG_CONTENT"  # Simpan output ke variabel GitHub Actions
+            echo "log_content=$LOG_CONTENT"  >> $GITHUB_OUTPUT
         env:
           WIBU_NAMESPACE: ${{ env.WIBU_NAMESPACE }}
 
