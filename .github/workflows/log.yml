@@ -36,9 +36,12 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-           echo "RESULT=thi is from server" >> $GITHUB_ENV
-        env:
-          WIBU_NAMESPACE: ${{ env.WIBU_NAMESPACE }}
+            echo "RESULT=thi is from server" >> $GITHUB_ENV
 
+      - name: Save SSH output to environment
+        run: |
+          echo "RESULT=$(echo '${{ steps.server-log.outputs.stdout }}')" >> $GITHUB_ENV
+  
       - name: Print log
-        run: echo "${{ toJson(steps.server-log) }}"
+        run: |
+            echo "Server result: ${{ env.RESULT }}"
