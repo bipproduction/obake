@@ -21,6 +21,7 @@ if (!pathRef) {
 
 const [firebase, key] = data.split("[x]");
 
+
 const dcryptFirebase = CryptoJS.AES.decrypt(firebase, key).toString(
   CryptoJS.enc.Utf8
 );

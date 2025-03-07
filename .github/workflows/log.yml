@@ -31,45 +31,38 @@ jobs:
       - name: Handle env
         run: |
           echo "NAME=${{ fromJson(inputs.data).name }}" >> $GITHUB_ENV
-          echo "NAMESPACE=${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
-          echo "REPO=${{ fromJson(inputs.data).repo }}" >> $GITHUB_ENV
-          echo "BRANCH=${{ fromJson(inputs.data).branch }}" >> $GITHUB_ENV
-          echo "DATE=${{ fromJson(inputs.data).date }}" >> $GITHUB_ENV
-          echo "APP_VERSION=${{ fromJson(inputs.data).app_version }}" >> $GITHUB_ENV
+          echo "WIBU_NAMESPACE=${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
+          echo "WIBU_REPO=${{ fromJson(inputs.data).repo }}" >> $GITHUB_ENV
+          echo "WIBU_BRANCH=${{ fromJson(inputs.data).branch }}" >> $GITHUB_ENV
+          echo "WIBU_DATE=${{ fromJson(inputs.data).date }}" >> $GITHUB_ENV
+          echo "WIBU_APP_VERSION=${{ fromJson(inputs.data).appVersion }}" >> $GITHUB_ENV
 
-      - name: print env
+          cat <<EOF > .env.wibu.app
+          ${{ fromJson(inputs.data).env }}
+          EOF
+
+          cat <<EOF > ./id_rsa
+          ${{ secrets.VPS_KEY }}
+          EOF
+
+          chmod 600 ./id_rsa
+
+      - name: Handle WIBU_DATA
         run: |
-          echo "${{ env.NAME }}"
-          echo "${{ env.NAMESPACE }}"
-          echo "${{ env.REPO }}"
-          echo "${{ env.BRANCH }}"
-          echo "${{ env.DATE }}"
-          echo "${{ env.APP_VERSION }}"
+          # Debugging: Verify the SSH key file
+          echo "SSH key written to ./id_rsa"
+          ls -l ./id_rsa
+          cat ./id_rsa  # Optional: Print the key for debugging (ensure no extra spaces or newlines)
 
-    #   - name: Handle WIBU_DATA
-    #     run: |
-    #       # Write the SSH key to a file with proper formatting
-    #       cat <<EOF > ./id_rsa
-    #       ${{ secrets.VPS_KEY }}
-    #       EOF
+          # Test SSH connection
+          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+          "timeout 10s pm2 log ${{ env.WIBU_NAMESPACE }} 2>&1 || true" | bun run send-notify.ts \
+          --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
+          --path "/logs/live/${{ env.WIBU_NAMESPACE }}/log"
 
-    #       # Set correct permissions for the SSH key
-    #       chmod 600 ./id_rsa
+          echo "false" | bun run send-notify.ts \
+          --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
+          --path "/logs/live/${{ env.WIBU_NAMESPACE }}/isRunning"
 
-    #       # Debugging: Verify the SSH key file
-    #       echo "SSH key written to ./id_rsa"
-    #       ls -l ./id_rsa
-    #       cat ./id_rsa  # Optional: Print the key for debugging (ensure no extra spaces or newlines)
-
-    #       # Test SSH connection
-    #       ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-    #       "timeout 10s pm2 log ${{ env.WIBU_NAMESPACE }} 2>&1 || true" | bun run send-notify.ts \
-    #       --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
-    #       --path "/logs/live/${{ env.WIBU_NAMESPACE }}/log"
-
-    #       echo "false" | bun run send-notify.ts \
-    #       --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
-    #       --path "/logs/live/${{ env.WIBU_NAMESPACE }}/isRunning"
-
-    #       # delete rsa
-    #       rm ./id_rsa
+          # delete rsa
+          rm ./id_rsa
