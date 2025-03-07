@@ -42,4 +42,4 @@ jobs:
 
       - name: Print RESULT from VPS
         run: |
-          echo "The result : ${{ toJson(steps.ssh_step) }}"
+          echo "The result : ${{ env.RESULT }}"
