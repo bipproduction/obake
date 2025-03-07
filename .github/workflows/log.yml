@@ -43,4 +43,4 @@ jobs:
           ls -l ./id_rsa
       
           # Run the TypeScript script with the required data
-          # bun run actions/ssh.ts --data "${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}"
+          bun run actions/ssh.ts --data "${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}"
