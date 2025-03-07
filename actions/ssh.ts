@@ -13,8 +13,11 @@ await fs.writeFile(`./id_rsa.pub`, key);
 await $`chmod 600 ./id_rsa`;
 await $`chmod 600 ./id_rsa.pub`;
 
-const log = await $`ssh -i ./id_rsa ${user}@${host} -t "ls"`;
-
-console.log(log.text());
+try {
+    const log = await $`ssh -i ./id_rsa ${user}@${host} -t "ls"`.text();
+    console.log(log);
+} catch (error) {
+    console.log(error);
+}
 
 
