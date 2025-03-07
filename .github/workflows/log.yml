@@ -22,9 +22,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Handle WIBU_DATA
-        run: echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}" >> $GITHUB_ENV
-
         # WIBU_NAME
         # WIBU_NAMESPACE
         # WIBU_REPO
@@ -34,7 +31,7 @@ jobs:
         # WIBU_APP_VERSION
       - name: Handle env
         run: |
-            bun run handle-env.ts --data ${{ env.WIBU_DATA }}
+            bun run handle-env.ts --data ${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}
             echo "${{ env.WIBU_NAMESPACE }}"
 
     #   - name: Handle WIBU_DATA

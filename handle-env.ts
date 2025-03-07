@@ -13,33 +13,18 @@ if (!data) {
   process.exit(1);
 }
 
-const listData = data.split("[x]");
-const TOKEN = listData[0];
-const firebase = listData[1];
-const appData = listData[2];
-const key = listData[3];
+const [appData, key] = data.split("[x]");
 
-// const dcryptFirebase = CryptoJS.AES.decrypt(firebase, key).toString(
-//   CryptoJS.enc.Utf8
-// );
 const dcryptAppData = CryptoJS.AES.decrypt(appData, key).toString(
   CryptoJS.enc.Utf8
 );
 
-// const firebaseJson = JSON.parse(dcryptFirebase);
 const appDataJson = JSON.parse(dcryptAppData);
-
-// const app = admin.initializeApp({
-//   credential: admin.credential.cert(firebaseJson.credential),
-//   databaseURL: firebaseJson.databaseURL,
-// });
-
-// const db = app.database();
 
 ;(async () => {
   const listKey = Object.keys(appDataJson);
   for (const key of listKey) {
-    const dataEnv = `WIBU_${_.snakeCase(_.upperCase(key))}=${appDataJson[key]}`;
+    const dataEnv = `WIBU_${_.snakeCase(_.upperCase(key))}="${appDataJson[key]}"`;
     await $`echo "${dataEnv}" >> $GITHUB_ENV`;
     console.log(dataEnv);
   }
