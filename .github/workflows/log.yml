@@ -36,9 +36,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            RESULT="this is from server"
-            echo "::set-output name=result::$RESULT"
-            exit 0
+           RESULT="this is from server"
+           echo "result=$RESULT" >> $GITHUB_OUTPUT
 
       - name: Print RESULT from VPS
         run: |
