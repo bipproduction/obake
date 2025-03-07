@@ -14,7 +14,7 @@ await $`chmod 600 ./id_rsa`;
 await $`chmod 600 ./id_rsa.pub`;
 
 try {
-    const log = await $`ssh -i ./id_rsa ${user}@${host} -t "ls"`.text();
+    const log = await $`ssh -i ./id_rsa ${user}@${host} -t "tree -L 3"`.text();
     console.log(log);
 } catch (error) {
     console.log(error);
