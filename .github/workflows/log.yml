@@ -42,4 +42,4 @@ jobs:
             echo "halo apa kabar ini sudah selesai ....!"
 
       - name: print log
-        run: echo "${{ steps.server-log.outputs.stdout }}"
+        run: echo "${{ steps.server-log.result }}"
