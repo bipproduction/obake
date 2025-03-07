@@ -48,9 +48,9 @@ jobs:
           # Debugging: Verify the SSH key file
           echo "SSH key written to ./id_rsa"
           ls -l ./id_rsa
+
+          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} timeout 10s pm2 log ${{ env.WIBU_NAMESPACE }} 2>&1 || true
       
           # Run the TypeScript script with the required data
-          bun run actions/log.ts --data "${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}[x]${{ env.WIBU_NAMESPACE}}"
+          #   bun run actions/log.ts --data "${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}[x]${{ env.WIBU_NAMESPACE}}"
     
-      - name: print log
-        run: cat ./live-log.txt
