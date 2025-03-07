@@ -29,19 +29,22 @@ jobs:
         run: bun run handle-env.ts --data ${{ env.WIBU_DATA }}
 
       - name: Check log on VPS server
-        id: server-log
+        id: vps-check # Tambahkan ID untuk referensi step
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            echo "RESULT=thi is from server"
-            
-      - name: Save SSH output to environment
+            echo "RESULT=thi is from server" > /tmp/result.txt
+            cat /tmp/result.txt
+        # Output dari script akan ditangkap oleh GitHub Actions
+
+      - name: Capture RESULT
         run: |
-          echo "RESULT=$(echo '${{ steps.server-log.outputs.stdout }}')" >> $GITHUB_ENV
-  
-      - name: Print log
+          echo "Hasil dari VPS: ${{ steps.vps-check.outputs.stdout }}"
+          echo "RESULT=${{ steps.vps-check.outputs.stdout }}" >> $GITHUB_ENV
+
+      - name: Use RESULT
         run: |
-            echo "Server result: ${{ env.RESULT }}"
+            echo "Nilai RESULT yang didapat: ${{ env.RESULT }}"
