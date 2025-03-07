@@ -36,12 +36,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            # Jalankan pm2 logs selama 5 detik dan simpan output ke file sementara
-            timeout 5s pm2 logs ${{ env.WIBU_NAMESPACE }} > /tmp/${{ env.WIBU_NAMESPACE }}.txt 2>&1 || true
-
-            # Baca isi file log dan kirim ke stdout
-            LOG_CONTENT=$(cat /tmp/${{ env.WIBU_NAMESPACE }}.txt)
-            echo "::set-output name=log_content::$LOG_CONTENT"
+           echo "RESULT=thi is from server"
         env:
           WIBU_NAMESPACE: ${{ env.WIBU_NAMESPACE }}
 
