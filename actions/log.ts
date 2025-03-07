@@ -43,7 +43,7 @@ try {
             conn.end();
           })
           .on("data", (data: Buffer) => {
-            console.log("STDOUT: " + data.toString().trim());
+            console.log(data.toString().trim());
           })
           .stderr.on("data", (data) => {
             console.error("STDERR: " + data.toString().trim());
