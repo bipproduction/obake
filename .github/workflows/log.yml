@@ -7,7 +7,6 @@ on:
         description: "data"
         required: true
         default: "null"
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,16 +18,16 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install dependencies
+      - name: install dependencies
         run: bun install
 
-      - name: Handle WIBU_DATA
+      - name: handle WIBU_DATA
         run: echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}" >> $GITHUB_ENV
 
-      - name: Handle env
+      - name: handle env
         run: bun run handle-env.ts --data ${{ env.WIBU_DATA }}
 
-      - name: Check log on VPS server
+      - name: check log on VPS server
         id: server-log
         uses: appleboy/ssh-action@master
         with:
@@ -39,34 +38,8 @@ jobs:
             # Jalankan pm2 logs selama 5 detik dan simpan output ke file sementara
             timeout 5s pm2 logs ${{ env.WIBU_NAMESPACE }} > /tmp/${{ env.WIBU_NAMESPACE }}.txt 2>&1 || true
 
-            # Verifikasi apakah file log dibuat
-            if [[ -f "/tmp/${{ env.WIBU_NAMESPACE }}.txt" && -s "/tmp/${{ env.WIBU_NAMESPACE }}.txt" ]]; then
-              echo "Log file created successfully."
-            else
-              echo "Log file is missing or empty. Creating a placeholder file."
-              echo "No logs available for ${{ env.WIBU_NAMESPACE }}" > /tmp/${{ env.WIBU_NAMESPACE }}.txt
-            fi
-
-      - name: Debug file existence on VPS
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            ls -la /tmp/${{ env.WIBU_NAMESPACE }}.txt
+            # Baca isi file log dan kirim ke stdout
             cat /tmp/${{ env.WIBU_NAMESPACE }}.txt
 
-      - name: Pull Log from VPS server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          source: "/tmp/${{ env.WIBU_NAMESPACE }}.txt"
-          target: "${{ github.workspace }}/${{ env.WIBU_NAMESPACE }}.txt"
-
-      - name: Print log
-        run: |
-          echo "Contents of the downloaded log file:"
-          cat "${{ github.workspace }}/${{ env.WIBU_NAMESPACE }}.txt"
+      - name: print log
+        run: echo "${{ steps.server-log.outputs }}"
