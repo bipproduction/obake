@@ -41,6 +41,14 @@ jobs:
             # Baca isi file log dan kirim ke stdout
             cat /tmp/${{ env.WIBU_NAMESPACE }}.txt
       
+      - name: Pull Log from VPS server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          source: "/tmp/${{ env.WIBU_NAMESPACE }}.txt"
+          target: "/tmp/${{ env.WIBU_NAMESPACE }}.txt"
+
       - name: print log
-        run: |
-          echo ${{ steps.server-log.outputs.stdout }}
+        run: cat /tmp/${{ env.WIBU_NAMESPACE }}.txt
