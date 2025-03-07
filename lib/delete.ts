@@ -11,12 +11,19 @@ const headers = {
   Accept: "application/vnd.github+json",
 };
 
-// Ambil semua workflow runs
-async function deleteAllWorkflowRuns() {
+// Fungsi untuk menghapus semua workflow runs
+async function deleteAllWorkflowRuns(page = 1) {
   try {
-    const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/runs`;
+    // Ambil semua workflow runs (dengan pagination)
+    const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/runs?page=${page}&per_page=100`;
     const response = await axios.get(url, { headers });
     const runs = response.data.workflow_runs;
+
+    // Hentikan jika tidak ada workflow runs
+    if (runs.length === 0) {
+      console.log("No more workflow runs to delete.");
+      return;
+    }
 
     // Hapus setiap workflow run
     for (const run of runs) {
@@ -31,10 +38,11 @@ async function deleteAllWorkflowRuns() {
       }
     }
 
-    console.log("All workflow runs deleted.");
-    await deleteAllWorkflowRuns();
+    // Lanjutkan ke halaman berikutnya
+    console.log(`Moving to the next page: ${page + 1}`);
+    await deleteAllWorkflowRuns(page + 1);
   } catch (error) {
-    console.log(error);
+    console.error("Error occurred:", error);
   }
 }
 
