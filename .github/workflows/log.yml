@@ -64,4 +64,10 @@ jobs:
 
       - name: Send WIBU_DATA
         run: |
-            scp -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/result.txt ./wibu.log
+          cat <<EOF > ./id_rsa
+          ${{ secrets.VPS_KEY }}
+          EOF
+
+          chmod 600 ./id_rsa
+          
+          scp -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/result.txt ./wibu.log
