@@ -36,8 +36,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            echo "RESULT=thi is from server" >> $GITHUB_ENV
-
+            echo "RESULT=thi is from server"
+            
       - name: Save SSH output to environment
         run: |
           echo "RESULT=$(echo '${{ steps.server-log.outputs.stdout }}')" >> $GITHUB_ENV
