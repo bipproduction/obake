@@ -7,6 +7,7 @@ on:
         description: "data"
         required: true
         default: "null"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,16 +19,16 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: install dependencies
+      - name: Install dependencies
         run: bun install
 
-      - name: handle WIBU_DATA
+      - name: Handle WIBU_DATA
         run: echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}" >> $GITHUB_ENV
 
-      - name: handle env
+      - name: Handle env
         run: bun run handle-env.ts --data ${{ env.WIBU_DATA }}
 
-      - name: check log on VPS server
+      - name: Check log on VPS server
         id: server-log
         uses: appleboy/ssh-action@master
         with:
@@ -39,7 +40,10 @@ jobs:
             timeout 5s pm2 logs ${{ env.WIBU_NAMESPACE }} > /tmp/${{ env.WIBU_NAMESPACE }}.txt 2>&1 || true
 
             # Baca isi file log dan kirim ke stdout
-            echo "halo apa kabar ini sudah selesai ....!"
+            LOG_CONTENT=$(cat /tmp/${{ env.WIBU_NAMESPACE }}.txt)
+            echo "log_content=$LOG_CONTENT"  # Simpan output ke variabel GitHub Actions
+        env:
+          WIBU_NAMESPACE: ${{ env.WIBU_NAMESPACE }}
 
-      - name: print log
-        run: echo "${{ steps.server-log.result }}"
+      - name: Print log
+        run: echo "${{ steps.server-log.outputs.log_content }}"
