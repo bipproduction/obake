@@ -42,4 +42,4 @@ jobs:
             cat /tmp/${{ env.WIBU_NAMESPACE }}.txt
 
       - name: print log
-        run: echo "${{ steps.server-log.outputs }}"
+        run: echo "${{ steps.server-log.outputs.stdout }}"
