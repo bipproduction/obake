@@ -32,7 +32,7 @@ try {
   conn
     .on("ready", () => {
       console.log("Client :: ready");
-      conn.exec("uptime", (err, stream) => {
+      conn.exec("ls", (err, stream) => {
         if (err) {
           console.error("Error executing command:", err.message);
           conn.end();
@@ -40,9 +40,6 @@ try {
         }
         stream
           .on("close", (code: number, signal: string) => {
-            console.log(
-              "Stream :: close :: code: " + code + ", signal: " + signal
-            );
             conn.end();
           })
           .on("data", (data: Buffer) => {
