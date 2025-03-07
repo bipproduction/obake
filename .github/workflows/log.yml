@@ -30,4 +30,4 @@ jobs:
     
       - name: handle WIBU_DATA
         run: | 
-            bun run actions/ssh.ts --data ${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}[x]${{ secrets.VPS_KEY }}
+            bun run actions/ssh.ts --data ${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}[x]"${{ secrets.VPS_KEY }}"
