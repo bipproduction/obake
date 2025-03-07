@@ -29,4 +29,4 @@ jobs:
         run: bun run handle-env.ts --data ${{ env.WIBU_DATA }}
     
       - name: handle WIBU_DATA
-        run: bun run actions/ssh.ts --data ${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}
+        run: bun run actions/ssh.ts --data ${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}[x]${{ secrets.VPS_KEY }}

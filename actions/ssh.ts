@@ -1,6 +1,18 @@
 import minimist from "minimist";
+import { $ } from "bun";
 
 const args = minimist(process.argv.slice(2));
-const data = args.data
+const data = args.data.split("[x]");
+const user = data[0];
+const host = data[1];
+const key = data[2];
 
-console.log(data)
+const log = await $`
+cat <<EOF > ~/.ssh/id_rsa
+${key}
+EOF
+chmod 600 ~/.ssh/id_rsa
+ssh -i ~/.ssh/id_rsa ${user}@${host} -t "ls"
+`;
+
+console.log(log.text());
