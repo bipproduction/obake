@@ -10,7 +10,7 @@ if (!args.data) {
 }
 
 // Split user and host
-const [user, host] = args.data.split("[x]");
+const [user, host, namespace] = args.data.split("[x]");
 if (!user || !host) {
   console.error("Error: Invalid --data format. Expected 'user[x]host'");
   process.exit(1);
@@ -32,7 +32,7 @@ try {
   conn
     .on("ready", () => {
       console.log("Client :: ready");
-      conn.exec("ls", (err, stream) => {
+      conn.exec(`pm2 logs ${namespace}`, (err, stream) => {
         if (err) {
           console.error("Error executing command:", err.message);
           conn.end();
