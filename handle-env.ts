@@ -4,6 +4,7 @@ import { $ } from "bun";
 import CryptoJS from "crypto-js";
 import _ from "lodash";
 import minimist from "minimist";
+import fs from "fs/promises";
 
 const argv = minimist(process.argv.slice(2));
 
@@ -22,10 +23,9 @@ const dcryptAppData = CryptoJS.AES.decrypt(appData, key).toString(
 const appDataJson = JSON.parse(dcryptAppData);
 
 ;(async () => {
-  const listKey = Object.keys(appDataJson);
-  for (const key of listKey) {
-    const dataEnv = `WIBU_${_.snakeCase(_.upperCase(key))}='${appDataJson[key]}'`;
-    await $`echo "${dataEnv}" >> $GITHUB_ENV`;
-    console.log(dataEnv);
-  }
+  await $`echo "WIBU_NAME=${appDataJson.name}" >> $GITHUB_ENV"`;
+  await $`echo "WIBU_NAMESPACE=${appDataJson.namespace}" >> $GITHUB_ENV"`;
+  await $`echo "WIBU_REPO=${appDataJson.repo}" >> $GITHUB_ENV"`;
+  await $`echo "WIBU_BRANCH=${appDataJson.branch}" >> $GITHUB_ENV"`;
+  await fs.writeFile(".env.app", appDataJson.env);
 })();
