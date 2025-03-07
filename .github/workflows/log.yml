@@ -36,9 +36,10 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-           RESULT="this is from server"
-           echo "result=$RESULT" >> $GITHUB_OUTPUT
+            RESULT="this is from server"
+            echo "result=$RESULT" >> $GITHUB_ENV
+            exit 0
 
       - name: Print RESULT from VPS
         run: |
-            echo "The result from VPS is: ${{ steps.ssh_step.outputs.result }}"
+          echo "The result from VPS is: ${{ env.result }}"
