@@ -37,7 +37,7 @@ jobs:
           key: ${{ secrets.VPS_KEY }}
           script: |
             RESULT="this is from server"
-            echo "result=$RESULT" >> $GITHUB_ENV
+            echo "result=$RESULT" >> $GITHUB_OUTPUT
             exit 0
 
       - name: Print RESULT from VPS
