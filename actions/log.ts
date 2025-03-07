@@ -1,6 +1,7 @@
 import { Client } from "ssh2";
 import minimist from "minimist";
 import { existsSync, readFileSync } from "fs";
+import {$} from 'bun'
 
 // Parse arguments
 const args = minimist(process.argv.slice(2));
@@ -42,8 +43,8 @@ try {
           .on("close", (code: number, signal: string) => {
             conn.end();
           })
-          .on("data", (data: Buffer) => {
-            console.log(data.toString().trim());
+          .on("data", async (data: Buffer) => {
+            await $`echo "WIBU_LIVE_LOG=${data.toString().trim()}" >> $GITHUB_ENV`
           })
           .stderr.on("data", (data) => {
             console.error("STDERR: " + data.toString().trim());

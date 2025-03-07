@@ -46,7 +46,7 @@ jobs:
 
       - name: clone and build
         run: |
-          bun run build.ts --data ${{ env.WIBU_DATA }} >> $GITHUB_WORKSPACE/wibu.log 2>&1
+          bun run actions/build.ts --data ${{ env.WIBU_DATA }} >> $GITHUB_WORKSPACE/wibu.log 2>&1
 
       - name: generate ecosystem config string
         run: |
@@ -154,7 +154,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            echo -e "${{ env.DIR_SOURCE }}\n$(cat history.log || echo "")" > history.log
+            echo -e "${{ env.DIR_SOURCE }}\n$(cat history.log)" > history.log
 
       - name: send log
         continue-on-error: true

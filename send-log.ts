@@ -45,8 +45,8 @@ const db = app.database();
 try {
   const dataLog = await fs.readFile(filePath, "utf-8");
   console.log("[LOG]".padEnd(14), dataLog.toString());
-  db.ref("/logs").child(appDataJson.namespace).child("log").push("[LOG]".padEnd(14) + "send log");
-  db.ref("/logs")
+  db.ref("/logs/build").child(appDataJson.namespace).child("log").push("[LOG]".padEnd(14) + "send log");
+  db.ref("/logs/build")
     .child(appDataJson.namespace)
     .child("log")
     .push("[LOG]".padEnd(14) + dataLog.toString());

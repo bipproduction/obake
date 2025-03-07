@@ -25,6 +25,13 @@ jobs:
       - name: Handle WIBU_DATA
         run: echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}" >> $GITHUB_ENV
 
+        # WIBU_NAME
+        # WIBU_NAMESPACE
+        # WIBU_REPO
+        # WIBU_BRANCH
+        # WIBU_ENV
+        # WIBU_DATE
+        # WIBU_APP_VERSION
       - name: Handle env
         run: bun run handle-env.ts --data ${{ env.WIBU_DATA }}
     
@@ -44,3 +51,6 @@ jobs:
       
           # Run the TypeScript script with the required data
           bun run actions/log.ts --data "${{ secrets.VPS_USER }}[x]${{ secrets.VPS_HOST }}[x]${{ env.WIBU_NAMESPACE}}"
+    
+      - name: print log
+        run: echo "${{ env.WIBU_LIVE_LOG }}"
