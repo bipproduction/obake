@@ -1,5 +1,6 @@
 import { $ } from "bun";
 import minimist from "minimist";
+import { Client } from "ssh2";
 
 // Parse arguments
 const args = minimist(process.argv.slice(2));
@@ -24,10 +25,22 @@ try {
         process.exit(1);
     }
 
-    // Execute SSH command
-    console.log(`Connecting to ${user}@${host}...`);
-    const log = await $`ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no root@wibudev.com "echo 'Hello World'"`.text();
-    console.log("Output from server:", log.trim());
+   const conn = new Client()
+   conn.on("ready", () => {
+    conn.exec("echo 'Hello World'", (err, stream) => {
+        if (err) throw err;
+        stream.on("data", (data: any) => {
+            console.log(data.toString());
+        });
+        stream.end();
+    });
+   })
+   .connect({
+    host,
+    port: 22,
+    username: user,
+    privateKey: sshKeyPath
+   })
 } catch (error) {
     console.error("SSH command failed:", error);
     process.exit(1);
