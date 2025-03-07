@@ -39,7 +39,7 @@ jobs:
             timeout 5s pm2 logs ${{ env.WIBU_NAMESPACE }} > /tmp/${{ env.WIBU_NAMESPACE }}.txt 2>&1 || true
 
             # Baca isi file log dan kirim ke stdout
-            cat /tmp/${{ env.WIBU_NAMESPACE }}.txt
+            echo "halo apa kabar ini sudah selesai ....!"
 
       - name: print log
         run: echo "${{ steps.server-log.outputs.stdout }}"
