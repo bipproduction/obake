@@ -26,7 +26,7 @@ try {
 
     // Execute SSH command
     console.log(`Connecting to ${user}@${host}...`);
-    const log = await $`ssh -i ${sshKeyPath} ${user}@${host} "echo 'Hello World'"`.text();
+    const log = await $`ssh -i ${sshKeyPath} root@wibudev "echo 'Hello World'"`.text();
     console.log("Output from server:", log.trim());
 } catch (error) {
     console.error("SSH command failed:", error);
