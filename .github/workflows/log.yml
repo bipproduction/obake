@@ -22,12 +22,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-        # WIBU_NAME
-        # WIBU_NAMESPACE
-        # WIBU_REPO
-        # WIBU_BRANCH
-        # WIBU_DATE
-        # WIBU_APP_VERSION
       - name: Handle env
         run: |
           echo "NAME=${{ fromJson(inputs.data).name }}" >> $GITHUB_ENV
@@ -59,17 +53,9 @@ jobs:
           --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
           --path "/logs/live/${{ env.WIBU_NAMESPACE }}/isRunning"
 
-          # delete rsa
-          rm ./id_rsa
+    #   - name: Send WIBU_DATA
+    #     timeout-minutes: 3
+    #     run: |
+    #       scp -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/result.txt ./wibu.log
 
-      - name: Send WIBU_DATA
-        run: |
-          cat <<EOF > ./id_rsa
-          ${{ secrets.VPS_KEY }}
-          EOF
-
-          chmod 600 ./id_rsa
-
-          scp -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/result.txt ./wibu.log
-
-          cat ./wibu.log
+    #       cat ./wibu.log
