@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import axios from "axios";
 
 // Konfigurasi

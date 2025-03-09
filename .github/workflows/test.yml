@@ -1,0 +1,17 @@
+name: log
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: test
+        run: |
+          echo "ini adalah test" | bun run lib/kirim-wa.ts --phone "6289697338821"
