@@ -1,1 +1,0 @@
-ls 2>&1 | tee xlog.txt

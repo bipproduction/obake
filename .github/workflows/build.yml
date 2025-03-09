@@ -42,7 +42,7 @@ jobs:
         run: bun install
 
       - name: notify loading
-        run: echo "loading please wait ...!" | bun run notif --data ${{ env.WIBU_DATA }}
+        run: echo "loading please wait ...!" | bun run lib/notif.ts --data ${{ env.WIBU_DATA }}
 
       - name: clone and build
         run: |
@@ -159,16 +159,16 @@ jobs:
       - name: send log
         continue-on-error: true
         run: |
-          bun send-log --data ${{ env.WIBU_DATA }} --file-path $GITHUB_WORKSPACE/wibu.log
+          bun run lib/send-log.ts --data ${{ env.WIBU_DATA }} --file-path $GITHUB_WORKSPACE/wibu.log
 
       - name: success
         continue-on-error: true
         if: success()
         run: |
-          echo "SUCCESS !" 2>&1 | bun notif --data ${{ env.WIBU_DATA }} --finish
+          echo "SUCCESS !" 2>&1 | bun run lib/notif.ts --data ${{ env.WIBU_DATA }} --finish
 
       - name: check failed
         continue-on-error: true
         if: failure()
         run: |
-          echo "FAILED !" 2>&1 | bun notif --data ${{ env.WIBU_DATA }} --finish
+          echo "FAILED !" 2>&1 | bun run lib/notif.ts --data ${{ env.WIBU_DATA }} --finish

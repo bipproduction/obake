@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
-import type { DataRequired } from "../../xsampah/init-data";
+import type { DataRequired } from "../../xsampah2/init-data";
 
 async function getRequiredData() {
   const dataAppJsonString = await fs.readFile(

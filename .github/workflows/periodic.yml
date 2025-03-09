@@ -1,0 +1,15 @@
+name: Fetch Logs from VPS Every Hour
+
+on:
+  schedule:
+    # Jalankan setiap satu jam sekali
+    - cron: "0 * * * *"
+
+jobs:
+  fetch-logs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Write SSH Key
+        run: |
+         echo "periodic"
