@@ -12,12 +12,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: handle install bun
         uses: oven-sh/setup-bun@v2
 
       - name: install
         run: |
-          cd ${{ github.workspace }}
           bun install
 
       - name: test
