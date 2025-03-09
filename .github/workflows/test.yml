@@ -12,6 +12,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: handle install bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: install
+        run: |
+          bun install
+
       - name: test
         run: |
           echo "ini adalah test" | bun run lib/kirim-wa.ts --phone "6289697338821"
