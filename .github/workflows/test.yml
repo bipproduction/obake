@@ -17,9 +17,10 @@ jobs:
 
       - name: install
         run: |
+          cd ${{ github.workspace }}
           bun install
 
       - name: test
         run: |
           echo "ini adalah test" | bun run lib/kirim-wa.ts --phone "6289697338821"
-          
+
