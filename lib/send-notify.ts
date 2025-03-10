@@ -40,7 +40,7 @@ if (!process.stdin.isTTY) {
   });
 
   process.stdin.on("end", () => {
-    const text = `[INFO]`.padEnd(14) + inputData.trim();
+    const text = inputData.trim();
     db.ref(ref).set(text);
     setTimeout(() => {
       db.app.delete();

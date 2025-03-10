@@ -40,5 +40,3 @@ jobs:
             cat clean_list.txt | bun run lib/send-notify.ts \
             --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
             --ref "/process/list/data"
-
-            cat clean_list.txt
