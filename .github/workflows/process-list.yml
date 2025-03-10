@@ -29,10 +29,6 @@ jobs:
           EOF
 
           chmod 600 ./id_rsa
-    
-      - name: get process list
-        run: |
-          ssh -i ./id_rsa root@192.168.0.100 "ps aux"
 
       - name: run collect process list
         run: |
