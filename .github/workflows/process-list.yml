@@ -33,6 +33,6 @@ jobs:
       - name: run collect process list
         run: |
             ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "pm2 jlist" | bun run lib/send-notify.ts \
+            "pm2 jlist" | grep -oE '\[[^{]*({.*})\]' | bun run lib/send-notify.ts \
             --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
             --ref "/process/list/data"
