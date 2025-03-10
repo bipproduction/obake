@@ -9,7 +9,7 @@ on:
         default: "null"
 
 jobs:
-  build:
+  collect-process-list:
     runs-on: ubuntu-latest
 
     steps:
