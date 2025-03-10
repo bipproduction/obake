@@ -7,14 +7,14 @@ import minimist from "minimist";
 const argv = minimist(process.argv.slice(2));
 
 const data = argv.data;
-const pathRef = argv.path;
+const ref = argv.ref;
 
 if (!data) {
   console.error("data not found");
   process.exit(1);
 }
 
-if (!pathRef) {
+if (!ref) {
     console.error("path not found");
     process.exit(1);
 }
@@ -41,7 +41,7 @@ if (!process.stdin.isTTY) {
 
   process.stdin.on("end", () => {
     const text = `[INFO]`.padEnd(14) + inputData.trim();
-    db.ref(pathRef).set(text);
+    db.ref(ref).set(text);
     setTimeout(() => {
       db.app.delete();
     }, 3000);
