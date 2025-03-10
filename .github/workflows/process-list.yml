@@ -33,7 +33,7 @@ jobs:
       - name: run collect process list
         run: |
             ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "pm2 jlist" | grep -oE '\[{".*\]' > list.txt
+            "pm2 jlist" > list.txt
 
             grep -oE '\[{".*\]' list.txt > clean_list.txt
 
