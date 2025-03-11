@@ -35,8 +35,22 @@ jobs:
             ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
             "pm2 jlist" > list.txt
 
+            ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "cat /etc/nginx/conf.d/wibudev.conf" > wibudev.conf.txt
+
+            ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "cat /etc/nginx/conf.d/muku.conf" > muku.conf.txt
+
             grep -oE '\[[^{]*({.*})\]' list.txt > clean_list.txt
 
             cat clean_list.txt | bun run lib/send-notify.ts \
             --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
             --ref "/process/list/data"
+
+            cat wibudev.conf.txt | bun run lib/send-notify.ts \
+            --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
+            --ref "/process/list/conf/wibudev"
+
+            cat muku.conf.txt | bun run lib/send-notify.ts \
+            --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
+            --ref "/process/list/conf/muku"
