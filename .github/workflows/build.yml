@@ -154,7 +154,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            echo -e "${{ env.DIR_SOURCE }}\n$(cat history.log)" > history.log
+            echo -e "${{ env.DIR_TARGET_CWD }}\n$(cat history.log)" > history.log
 
       - name: send log
         continue-on-error: true

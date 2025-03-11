@@ -49,7 +49,7 @@ async function main() {
   await $`bunx prisma db push`.cwd(appDataJson.appVersion);
   await $`bunx prisma db seed`.nothrow().cwd(appDataJson.appVersion);
   await $`bun --bun run build`.cwd(appDataJson.appVersion);
-  await $`rm -rf .git node_modules`.cwd(appDataJson.appVersion);
+  await $`rm -rf node_modules`.cwd(appDataJson.appVersion);
 }
 
 main()
