@@ -45,12 +45,12 @@ jobs:
 
             cat clean_list.txt | bun run lib/send-notify.ts \
             --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
-            --ref "/process/list/data"
+            --ref "/process/list/data/process"
 
             cat wibudev.conf.txt | bun run lib/send-notify.ts \
             --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
-            --ref "/process/list/conf/wibudev"
+            --ref "/process/list/data/wibudev"
 
             cat muku.conf.txt | bun run lib/send-notify.ts \
             --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} \
-            --ref "/process/list/conf/muku"
+            --ref "/process/list/data/muku"
