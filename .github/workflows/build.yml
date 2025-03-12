@@ -106,7 +106,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           source: "${{ env.WIBU_APP_VERSION }}/.env"
-          target: "${{ env.WIBU_TARGET_WORKER_DIR }}/.env"
+          target: "${{ env.WIBU_TARGET_WORKER_DIR }}"
       
       - name: install and db push on project
         run: |
