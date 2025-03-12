@@ -90,16 +90,30 @@ jobs:
            ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
            "mkdir -p ${{env.WIBU_TARGET_WORKER_DIR}}"
 
-      - name: Send data source to server
-        run: |
-          scp -o StrictHostKeyChecking=no -i ./id_rsa -r ${{env.WIBU_SOURCE_DIR}} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{env.WIBU_TARGET_WORKER_DIR}}
+      - name: Deploy to VPS (New Version)
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          source: "${{ env.WIBU_SOURCE_DIR}}/"
+          target: "${{ env.WIBU_TARGET_WORKER_DIR }}"
+
+      - name: Deploy env to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          source: "${{ env.WIBU_SOURCE_DIR }}/.env"
+          target: "${{ env.WIBU_TARGET_WORKER_DIR }}/.env"
       
-      - name: install adn db push on project
+      - name: install and db push on project
         run: |
           ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "cd ${{env.WIBU_TARGET_}} && bun install && bunx prisma db push"
+          "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bun install --production && bunx prisma db push"
 
       - name: seed on project
         run:  |
           ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "cd ${{env.WIBU_TARGET_}} && bunx prisma db seed"
+          "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bunx prisma db seed"
