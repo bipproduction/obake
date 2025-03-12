@@ -44,8 +44,8 @@ jobs:
           echo "WIBU_APP_VERSION=${{ fromJson(inputs.data).appVersion }}" >> $GITHUB_ENV
           echo "WIBU_SOURCE_DIR=${{ github.workspace }}/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
           echo "WIBU_TARGET_PROJECT_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
-          echo "WIBU_TARGET_RELEASES_DIR=/var/www/releases/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases" >> $GITHUB_ENV
-          echo "WIBU_TARGET_WORKER_DIR=/var/www/releases/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
+          echo "WIBU_TARGET_RELEASES_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases" >> $GITHUB_ENV
+          echo "WIBU_TARGET_WORKER_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
 
           cat <<EOF > .env.wibu.app
           ${{ fromJson(inputs.data).env }}
@@ -96,8 +96,8 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "${{ env.WIBU_SOURCE_DIR}}/"
-          target: "${{ env.WIBU_TARGET_RELEASES_DIR }}"
+          source: "${{ env.WIBU_SOURCE_DIR}}/."
+          target: "${{ env.WIBU_TARGET_WORKER_DIR }}"
 
       - name: Deploy env to VPS
         uses: appleboy/scp-action@master
