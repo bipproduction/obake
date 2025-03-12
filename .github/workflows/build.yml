@@ -117,3 +117,8 @@ jobs:
       #   run:  |
       #     ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
       #     "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bunx prisma db seed"
+
+      - name: finish
+        run: |
+          echo "false" | bun run lib/send-notify.ts --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} --ref "/logs/isRunning"
+          
