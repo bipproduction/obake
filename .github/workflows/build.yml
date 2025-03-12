@@ -42,10 +42,10 @@ jobs:
           echo "WIBU_BRANCH=${{ fromJson(inputs.data).branch }}" >> $GITHUB_ENV
           echo "WIBU_DATE=${{ fromJson(inputs.data).date }}" >> $GITHUB_ENV
           echo "WIBU_APP_VERSION=${{ fromJson(inputs.data).appVersion }}" >> $GITHUB_ENV
-          echo "WIBU_SOURCE_DIR=./${{ github.workspace }}/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
-          echo "WIBU_TARGET_PROJECT_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
-          echo "WIBU_TARGET_RELEASES_DIR=/var/www/releases/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases" >> $GITHUB_ENV
-          echo "WIBU_TARGET_WORKER_DIR=/var/www/releases/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
+          # echo "WIBU_SOURCE_DIR=./${{ github.workspace }}/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
+          # echo "WIBU_TARGET_PROJECT_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
+          # echo "WIBU_TARGET_RELEASES_DIR=/var/www/releases/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases" >> $GITHUB_ENV
+          # echo "WIBU_TARGET_WORKER_DIR=/var/www/releases/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
 
           cat <<EOF > .env.wibu.app
           ${{ fromJson(inputs.data).env }}
@@ -57,50 +57,50 @@ jobs:
 
           chmod 600 ./id_rsa
 
-      - name: clone project
-        run: git clone --branch ${{ env.WIBU_BRANCH }} https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.WIBU_REPO }}.git ${{ env.WIBU_APP_VERSION }}
+      # - name: clone project
+      #   run: git clone --branch ${{ env.WIBU_BRANCH }} https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.WIBU_REPO }}.git ${{ env.WIBU_APP_VERSION }}
 
-      - name: handle .env
-        working-directory: ${{ env.WIBU_APP_VERSION }}
-        run: echo "${{ fromJson(inputs.data).env }}" > .env
+      # - name: handle .env
+      #   working-directory: ${{ env.WIBU_APP_VERSION }}
+      #   run: echo '${{ fromJson(inputs.data).env }}' > .env
 
-      - name: bun install on source
-        working-directory: ${{ env.WIBU_APP_VERSION }}
-        run: bun install
+      # - name: bun install on source
+      #   working-directory: ${{ env.WIBU_APP_VERSION }}
+      #   run: bun install
 
-      - name: db push
-        working-directory: ${{ env.WIBU_APP_VERSION }}
-        run: bunx prisma db push
+      # - name: db push
+      #   working-directory: ${{ env.WIBU_APP_VERSION }}
+      #   run: bunx prisma db push
 
-      - name: db seed
-        continue-on-error: true
-        working-directory: ${{ env.WIBU_APP_VERSION }}
-        run: bunx prisma db seed
+      # - name: db seed
+      #   continue-on-error: true
+      #   working-directory: ${{ env.WIBU_APP_VERSION }}
+      #   run: bunx prisma db seed
 
-      - name: build
-        working-directory: ${{ env.WIBU_APP_VERSION }}
-        run: bun run build
+      # - name: build
+      #   working-directory: ${{ env.WIBU_APP_VERSION }}
+      #   run: bun run build
 
-      - name: remove node_modules
-        working-directory: ${{ env.WIBU_APP_VERSION }}
-        run: rm -r node_modules
+      # - name: remove node_modules
+      #   working-directory: ${{ env.WIBU_APP_VERSION }}
+      #   run: rm -r node_modules
 
-      - name: mkdir target releases
-        run: |
-           ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-           "mkdir -p ${{env.WIBU_TARGET_PROJECT_DIR}}/releases"
+      # - name: mkdir target releases
+      #   run: |
+      #      ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+      #      "mkdir -p ${{env.WIBU_TARGET_PROJECT_DIR}}/releases"
 
-      - name: Send WIBU_DATA
-        timeout-minutes: 3
-        run: |
-          scp -o StrictHostKeyChecking=no -i ./id_rsa ${{env.WIBU_SOURCE_DIR}} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{env.WIBU_TARGET_WORKER_DIR}}
+      # - name: Send WIBU_DATA
+      #   timeout-minutes: 3
+      #   run: |
+      #     scp -o StrictHostKeyChecking=no -i ./id_rsa ${{env.WIBU_SOURCE_DIR}} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{env.WIBU_TARGET_WORKER_DIR}}
       
-      - name: install adn db push on project
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "cd ${{env.WIBU_TARGET_}} && bun install && bunx prisma db push"
+      # - name: install adn db push on project
+      #   run: |
+      #     ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+      #     "cd ${{env.WIBU_TARGET_}} && bun install && bunx prisma db push"
 
-      - name: seed on project
-        run:  |
-          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "cd ${{env.WIBU_TARGET_}} && bunx prisma db seed"
+      # - name: seed on project
+      #   run:  |
+      #     ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+      #     "cd ${{env.WIBU_TARGET_}} && bunx prisma db seed"
