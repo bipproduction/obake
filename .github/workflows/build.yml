@@ -96,7 +96,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
-          source: "${{ env.WIBU_SOURCE_DIR}}/."
+          source: "${{ env.WIBU_NAMESPACE}}/."
           target: "${{ env.WIBU_TARGET_WORKER_DIR }}"
 
       - name: Deploy env to VPS
