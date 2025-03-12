@@ -88,7 +88,7 @@ jobs:
       - name: mkdir target releases
         run: |
            ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-           "mkdir -p ${{env.WIBU_TARGET_PROJECT_DIR}}/releases"
+           "mkdir -p ${{env.WIBU_TARGET_WORKER_DIR}}"
 
       - name: Send data source to server
         run: |
