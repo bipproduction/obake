@@ -92,7 +92,7 @@ jobs:
 
       - name: Send data source to server
         run: |
-          scp -o StrictHostKeyChecking=no -i ./id_rsa ${{env.WIBU_SOURCE_DIR}} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{env.WIBU_TARGET_WORKER_DIR}}
+          scp -o StrictHostKeyChecking=no -i ./id_rsa -r ${{env.WIBU_SOURCE_DIR}} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{env.WIBU_TARGET_WORKER_DIR}}
       
       - name: install adn db push on project
         run: |
