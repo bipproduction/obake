@@ -119,6 +119,7 @@ jobs:
       #     "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bunx prisma db seed"
 
       - name: finish
+        if: always()
         run: |
           echo "false" | bun run lib/send-notify.ts --data ${{ secrets.FIREBASE }}[x]${{ secrets.WIBU_KEY }} --ref "/logs/isRunning"
           
