@@ -42,7 +42,7 @@ jobs:
           echo "WIBU_BRANCH=${{ fromJson(inputs.data).branch }}" >> $GITHUB_ENV
           echo "WIBU_DATE=${{ fromJson(inputs.data).date }}" >> $GITHUB_ENV
           echo "WIBU_APP_VERSION=${{ fromJson(inputs.data).appVersion }}" >> $GITHUB_ENV
-          echo "WIBU_SOURCE_DIR=./${{ github.workspace }}/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
+          echo "WIBU_SOURCE_DIR=${{ github.workspace }}/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
           echo "WIBU_TARGET_PROJECT_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
           echo "WIBU_TARGET_RELEASES_DIR=/var/www/releases/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases" >> $GITHUB_ENV
           echo "WIBU_TARGET_WORKER_DIR=/var/www/releases/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
@@ -90,8 +90,7 @@ jobs:
            ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
            "mkdir -p ${{env.WIBU_TARGET_PROJECT_DIR}}/releases"
 
-      - name: Send WIBU_DATA
-        timeout-minutes: 3
+      - name: Send data source to server
         run: |
           scp -o StrictHostKeyChecking=no -i ./id_rsa ${{env.WIBU_SOURCE_DIR}} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{env.WIBU_TARGET_WORKER_DIR}}
       
