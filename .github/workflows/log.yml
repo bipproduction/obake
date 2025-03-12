@@ -57,5 +57,4 @@ jobs:
     #     timeout-minutes: 3
     #     run: |
     #       scp -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/tmp/result.txt ./wibu.log
-
     #       cat ./wibu.log

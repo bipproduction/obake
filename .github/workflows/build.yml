@@ -31,144 +31,76 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: handle WIBU_DATA
-        run: echo "WIBU_DATA=${{ secrets.WIBU_GIT_TOKEN }}[x]${{ secrets.FIREBASE }}[x]${{ inputs.data }}[x]${{ secrets.WIBU_KEY }}" >> $GITHUB_ENV
-
-      - name: create log file
-        run: |
-          touch $GITHUB_WORKSPACE/wibu.log
-
-      - name: install dependencies
+      - name: run bun install workspace
         run: bun install
 
-      - name: notify loading
-        run: echo "loading please wait ...!" | bun run lib/notif.ts --data ${{ env.WIBU_DATA }}
-
-      - name: clone and build
+      - name: Handle env
         run: |
-          bun run actions/build.ts --data ${{ env.WIBU_DATA }} >> $GITHUB_WORKSPACE/wibu.log 2>&1
+          echo "NAME=${{ fromJson(inputs.data).name }}" >> $GITHUB_ENV
+          echo "WIBU_NAMESPACE=${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
+          echo "WIBU_REPO=${{ fromJson(inputs.data).repo }}" >> $GITHUB_ENV
+          echo "WIBU_BRANCH=${{ fromJson(inputs.data).branch }}" >> $GITHUB_ENV
+          echo "WIBU_DATE=${{ fromJson(inputs.data).date }}" >> $GITHUB_ENV
+          echo "WIBU_APP_VERSION=${{ fromJson(inputs.data).appVersion }}" >> $GITHUB_ENV
+          echo "WIBU_SOURCE_DIR=./${{ github.workspace }}/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
+          echo "WIBU_TARGET_PROJECT_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
+          echo "WIBU_TARGET_RELEASES_DIR=/var/www/releases/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases" >> $GITHUB_ENV
+          echo "WIBU_TARGET_WORKER_DIR=/var/www/releases/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
 
-      - name: generate ecosystem config string
-        run: |
-          bun run ecosystem.ts --data ${{ env.WIBU_DATA }}
+          cat <<EOF > .env.wibu.app
+          ${{ fromJson(inputs.data).env }}
+          EOF
 
-      - name: make directory releases
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            mkdir -p ${{ env.DIR_RELEASES }}
+          cat <<EOF > ./id_rsa
+          ${{ secrets.VPS_KEY }}
+          EOF
 
-      - name: Deploy to VPS (New Version)
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          source: "${{ env.DIR_SOURCE }}"
-          target: "${{ env.DIR_RELEASES }}"
+          chmod 600 ./id_rsa
 
-      - name: Deploy env to VPS
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          source: "${{ env.DIR_SOURCE }}/.env"
-          target: "${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}"
+      - name: clone project
+        run: git clone --branch ${{ env.WIBU_BRANCH }} https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.WIBU_REPO }}.git ${{ env.WIBU_APP_VERSION }}
 
-      - name: install on server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            cd ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}
-            bun install --production
+      - name: handle .env
+        working-directory: ${{ env.WIBU_APP_VERSION }}
+        run: echo "${{ fromJson(inputs.data).env }}" > .env
 
-      - name: db push on server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            cd ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}
-            bunx prisma db push
+      - name: bun install on source
+        working-directory: ${{ env.WIBU_APP_VERSION }}
+        run: bun install
 
-      - name: seed on server
-        uses: appleboy/ssh-action@master
+      - name: db push
+        working-directory: ${{ env.WIBU_APP_VERSION }}
+        run: bunx prisma db push
+
+      - name: db seed
         continue-on-error: true
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            cd ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}
-            bunx prisma db seed || echo "[server] tidak membutuhkan seed"
+        working-directory: ${{ env.WIBU_APP_VERSION }}
+        run: bunx prisma db seed
 
-      - name: check ecosystem config on server
-        id: check-ecosystem
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            ECOSYSTEM_FILE="${{ env.DIR_TARGET_CWD }}/ecosystem.config.json"
-            if [[ ! -f "$ECOSYSTEM_FILE" ]]; then
-              cp ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }}/ecosystem.config.json $ECOSYSTEM_FILE
-            fi
+      - name: build
+        working-directory: ${{ env.WIBU_APP_VERSION }}
+        run: bun run build
 
-      - name: create symbolic link
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            ln -sf ${{ env.DIR_RELEASES }}/${{ env.DIR_SOURCE }} ${{ env.DIR_TARGET_CWD}}/current
+      - name: remove node_modules
+        working-directory: ${{ env.WIBU_APP_VERSION }}
+        run: rm -r node_modules
 
-      - name: reload app
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            ECOSYSTEM_FILE="${{ env.DIR_TARGET_CWD }}/ecosystem.config.json"
-            if [[ ! -f "$ECOSYSTEM_FILE" ]]; then
-              echo "Error: Ecosystem file not found at $ECOSYSTEM_FILE"
-              exit 1
-            fi
-            pm2 reload ${{ env.DIR_TARGET_CWD }}/ecosystem.config.json || pm2 start ${{ env.DIR_TARGET_CWD }}/ecosystem.config.json
-            pm2 save
-
-      - name: set history
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            echo -e "${{ env.DIR_TARGET_CWD }}\n$(cat history.log)" > history.log
-
-      - name: send log
-        continue-on-error: true
+      - name: mkdir target releases
         run: |
-          bun run lib/send-log.ts --data ${{ env.WIBU_DATA }} --file-path $GITHUB_WORKSPACE/wibu.log
+           ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+           "mkdir -p ${{env.WIBU_TARGET_PROJECT_DIR}}/releases"
 
-      - name: success
-        continue-on-error: true
-        if: success()
+      - name: Send WIBU_DATA
+        timeout-minutes: 3
         run: |
-          echo "SUCCESS !" 2>&1 | bun run lib/notif.ts --data ${{ env.WIBU_DATA }} --finish
+          scp -o StrictHostKeyChecking=no -i ./id_rsa ${{env.WIBU_SOURCE_DIR}} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{env.WIBU_TARGET_WORKER_DIR}}
+      
+      - name: install adn db push on project
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+          "cd ${{env.WIBU_TARGET_}} && bun install && bunx prisma db push"
 
-      - name: check failed
-        continue-on-error: true
-        if: failure()
-        run: |
-          echo "FAILED !" 2>&1 | bun run lib/notif.ts --data ${{ env.WIBU_DATA }} --finish
+      - name: seed on project
+        run:  |
+          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+          "cd ${{env.WIBU_TARGET_}} && bunx prisma db seed"
