@@ -99,24 +99,24 @@ jobs:
           source: "${{ env.WIBU_APP_VERSION}}"
           target: "${{ env.WIBU_TARGET_RELEASES_DIR }}"
 
-      # - name: Deploy env to VPS
-      #   uses: appleboy/scp-action@master
-      #   with:
-      #     host: ${{ secrets.VPS_HOST }}
-      #     username: ${{ secrets.VPS_USER }}
-      #     key: ${{ secrets.VPS_KEY }}
-      #     source: "${{ env.WIBU_APP_VERSION }}/.env"
-      #     target: "${{ env.WIBU_TARGET_WORKER_DIR }}"
+      - name: Deploy env to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          source: "${{ env.WIBU_APP_VERSION }}/.env"
+          target: "${{ env.WIBU_TARGET_WORKER_DIR }}"
       
       - name: install and db push on project
         run: |
           ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "tree -I node_modules ${{env.WIBU_TARGET_RELEASES_DIR}} -L 6"
+          "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bun install && bunx prisma db push"
 
-      # - name: seed on project
-      #   run:  |
-      #     ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-      #     "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bunx prisma db seed"
+      - name: seed on project
+        run:  |
+          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+          "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bunx prisma db seed"
 
       - name: finish
         if: always()
