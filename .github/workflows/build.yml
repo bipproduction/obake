@@ -36,7 +36,7 @@ jobs:
 
       - name: Handle env
         run: |
-          echo "NAME=${{ fromJson(inputs.data).name }}" >> $GITHUB_ENV
+          echo "WIBU_NAME=${{ fromJson(inputs.data).name }}" >> $GITHUB_ENV
           echo "WIBU_NAMESPACE=${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
           echo "WIBU_REPO=${{ fromJson(inputs.data).repo }}" >> $GITHUB_ENV
           echo "WIBU_BRANCH=${{ fromJson(inputs.data).branch }}" >> $GITHUB_ENV
