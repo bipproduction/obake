@@ -111,9 +111,9 @@ jobs:
       - name: install and db push on project
         run: |
           ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bun install --production && bunx prisma db push"
+          "tree -I node_modules ${{env.WIBU_TARGET_RELEASES_DIR}} -L 6"
 
-      - name: seed on project
-        run:  |
-          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bunx prisma db seed"
+      # - name: seed on project
+      #   run:  |
+      #     ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+      #     "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bunx prisma db seed"
