@@ -42,6 +42,7 @@ jobs:
           echo "WIBU_BRANCH=${{ fromJson(inputs.data).branch }}" >> $GITHUB_ENV
           echo "WIBU_DATE=${{ fromJson(inputs.data).date }}" >> $GITHUB_ENV
           echo "WIBU_APP_VERSION=${{ fromJson(inputs.data).appVersion }}" >> $GITHUB_ENV
+          echo "WIBU_COUNT=${{ fromJson(inputs.data).count }}" >> $GITHUB_ENV
           echo "WIBU_SOURCE_DIR=${{ github.workspace }}/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
           echo "WIBU_TARGET_PROJECT_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}" >> $GITHUB_ENV
           echo "WIBU_TARGET_RELEASES_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases" >> $GITHUB_ENV
@@ -114,9 +115,24 @@ jobs:
           "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bun install && bunx prisma db push"
 
       - name: seed on project
+        continue-on-error: true
         run:  |
           ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bunx prisma db seed"
+          "cd ${{env.WIBU_TARGET_WORKER_DIR}} && bunx prisma db seed || true"
+
+      - name: check config
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+          "cd ${{env.WIBU_TARGET_PROJECT_DIR}} && \
+          ECOSYSTEM_FILE=\"ecosystem.config.json\" && \
+          if [[ ! -f \"\$ECOSYSTEM_FILE\" ]]; then \
+            CONFIF=\$(bun /var/www/lib/generate-config.ts \
+            --name ${{ env.WIBU_APP_NAME }} \
+            --namespace ${{ env.WIBU_NAMESPACE }} \
+            --count ${{ env.WIBU_COUNT }}) && \
+            if [[ -z \"\$CONFIF\" ]]; then echo \"Error: Failed to generate config\"; exit 1; fi && \
+            echo \"\$CONFIF\" > \"\$ECOSYSTEM_FILE\"; \
+          fi"
 
       - name: finish
         if: always()
