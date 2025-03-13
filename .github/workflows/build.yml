@@ -133,7 +133,7 @@ jobs:
           ECOSYSTEM_FILE=\"ecosystem.config.json\" && \
           if [[ ! -f \"\$ECOSYSTEM_FILE\" ]]; then \
             CONFIF=\$(bun /var/www/lib/generate-config.ts \
-            --name ${{ env.WIBU_APP_NAME }} \
+            --name ${{ env.WIBU_NAME }} \
             --namespace ${{ env.WIBU_NAMESPACE }} \
             --count ${{ env.WIBU_COUNT }}) && \
             if [[ -z \"\$CONFIF\" ]]; then echo \"Error: Failed to generate config\"; exit 1; fi && \
