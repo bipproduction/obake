@@ -143,6 +143,11 @@ jobs:
           pm2 save
           "
 
+      - name: test env
+        run: | 
+          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+          "echo \"${{ fromJson(inputs.data).env }}\" > /tmp/.env"
+
       - name: finish
         if: always()
         run: |
