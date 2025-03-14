@@ -49,9 +49,9 @@ jobs:
           echo "WIBU_TARGET_CURRENT_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/current" >> $GITHUB_ENV
           echo "WIBU_TARGET_WORKER_DIR=/var/www/projects/${{ fromJson(inputs.data).name }}/${{ fromJson(inputs.data).namespace }}/releases/${{fromJson(inputs.data).appVersion}}" >> $GITHUB_ENV
 
-          cat <<EOF > .env.wibu.app
-          ${{ fromJson(inputs.data).env }}
-          EOF
+          # cat <<EOF > .env.wibu.app
+          # ${{ fromJson(inputs.data).env }}
+          # EOF
 
           cat <<EOF > ./id_rsa
           ${{ secrets.VPS_KEY }}
@@ -61,6 +61,9 @@ jobs:
 
       - name: clone project
         run: git clone --branch ${{ env.WIBU_BRANCH }} https://x-access-token:${{ secrets.WIBU_GIT_TOKEN }}@github.com/bipproduction/${{ env.WIBU_REPO }}.git ${{ env.WIBU_APP_VERSION }}
+      - name: handle .env
+        working-directory: ${{ env.WIBU_APP_VERSION }}
+        run: cat package.json
 
       - name: handle .env
         working-directory: ${{ env.WIBU_APP_VERSION }}
@@ -101,14 +104,10 @@ jobs:
           source: "${{ env.WIBU_APP_VERSION}}"
           target: "${{ env.WIBU_TARGET_RELEASES_DIR }}"
 
-      - name: Deploy env to VPS
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          source: "${{ env.WIBU_APP_VERSION }}/.env"
-          target: "${{ env.WIBU_TARGET_WORKER_DIR }}"
+      - name: deploy env
+        run: | 
+          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+          "echo \"${{ fromJson(inputs.data).env }}\" > ${{ env.WIBU_TARGET_WORKER_DIR }}/.env"
       
       - name: install and db push on project
         run: |
@@ -142,11 +141,6 @@ jobs:
           pm2 reload ${{ env.WIBU_TARGET_PROJECT_DIR }}/ecosystem.config.json || pm2 start ${{ env.WIBU_TARGET_PROJECT_DIR }}/ecosystem.config.json && \
           pm2 save
           "
-
-      - name: test env
-        run: | 
-          ssh -o StrictHostKeyChecking=no -i ./id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "echo \"${{ fromJson(inputs.data).env }}\" > /tmp/.env"
 
       - name: finish
         if: always()
